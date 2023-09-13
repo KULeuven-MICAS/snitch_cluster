@@ -1198,5 +1198,8 @@ package riscv_instr;
   localparam logic [11:0] CSR_MHPMCOUNTER29H = 12'hb9d;
   localparam logic [11:0] CSR_MHPMCOUNTER30H = 12'hb9e;
   localparam logic [11:0] CSR_MHPMCOUNTER31H = 12'hb9f;
+  // SNAX address range
+  localparam logic [11:0] CSR_SNAX_BEGIN = 12'h3c0;
+  localparam logic [11:0] CSR_SNAX_END = 12'h5ff;
 endpackage
 // verilog_lint: waive-stop parameter-name-style
