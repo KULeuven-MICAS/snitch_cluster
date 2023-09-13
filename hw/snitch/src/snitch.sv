@@ -213,7 +213,9 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   alu_op_e alu_op;
 
   typedef enum logic [3:0] {
-    None, Reg, IImmediate, UImmediate, JImmediate, SImmediate, SFImmediate, PC, CSR, CSRImmmediate, CSRAddrImmediate
+    None, Reg, IImmediate, UImmediate, JImmediate,
+    SImmediate, SFImmediate, PC,
+    CSR, CSRImmmediate, CSRAddrImmediate
   } op_select_e;
   op_select_e opa_select, opb_select;
 
@@ -764,7 +766,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       //---------------------------------------------
 
       CSRRW: begin // Atomic Read/Write CSR
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           acc_qvalid_o    = valid_instr;
           opa_select      = Reg;
           opb_select      = CSRAddrImmediate;
@@ -779,7 +782,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       end
 
       CSRRWI: begin
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           acc_qvalid_o    = valid_instr;
           opa_select      = CSRImmmediate;
           opb_select      = CSRAddrImmediate;
@@ -794,7 +798,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       end
 
       CSRRS: begin  // Atomic Read and Set Bits in CSR
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
@@ -813,8 +818,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       end
 
       CSRRSI: begin
-        
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
@@ -836,7 +841,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       end
 
       CSRRC: begin // Atomic Read and Clear Bits in CSR
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
@@ -855,7 +861,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       end
 
       CSRRCI: begin
-        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) && ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
+        if((csrimm >= csr_snax_def::CSR_SNAX_BEGIN) &&
+          ((csrimm <= csr_snax_def::CSR_SNAX_END))) begin
           write_rd        = 1'b0;
           uses_rd         = 1'b1;
           acc_qvalid_o    = valid_instr;
