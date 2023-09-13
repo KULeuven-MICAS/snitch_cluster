@@ -2673,6 +2673,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
       SFImmediate, SImmediate: opb = simm;
       PC: opb = pc_q;
       CSR: opb = csr_rvalue;
+      CSRAddrImmediate: opb = csrimm;
       default: opb = '0;
     endcase
   end
