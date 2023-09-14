@@ -763,6 +763,7 @@ module snitch_cluster
     end
   end
 
+  // generate TCDM for snax if any of the cores has SNAX enabled
   if(|SNAX) begin: gen_yes_snax_tcdm_interconnect
     snitch_tcdm_interconnect #(
       .NumInp (NumTCDMIn + TotalSnaxTcdmPorts),
