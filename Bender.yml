@@ -140,7 +140,7 @@ sources:
       - hw/snax_hwpe_mac/src/snax_hwpe_ctrl.sv
       - hw/snax_hwpe_mac/src/snax_hwpe_to_reqrsp.sv
       - hw/snax_hwpe_mac/src/snax_hwpe_mac.sv
-      
+
   # snitch
   - files:
       # Level 0
