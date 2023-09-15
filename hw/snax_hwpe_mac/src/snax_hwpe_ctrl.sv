@@ -120,7 +120,7 @@ module snax_hwpe_ctrl #(
 
 
   // States
-  typedef enum logic [2:0] {
+  typedef enum logic [1:0] {
     WAIT,
     WRITE,
     READ
@@ -139,7 +139,6 @@ module snax_hwpe_ctrl #(
   end
 
   // Next state changes
-  // No default because we cover all 4 states already
   always_comb begin
     case(cstate)
       WAIT: begin
@@ -194,7 +193,7 @@ module snax_hwpe_ctrl #(
 
   end
  
-  // Remake of the controller
+  // Controller
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
       req_ready_o   <= 1'b1;
