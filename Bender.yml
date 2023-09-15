@@ -134,7 +134,7 @@ sources:
       - hw/tcdm_interface/test/reqrsp_to_tcdm_tb.sv
       - hw/tcdm_interface/test/tcdm_mux_tb.sv
 
-  # hwpe_mac 
+  # hwpe_mac
   - files:
       # Level 0
       - hw/snax_hwpe_mac/src/snax_hwpe_ctrl.sv
