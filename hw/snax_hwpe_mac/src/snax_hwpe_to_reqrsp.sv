@@ -54,7 +54,8 @@ module snax_hwpe_to_reqrsp #(
   hwpe_tcdm_t fifo_hwpe_tcdm_data_in;
   hwpe_tcdm_t fifo_hwpe_tcdm_data_out;
 
-  // HWPE shows 4 bits of be but let's just say it's always strobed properly
+  // HWPE has 4 bits for the strb but let's tie all to 1 which is the MSB
+  // Note that the strb is a byte mask
   assign be = hwpe_tcdm_slave.be[0];
 
   // Pack
@@ -152,24 +153,24 @@ module snax_hwpe_to_reqrsp #(
   //---------------------------------------------
   // We just directly map the tcdm_rsp_i to the HWPE ports
   //---------------------------------------------
-  // This one can be confusing but it's because of the mismatch
-  // in data memory and the assumed addressing.
-  // The HWPE and snitch integer core uses 32-bit data BUT the data memory is 64-bit
-  // This means that every address in data memory is in double word aligned (every 8 bytes)
-  // so the 8th address will always be the lower 32 bits,
-  // and every "12th" or multiples of 4 needs to be the upper 32 bits
-  // visually we have
   //
-  //   address    |     data      |  data to get
-  // 0x1000_0000  | 0xdead_beef   |    0xbeef
-  // 0x1000_0004  | 0xdead_beef   |    0xdead
-  // 0x1000_0008  | 0xc0de_babe   |    0xbabe
-  // 0x1000_000c  | 0xc0de_babe   |    0xc0de
+  // The HWPE and snitch integer core uses 32-bit data BUT the data memory is 64-bit.
+  // This means that every address in data memory is in double word aligned
+  // (every access is in multiples of 8 bytes)
+  // so the 8th address will always be the lower 32 bits, but accessing
+  // the next word (32-bits) is in multiples of 8 AND 4
+  //
+  // In other words, every time the address is divisble by 8
+  // then we get the lower word. Otherwise we get the upper word.
+  //
+  //   address    | 64-bit data from memory  |  data to get
+  // 0x1000_0000  |  0x1234_abcd_dead_beef   |  0xdead_beef
+  // 0x1000_0004  |  0x1234_abcd_dead_beef   |  0x1234_abcd
+  // 0x1000_0008  |  0xfeed_5678_c0de_babe   |  0xc0de_babe
+  // 0x1000_000c  |  0xfeed_5678_c0de_babe   |  0xfeed_5678
   //
   // .. cycle and repeat
   // 
-  // So in other words every time the address is divisble by 8
-  // alone, then we get the lower word. Otherwise we get the upper word.
   //---------------------------------------------
 
   assign hwpe_tcdm_slave.r_data  = (fifo_addr_out[2]) ?  tcdm_rsp_i.p.data[63:32] : tcdm_rsp_i.p.data[31:0];
