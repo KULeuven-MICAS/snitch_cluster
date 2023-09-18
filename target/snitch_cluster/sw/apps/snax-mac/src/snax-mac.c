@@ -1,8 +1,7 @@
-#include "snrt.h"
 #include "data.h"
+#include "snrt.h"
 
 int main() {
-
     // Set err value for checking
     int err = 0;
 
@@ -11,16 +10,16 @@ int main() {
     uint32_t *local_a, *local_b, *local_c, *local_o;
 
     // Allocate space in TCDM
-    local_a   = (uint32_t *)snrt_l1_next();
-    local_b   = local_a + VEC_LEN;
-    local_c   = local_b + VEC_LEN;
-    local_o   = local_c + 1;
+    local_a = (uint32_t *)snrt_l1_next();
+    local_b = local_a + VEC_LEN;
+    local_c = local_b + VEC_LEN;
+    local_o = local_c + 1;
 
     uint32_t dma_pre_load = snrt_mcycle();
 
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
-        size_t scale_size  = 1 * sizeof(uint32_t);
+        size_t scale_size = 1 * sizeof(uint32_t);
         snrt_dma_start_1d(local_a, A, vector_size);
         snrt_dma_start_1d(local_b, B, vector_size);
         snrt_dma_start_1d(local_c, &C, scale_size);
@@ -28,12 +27,11 @@ int main() {
 
     snrt_cluster_hw_barrier();
 
-    // Read the mcycle CSR (this is our way to mark/delimit a specific code region for benchmarking)
+    // Read the mcycle CSR (this is our way to mark/delimit a specific
+    // code region for benchmarking)
     uint32_t pre_is_compute_core = snrt_mcycle();
-
     
-    if(snrt_is_compute_core()){
-
+    if (snrt_is_compute_core()) {
         // This marks the start of the accelerator style of MAC operation
         uint32_t csr_set = snrt_mcycle();
 
@@ -42,20 +40,20 @@ int main() {
         write_csr(0x3d1, (uint32_t)local_b);
         write_csr(0x3d2, (uint32_t)local_c);
         write_csr(0x3d3, (uint32_t)local_o);
-        
+
         // Set configs
         write_csr(0x3d4, 1);   // Number of iterations
         write_csr(0x3d5, 19);  // Vector length
 
         // CSR start
         write_csr(0x3c0, 0);
-        
+
         // Start of CSR start and poll until accelerator finishes
         uint32_t mac_start = snrt_mcycle();
 
         uint32_t break_poll;
 
-        while(1){
+        while(1) {
             // 0x3c3 is the CSR address for accelerator status
             break_poll = read_csr(0x3c3);
             if(break_poll == 0){
@@ -65,20 +63,21 @@ int main() {
 
         uint32_t mac_end = snrt_mcycle();
 
-        // Data memory is 64-bits per access, hence it is double word addressable
-        // But HWPE accelerator and snitch cores are 32-bits (word) addressable
-        // If output address is divisble by 8, we read normally
-        // Otherwise, we get the lower 32-bits (get the lower word address)
-        if(((uint32_t)local_o) % 8){
+        // Data memory is 64-bits per access, hence it is double word
+        // addressable but HWPE accelerator and snitch cores are
+        // 32-bits (word) addressable. If output address is
+        // divisble by 8, we read normally; otherwise, we get
+        // the lower 32-bits (get the lower word address)
+        if (((uint32_t)local_o) % 8) {
             final_output = *(local_o-1);
-        }else {
+        } else {
             final_output = *local_o;
         };
 
-        if(final_output != 54763){
+        if (final_output != 54763) {
             err = 1;
         }
-        
+
         uint32_t end_of_check = snrt_mcycle();
     };
 
