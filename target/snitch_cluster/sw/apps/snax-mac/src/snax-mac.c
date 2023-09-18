@@ -1,5 +1,5 @@
-#include "data.h"
 #include "snrt.h"
+#include "data.h"
 
 int main() {
     // Set err value for checking
