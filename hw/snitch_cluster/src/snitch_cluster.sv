@@ -955,13 +955,6 @@ module snitch_cluster
       end
 
       if(SNAX[i]) begin: gen_yes_mac
-        //TODO: Add MAC engine here in next PR
-        // Tie these signal to low when no SNAX accelerator is present
-        // assign snax_qready = '0;
-        // assign snax_resp   = '0;
-        // assign snax_pvalid = '0;
-        // assign snax_tcdm_req[i] = '0;
-
         snax_mac # (
           .DataWidth          ( 32               ),
           .SnaxTcdmPorts      ( SnaxTcdmPorts    ),
