@@ -1,4 +1,9 @@
+// Copyright 2020 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 #include "snrt.h"
+
 #include "data.h"
 
 int main() {
@@ -30,7 +35,7 @@ int main() {
     // Read the mcycle CSR (this is our way to mark/delimit a specific
     // code region for benchmarking)
     uint32_t pre_is_compute_core = snrt_mcycle();
-    
+
     if (snrt_is_compute_core()) {
         // This marks the start of the accelerator style of MAC operation
         uint32_t csr_set = snrt_mcycle();
@@ -53,10 +58,10 @@ int main() {
 
         uint32_t break_poll;
 
-        while(1) {
+        while (1) {
             // 0x3c3 is the CSR address for accelerator status
             break_poll = read_csr(0x3c3);
-            if(break_poll == 0){
+            if (break_poll == 0) {
                 break;
             };
         };
@@ -69,7 +74,7 @@ int main() {
         // divisble by 8, we read normally; otherwise, we get
         // the lower 32-bits (get the lower word address)
         if (((uint32_t)local_o) % 8) {
-            final_output = *(local_o-1);
+            final_output = *(local_o - 1);
         } else {
             final_output = *local_o;
         };
