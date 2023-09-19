@@ -22,6 +22,7 @@ int main() {
 
     uint32_t dma_pre_load = snrt_mcycle();
 
+    // Use data mover core to bring data from L3 to TCDM
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
         size_t scale_size = 1 * sizeof(uint32_t);
@@ -30,6 +31,7 @@ int main() {
         snrt_dma_start_1d(local_c, &C, scale_size);
     }
 
+    // Wait until DMa transfer is done
     snrt_cluster_hw_barrier();
 
     // Read the mcycle CSR (this is our way to mark/delimit a specific
@@ -85,8 +87,6 @@ int main() {
 
         uint32_t end_of_check = snrt_mcycle();
     };
-
-    snrt_cluster_hw_barrier();
 
     return err;
 }
