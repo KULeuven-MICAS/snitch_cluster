@@ -31,7 +31,7 @@ int main() {
         snrt_dma_start_1d(local_c, &C, scale_size);
     }
 
-    // Wait until DMa transfer is done
+    // Wait until DMA transfer is done
     snrt_cluster_hw_barrier();
 
     // Read the mcycle CSR (this is our way to mark/delimit a specific
@@ -52,7 +52,7 @@ int main() {
         write_csr(0x3d4, 1);   // Number of iterations
         write_csr(0x3d5, 19);  // Vector length
 
-        // CSR start
+        // Write start CSR to launch accelerator
         write_csr(0x3c0, 0);
 
         // Start of CSR start and poll until accelerator finishes
