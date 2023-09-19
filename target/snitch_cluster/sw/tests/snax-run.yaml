@@ -67,5 +67,6 @@ runs:
   - app: varargs_1
   - app: varargs_2
   - app: zero_mem
+  - app: snax-mac
   - app: non_null_exitcode
     exit_code: 14
