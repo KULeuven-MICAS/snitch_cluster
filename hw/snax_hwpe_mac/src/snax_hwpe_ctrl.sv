@@ -115,6 +115,11 @@ module snax_hwpe_ctrl #(
     endcase
   end
 
+  // Output stream flag used to indicate if we are
+  // writing towards the SNAX MAC's output stream
+  logic output_stream_addr;
+  assign output_stream_addr = (address_in == 32'd76);
+
   // Byte enable always only when we need to write
   assign be  = (is_write) ? 4'hF : 4'h0;
 
@@ -214,7 +219,11 @@ module snax_hwpe_ctrl #(
             periph.add  <= address_in;
             periph.wen  <= wen;
             periph.be   <= be;
-            periph.data <= req_i.data_arga[31:0];
+            // If the CSR address points to HWPE MAC output stream
+            // Then we align it to every double word which gets
+            // into the configuragion of HWPE we divide by two
+            // to accommodate the +4 increments of HWPE
+            periph.data <= (output_stream_addr) ? {req_i.data_arga[31:3],3'b000} >> 1: req_i.data_arga[31:0];
           end
         end 
         WRITE: begin 
