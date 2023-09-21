@@ -47,9 +47,9 @@ int main() {
         write_csr(0x3d3, (uint32_t)local_o);
 
         // Set configs
-        write_csr(0x3d4, 1);  // Number of iterations
-        write_csr(0x3d5, 19); // Vector length
-        write_csr(0x3d6, 1);  // Set simple multiplication
+        write_csr(0x3d4, 1);   // Number of iterations
+        write_csr(0x3d5, 19);  // Vector length
+        write_csr(0x3d6, 1);   // Set simple multiplication
 
         // Write start CSR to launch accelerator
         write_csr(0x3c0, 0);
@@ -72,7 +72,7 @@ int main() {
         uint32_t *work_address;
 
         for (uint64_t i = 0; i < (uint64_t)VEC_LEN; i++) {
-            if (*(local_o+i) != OUT[i]) {
+            if (*(local_o + i) != OUT[i]) {
                 err++;
             };
         };
