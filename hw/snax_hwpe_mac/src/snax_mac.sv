@@ -132,33 +132,18 @@ module snax_mac # (
     assign snax_mem.r_data [i]      = snax_tcdm    [i].r_data;
     assign snax_mem.r_valid[i]      = snax_tcdm    [i].r_valid;
 
-    if(i == 3) begin: gen_output_stream 
-      snax_hwpe_to_reqrsp #(
-        .DataWidth        ( DataWidth           ),  // Data width to use
-        .tcdm_req_t       ( tcdm_req_t          ),  // TCDM request type
-        .tcdm_rsp_t       ( tcdm_rsp_t          ),  // TCDM response type
-        .AlignOutputDouble( 1'b1                )   // Align data to double word
-      ) i_snax_hwpe_to_reqrsp (
-        .clk_i            ( clk_i               ),  // Clock
-        .rst_ni           ( rst_ni              ),  // Asynchronous reset, active low
-        .tcdm_req_o       ( snax_tcdm_req_o[i]  ),  // TCDM valid ready format
-        .tcdm_rsp_i       ( snax_tcdm_rsp_i[i]  ),  // TCDM valid ready format
-        .hwpe_tcdm_slave  ( snax_tcdm[i]        )   // HWPE TCDM slave port
-      );
-    end else begin: gen_input_stream
-      snax_hwpe_to_reqrsp #(
-        .DataWidth        ( DataWidth           ),
-        .tcdm_req_t       ( tcdm_req_t          ),
-        .tcdm_rsp_t       ( tcdm_rsp_t          ),
-        .AlignOutputDouble( 1'b0                )
-      ) i_snax_hwpe_to_reqrsp (
-        .clk_i            ( clk_i               ),
-        .rst_ni           ( rst_ni              ),
-        .tcdm_req_o       ( snax_tcdm_req_o[i]  ),
-        .tcdm_rsp_i       ( snax_tcdm_rsp_i[i]  ),
-        .hwpe_tcdm_slave  ( snax_tcdm[i]        )
-      );
-    end
+    snax_hwpe_to_reqrsp #(
+      .DataWidth        ( DataWidth           ),  // Data width to use
+      .tcdm_req_t       ( tcdm_req_t          ),  // TCDM request type
+      .tcdm_rsp_t       ( tcdm_rsp_t          ),  // TCDM response type
+      .AlignOutputDouble( 1'b1                )   // Align data to double word
+    ) i_snax_hwpe_to_reqrsp (
+      .clk_i            ( clk_i               ),  // Clock
+      .rst_ni           ( rst_ni              ),  // Asynchronous reset, active low
+      .tcdm_req_o       ( snax_tcdm_req_o[i]  ),  // TCDM valid ready format
+      .tcdm_rsp_i       ( snax_tcdm_rsp_i[i]  ),  // TCDM valid ready format
+      .hwpe_tcdm_slave  ( snax_tcdm[i]        )   // HWPE TCDM slave port
+    );
 
   end
 

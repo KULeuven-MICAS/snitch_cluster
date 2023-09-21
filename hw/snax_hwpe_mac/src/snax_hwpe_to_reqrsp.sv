@@ -177,7 +177,7 @@ module snax_hwpe_to_reqrsp #(
   // 
   //---------------------------------------------
 
-  assign hwpe_tcdm_slave.r_data  = (fifo_addr_out[2]) ?  tcdm_rsp_i.p.data[63:32] : tcdm_rsp_i.p.data[31:0];
+  assign hwpe_tcdm_slave.r_data  = tcdm_rsp_i.p.data[31:0];
   assign hwpe_tcdm_slave.r_valid = tcdm_rsp_i.p_valid;
 
   //---------------------------------------------
