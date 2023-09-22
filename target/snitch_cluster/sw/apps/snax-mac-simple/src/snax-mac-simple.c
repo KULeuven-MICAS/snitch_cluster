@@ -66,8 +66,6 @@ int main() {
 
         uint32_t mac_end = snrt_mcycle();
 
-        uint32_t *work_address;
-
         for (uint64_t i = 0; i < (uint64_t)VEC_LEN; i++) {
             if (*(local_o + i) != OUT[i]) {
                 err++;
