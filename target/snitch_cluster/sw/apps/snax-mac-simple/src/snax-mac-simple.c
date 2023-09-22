@@ -65,9 +65,20 @@ int main() {
         };
 
         uint32_t mac_end = snrt_mcycle();
+        uint64_t cpu_checker;
 
         for (uint64_t i = 0; i < (uint64_t)VEC_LEN; i++) {
+            // Check if output is same as golden output
             if (*(local_o + i) != OUT[i]) {
+                err++;
+            };
+
+            // Compute using CPU multiplier
+            // Not the MAC output
+            cpu_checker = (*(local_a + i)) * (*(local_b + i));
+
+            // Compare if MAC output is same as CPU multiplier
+            if (*(local_o + i) != cpu_checker) {
                 err++;
             };
         };
