@@ -12,7 +12,7 @@ import reqrsp_pkg::*;
 module snax_hwpe_to_reqrsp #(
   parameter int unsigned AddrWidth = 48,
   parameter int unsigned DataWidth = 64,
-  parameter bit  AlignOutputDouble = 0,
+  parameter bit  AlignOutputDouble = 0,         // This triggers the x2 alignment for the addreses for doubles
   parameter type tcdm_req_t = logic,            // Memory request payload type, usually write enable, write data, etc.
   parameter type tcdm_rsp_t = logic             // Memory response payload type, usually read data
 )(

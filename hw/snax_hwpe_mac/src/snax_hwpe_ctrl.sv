@@ -38,6 +38,12 @@ module snax_hwpe_ctrl #(
   // Number of bits to fill to extend to DataWidth
   localparam int unsigned FillBits = DataWidth - 32;
 
+  // CSR addresses for HWPE register mappings
+  localparam int unsigned HwpeStreamAddrA   = 32'd64;
+  localparam int unsigned HwpeStreamAddrB   = 32'd68;
+  localparam int unsigned HwpeStreamAddrC   = 32'd72;
+  localparam int unsigned HwpeStreamAddrOut = 32'd76;
+
   //---------------------------------------------
   // Registers and wires
   //---------------------------------------------
@@ -115,17 +121,16 @@ module snax_hwpe_ctrl #(
     endcase
   end
 
-  // Output stream flag used to indicate if we are
-  // writing towards the SNAX MAC's output stream
+  // If the writes are towards address settings
+  // Make sure to trigger the flag so we can offset the addresses
   logic  address_register;
-  assign address_register = ( address_in == 32'd64
-                           || address_in == 32'd68
-                           || address_in == 32'd72
-                           || address_in == 32'd76 );
+  assign address_register = ( address_in == HwpeStreamAddrA
+                           || address_in == HwpeStreamAddrB
+                           || address_in == HwpeStreamAddrC
+                           || address_in == HwpeStreamAddrOut );
 
   // Byte enable always only when we need to write
   assign be  = (is_write) ? 4'hF : 4'h0;
-
 
   // States
   typedef enum logic [1:0] {
