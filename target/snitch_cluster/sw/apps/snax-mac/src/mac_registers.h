@@ -1,9 +1,0 @@
-#define MAC_LAUNCH 0x3c0
-#define MAC_ADDRESS_A 976
-#define MAC_ADDRESS_B 0x3d1
-#define MAC_ADDRESS_C 0x3d2
-#define MAC_ADDRESS_OUT 0x3d3
-#define MAC_NB_ITER 0x3d4
-#define MAC_VEC_LEN 0x3d5
-#define MAC_SIMPLE_MODE 0x3d6
-#define MAC_VEC_STRIDE 0x3d6
