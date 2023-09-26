@@ -1002,8 +1002,6 @@ module snitch_cluster
         .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp )
       );
 
-      
-
     end else begin: gen_no_snax_acc
       // Tie these signal to low when no SNAX accelerator is present
       assign snax_qready[i]   = '0;
