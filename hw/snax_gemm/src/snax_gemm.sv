@@ -41,10 +41,10 @@ module snax_gemm # (
 
 
   // CSRs
-  localparam int unsigned reg_num         = 5;
-  localparam int unsigned csr_addr_offset = 32'h3c0;
+  localparam int unsigned RegNum         = 5;
+  localparam int unsigned CsrAddrOFfset = 32'h3c0;
 
-  logic [31:0] CSRs [reg_num - 1:0];
+  logic [31:0] CSRs [RegNum];
   logic [31:0] csr_addr;
 
   logic write_csr;
@@ -87,8 +87,8 @@ module snax_gemm # (
   // Write CSRs
   always_ff @ (posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      for (int i=0; i < reg_num; i++) begin
-        CSRs[i] <= 32'b0;
+      for (int i=0; i < RegNum; i++) begin
+        CSRs[i] <= 32'd0;
       end     
     end else begin
       if(write_csr) begin
@@ -96,10 +96,10 @@ module snax_gemm # (
       end 
       else begin
         if (write_tcdm_done_2 == 1'b1) begin
-          CSRs[4] <= 31'b1;
+          CSRs[4] <= 31'd1;
         end
         else begin
-          CSRs[4] <= 31'b0;          
+          CSRs[4] <= 31'd0;          
         end
       end
     end
@@ -153,23 +153,23 @@ module snax_gemm # (
   end
 
   assign snax_qready_o = 1'b1;
-  assign csr_addr      = snax_req_i.data_argb - csr_addr_offset;
+  assign csr_addr      = snax_req_i.data_argb - CsrAddrOFfset;
 
   // Gemm wires
   logic [ InputMatrixSize-1:0] io_a_io_in;
   logic [ InputMatrixSize-1:0] io_b_io_in;
   logic [OutputMatrixSize-1:0] io_c_io_out;
   logic [OutputMatrixSize-1:0] io_c_io_out_reg;
-  logic [       DataWidth-1:0] req_write_data [SnaxTcdmPorts - 1:0] ;
+  logic [       DataWidth-1:0] req_write_data [SnaxTcdmPorts] ;
   logic [       DataWidth-1:0] req_write_data_test;
   logic      io_start_do;
   logic      io_data_in_valid;
   logic      io_data_out_valid;
 
-  localparam int unsigned half_c           = InputMatrixSize*2;
-  localparam int unsigned half_half_c_addr = half_c/2/8;
-  localparam int unsigned half_c_addr      = half_c/8;
-  localparam int unsigned half_half_c      = half_c/2;
+  localparam int unsigned HalfC         = InputMatrixSize*2;
+  localparam int unsigned HalfHalfCAddr = HalfC/2/8;
+  localparam int unsigned HalfCAddr   = HalfC/8;
+  localparam int unsigned HalfHalfC      = HalfC/2;
   
 
   Gemm inst_gemm(
@@ -293,27 +293,27 @@ module snax_gemm # (
           snax_tcdm_req_o[i].q.user  = '0;
 
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q_valid = 1'b1;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + half_half_c_addr;
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + HalfHalfCAddr;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.write = 1'b1;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.amo   = AMONone;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + half_half_c) +: DataWidth];
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + HalfHalfC) +: DataWidth];
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.user  = '0;                    
         end  
         else if(write_tcdm_2) begin
           snax_tcdm_req_o[i].q_valid = 1'b1;
-          snax_tcdm_req_o[i].q.addr  = CSRs[2] + i * 8 + half_c_addr;
+          snax_tcdm_req_o[i].q.addr  = CSRs[2] + i * 8 + HalfCAddr;
           snax_tcdm_req_o[i].q.write = 1'b1;
           snax_tcdm_req_o[i].q.amo   = AMONone;
-          snax_tcdm_req_o[i].q.data  = io_c_io_out_reg[(i * DataWidth + half_c) +: DataWidth];
+          snax_tcdm_req_o[i].q.data  = io_c_io_out_reg[(i * DataWidth + HalfC) +: DataWidth];
           snax_tcdm_req_o[i].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i].q.user  = '0;
 
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q_valid = 1'b1;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + half_c_addr + half_half_c_addr;
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + HalfCAddr + HalfHalfCAddr;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.write = 1'b1;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.amo   = AMONone;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + half_c + half_half_c) +: DataWidth];
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + HalfC + HalfHalfC) +: DataWidth];
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.user  = '0;                    
         end              
@@ -345,11 +345,11 @@ module snax_gemm # (
       end
       else if(write_tcdm_1) begin
         req_write_data[i] = io_c_io_out_reg[i * DataWidth +: DataWidth];
-        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + half_half_c) +: DataWidth];
+        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + HalfHalfC) +: DataWidth];
       end
       else if(write_tcdm_2) begin
-        req_write_data[i] = io_c_io_out_reg[(i * DataWidth + half_c) +: DataWidth];
-        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + half_c + half_half_c) +: DataWidth];
+        req_write_data[i] = io_c_io_out_reg[(i * DataWidth + HalfC) +: DataWidth];
+        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + HalfC + HalfHalfC) +: DataWidth];
       end
       else begin
         req_write_data[i] = 0;
