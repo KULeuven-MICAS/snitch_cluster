@@ -174,7 +174,7 @@ module snax_gemm # (
       io_c_io_out_reg <= 0;
     end else begin
       if (io_data_out_valid) begin
-        io_c_io_out_reg <= io_c_io_out[OutputMatrixSize / 2 - 1: 0 ];
+        io_c_io_out_reg <= io_c_io_out[OutputMatrixSize - 1: OutputMatrixSize / 2];
       end
     end
   end
@@ -264,7 +264,7 @@ module snax_gemm # (
           snax_tcdm_req_o[i].q.addr  = CSRs[2] + i * 8;
           snax_tcdm_req_o[i].q.write = 1'b1;
           snax_tcdm_req_o[i].q.amo   = AMONone;
-          snax_tcdm_req_o[i].q.data  = io_c_io_out_reg[i * DataWidth +: DataWidth];
+          snax_tcdm_req_o[i].q.data  = io_c_io_out[i * DataWidth +: DataWidth];
           snax_tcdm_req_o[i].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i].q.user  = '0;
 
@@ -272,16 +272,16 @@ module snax_gemm # (
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + HalfHalfCAddr;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.write = 1'b1;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.amo   = AMONone;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + HalfHalfC) +: DataWidth];
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out[(i * DataWidth + HalfHalfC) +: DataWidth];
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.strb  = {(DataWidth / 8){1'b1}};
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.user  = '0;                    
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.user  = '0;                   
         end  
         else if(write_tcdm_2) begin
           snax_tcdm_req_o[i].q_valid = 1'b1;
           snax_tcdm_req_o[i].q.addr  = CSRs[2] + i * 8 + HalfCAddr;
           snax_tcdm_req_o[i].q.write = 1'b1;
           snax_tcdm_req_o[i].q.amo   = AMONone;
-          snax_tcdm_req_o[i].q.data  = io_c_io_out_reg[(i * DataWidth + HalfC) +: DataWidth];
+          snax_tcdm_req_o[i].q.data  = io_c_io_out_reg[(i * DataWidth) +: DataWidth];
           snax_tcdm_req_o[i].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i].q.user  = '0;
 
@@ -289,7 +289,7 @@ module snax_gemm # (
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.addr  = CSRs[2] + i * 8 + HalfCAddr + HalfHalfCAddr;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.write = 1'b1;
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.amo   = AMONone;
-          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + HalfC + HalfHalfC) +: DataWidth];
+          snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.data  = io_c_io_out_reg[(i * DataWidth + HalfHalfC) +: DataWidth];
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.strb  = {(DataWidth / 8){1'b1}};
           snax_tcdm_req_o[i + SnaxTcdmPorts / 2].q.user  = '0;                    
         end              
