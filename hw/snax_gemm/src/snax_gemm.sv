@@ -39,7 +39,6 @@ module snax_gemm # (
   localparam int unsigned InputMatrixSize  = DataWidth*SnaxTcdmPorts/2;
   localparam int unsigned OutputMatrixSize = InputMatrixSize*4; // x4 because of multiplication and addition considerations
 
-
   // CSRs
   localparam int unsigned RegNum         = 5;
   localparam int unsigned CsrAddrOFfset = 32'h3c0;
@@ -49,17 +48,6 @@ module snax_gemm # (
 
   logic write_csr;
   logic read_csr;
-  logic csr_read_done;
-  logic csr_write_done;
-
-  // CSR States
-  typedef enum logic [1:0] {
-    IDLE,
-    READ,
-    WRITE
-  } ctrl_csr_states_t;
-
-  ctrl_csr_states_t csr_cstate, csr_nstate;
 
   // 2 cycle to write data out
   logic read_tcdm;
@@ -159,9 +147,7 @@ module snax_gemm # (
   logic [ InputMatrixSize-1:0] io_a_io_in;
   logic [ InputMatrixSize-1:0] io_b_io_in;
   logic [OutputMatrixSize-1:0] io_c_io_out;
-  logic [OutputMatrixSize-1:0] io_c_io_out_reg;
-  logic [       DataWidth-1:0] req_write_data [SnaxTcdmPorts] ;
-  logic [       DataWidth-1:0] req_write_data_test;
+  logic [OutputMatrixSize / 2 -1:0] io_c_io_out_reg;
   logic      io_start_do;
   logic      io_data_in_valid;
   logic      io_data_out_valid;
@@ -188,7 +174,7 @@ module snax_gemm # (
       io_c_io_out_reg <= 0;
     end else begin
       if (io_data_out_valid) begin
-        io_c_io_out_reg <= io_c_io_out;
+        io_c_io_out_reg <= io_c_io_out[OutputMatrixSize / 2 - 1: 0 ];
       end
     end
   end
@@ -207,35 +193,25 @@ module snax_gemm # (
     case(cstate)
       IDLE_GEMM: begin
         if (io_start_do) begin
-          nstate = READ_GEMM;
+          nstate = COMP_GEMM;
         end else begin
           nstate = IDLE_GEMM;
         end
       end 
-      READ_GEMM: begin
-        nstate = COMP_GEMM;
-      end   
       COMP_GEMM: begin
-        if (io_data_out_valid) begin 
+        if (write_tcdm_done_1) begin 
           nstate = WRITE1_GEMM; 
         end else begin
           nstate = COMP_GEMM; 
         end
       end          
       WRITE1_GEMM: begin
-        if (write_tcdm_done_1) begin 
-          nstate = WRITE2_GEMM; 
-        end else begin
-          nstate = WRITE1_GEMM; 
-        end
-      end
-      WRITE2_GEMM: begin
         if (write_tcdm_done_2) begin 
           nstate = IDLE_GEMM; 
         end else begin
-          nstate = WRITE2_GEMM; 
+          nstate = WRITE1_GEMM; 
         end
-      end      
+      end    
       default: begin
         nstate = IDLE_GEMM;
       end
@@ -338,29 +314,6 @@ module snax_gemm # (
   end 
 
   always_comb begin
-    for (int i = 0; i < SnaxTcdmPorts / 2; i++) begin
-      if (!rst_ni) begin
-        req_write_data[i] = 0;
-        req_write_data[i + SnaxTcdmPorts / 2] = 0;
-      end
-      else if(write_tcdm_1) begin
-        req_write_data[i] = io_c_io_out_reg[i * DataWidth +: DataWidth];
-        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + HalfHalfC) +: DataWidth];
-      end
-      else if(write_tcdm_2) begin
-        req_write_data[i] = io_c_io_out_reg[(i * DataWidth + HalfC) +: DataWidth];
-        req_write_data[i + SnaxTcdmPorts / 2] = io_c_io_out_reg[(i * DataWidth + HalfC + HalfHalfC) +: DataWidth];
-      end
-      else begin
-        req_write_data[i] = 0;
-        req_write_data[i + SnaxTcdmPorts / 2] = 0;                
-      end
-    end
-  end
-
-  assign req_write_data_test = io_c_io_out_reg[OutputMatrixSize-1:'h40];
-
-  always_comb begin
     if (!rst_ni) begin
         io_a_io_in = 512'b0;        
         io_b_io_in = 512'b0;        
@@ -392,13 +345,13 @@ module snax_gemm # (
   end 
 
   assign tcdm_not_ready    = ~io_data_in_valid; 
-  assign io_data_in_valid  = (&snax_tcdm_rsp_i_p_valid) === 1'b1 ? 1'b1 : 1'b0;
-  assign read_tcdm         = cstate == READ_GEMM;
-  assign write_tcdm_1      = cstate == WRITE1_GEMM;
-  assign write_tcdm_2      = cstate == WRITE2_GEMM;
+  assign io_data_in_valid  = ((&snax_tcdm_rsp_i_p_valid) === 1'b1 && (cstate == COMP_GEMM))? 1'b1 : 1'b0;
+  assign read_tcdm         = io_start_do;
+  assign write_tcdm_1      = io_data_out_valid;
+  assign write_tcdm_2      = cstate == WRITE1_GEMM;
   assign read_tcdm_done    = io_data_in_valid;
-  assign write_tcdm_done_1 = (&snax_tcdm_req_o_q_valid) && cstate == WRITE1_GEMM;
-  assign write_tcdm_done_2 = (&snax_tcdm_req_o_q_valid) && cstate == WRITE2_GEMM;
+  assign write_tcdm_done_1 = (&snax_tcdm_req_o_q_valid) && cstate == COMP_GEMM;
+  assign write_tcdm_done_2 = (&snax_tcdm_req_o_q_valid) && cstate == WRITE1_GEMM;
   assign write_tcdm_done   = write_tcdm_done_1 & write_tcdm_done_2;
 
 endmodule
