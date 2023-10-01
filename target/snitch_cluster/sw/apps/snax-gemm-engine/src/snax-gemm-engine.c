@@ -28,15 +28,11 @@ int main() {
 
         toc = snrt_mcycle();
 
-        printf("DMA transfer cycles: %d \n",
-                toc - tic);
-        
+        printf("DMA transfer cycles: %d \n", toc - tic);
     }
 
     // Wait for DMA to finish
     snrt_cluster_hw_barrier();
-
-    
 
     // Base MM calculation
     if (snrt_is_compute_core()) {
