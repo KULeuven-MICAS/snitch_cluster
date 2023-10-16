@@ -16,6 +16,14 @@ void snax_mac_sw_barrier(){
     while (read_csr(0x3c3)) {};
 }
 
+void snax_mac_sw_clear(){
+    // poll csr 0x3c3 until HWPE MAC accelerator is finished
+    write_csr(0x3c5, 0);
+    asm volatile("nop\n");
+    asm volatile("nop\n");
+    asm volatile("nop\n");
+}
+
 void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b,
                                 uint32_t* o, uint32_t vector_length){
     /* Setup the hwpe_mac accelerator in simple_mult mode.
@@ -89,20 +97,15 @@ int main() {
     uint32_t pre_is_compute_core = snrt_mcycle();
 
     if (snrt_is_compute_core()) {
-        // This marks the start of the accelerator style of MAC operation
-        uint32_t csr_set = snrt_mcycle();
+
 
         snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
 
-        // Start of CSR start 
-        uint32_t mac_start = snrt_mcycle();
-        
         snax_mac_launch();
 
-        // Wait until accelerator finishes
         snax_mac_sw_barrier();
 
-        uint32_t mac_end = snrt_mcycle();
+        snax_mac_sw_clear();
 
     }
 
