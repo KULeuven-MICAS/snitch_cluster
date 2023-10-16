@@ -1,3 +1,9 @@
+// Copyright 2023 KU Leuven
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Josse Van Delm <jvandelm@esat.kuleuven.be>
+
 uint32_t VEC_LEN = 20;
 uint32_t A[] = {99, 67, 39, 26, 62, 14, 17, 18, 54, 16,
                 44, 9,  26, 85, 72, 66, 95, 65, 43, 84};
