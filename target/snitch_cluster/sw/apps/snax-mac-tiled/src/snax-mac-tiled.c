@@ -6,17 +6,18 @@
 
 #include "data.h"
 
-void snax_mac_launch(){
+void snax_mac_launch() {
     // Write start CSR to launch accelerator
     write_csr(0x3c0, 0);
 }
 
-void snax_mac_sw_barrier(){
+void snax_mac_sw_barrier() {
     // poll csr 0x3c3 until HWPE MAC accelerator is finished
-    while (read_csr(0x3c3)) {};
+    while (read_csr(0x3c3)) {
+    };
 }
 
-void snax_mac_sw_clear(){
+void snax_mac_sw_clear() {
     // poll csr 0x3c3 until HWPE MAC accelerator is finished
     write_csr(0x3c5, 0);
     asm volatile("nop\n");
@@ -24,8 +25,8 @@ void snax_mac_sw_clear(){
     asm volatile("nop\n");
 }
 
-void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b,
-                                uint32_t* o, uint32_t vector_length){
+void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
+                                uint32_t vector_length) {
     /* Setup the hwpe_mac accelerator in simple_mult mode.
      * This computes the product A*B in 32 bits and stores it starting
      * from the pointer given by O
@@ -42,21 +43,20 @@ void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b,
     write_csr(0x3d3, (uint32_t)o);
 
     // Set configs
-    write_csr(0x3d4, 1);   // Number of iterations
+    write_csr(0x3d4, 1);              // Number of iterations
     write_csr(0x3d5, vector_length);  // Vector length
-    write_csr(0x3d6, 1);   // Set simple multiplication
+    write_csr(0x3d6, 1);              // Set simple multiplication
 }
 
-
-void cpu_simple_mult(uint32_t* a, uint32_t* b,
-                     uint32_t* o, uint32_t vector_length){
+void cpu_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
+                     uint32_t vector_length) {
     for (uint32_t i = 0; i < vector_length; i++) {
         o[i] = a[i] * b[i];
     };
 }
 
 int check_simple_mult(uint32_t* output, uint32_t* output_golden,
-                      uint32_t vector_length){
+                      uint32_t vector_length) {
     /*
      * Compare output to output_golden with length vector_length
      */
@@ -71,12 +71,11 @@ int check_simple_mult(uint32_t* output, uint32_t* output_golden,
 }
 
 int main() {
-
     uint32_t *local_a, *local_b;
-    uint32_t *local_o;
+    uint32_t* local_o;
 
     // Allocate space in TCDM
-    local_a = (uint32_t *)snrt_l1_next();
+    local_a = (uint32_t*)snrt_l1_next();
     local_b = local_a + VEC_LEN;
     local_o = local_b + VEC_LEN;
 
@@ -97,8 +96,7 @@ int main() {
     uint32_t pre_is_compute_core = snrt_mcycle();
 
     if (snrt_is_compute_core()) {
-
-        for(uint32_t i = 0; i < 5; i++){
+        for (uint32_t i = 0; i < 5; i++) {
             // First run
             snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
 
@@ -108,12 +106,11 @@ int main() {
 
             snax_mac_sw_clear();
         }
-
     }
 
     // Perform correctness check
     int err = 0;
-    if (snrt_is_compute_core()){
+    if (snrt_is_compute_core()) {
         err = check_simple_mult(local_o, OUT, VEC_LEN);
         // Compute using CPU multiplier and check
         uint32_t cpu_output[VEC_LEN];
