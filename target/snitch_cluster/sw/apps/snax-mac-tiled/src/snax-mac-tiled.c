@@ -73,42 +73,50 @@ int check_simple_mult(uint32_t* output, uint32_t* output_golden,
 
 int main() {
     uint32_t *local_a, *local_b;
-    uint32_t* local_o;
+    uint32_t* local_o, *local_extra_o;
 
     // Allocate space in TCDM
     local_a = (uint32_t*)snrt_l1_next();
     local_b = local_a + VEC_LEN;
     local_o = local_b + VEC_LEN;
+    // Extra local output buffer
+    local_extra_o = local_o + VEC_LEN;
 
-    uint32_t dma_pre_load = snrt_mcycle();
-    
-    // Use data mover core to bring data from L3 to TCDM
-    if (snrt_is_dm_core()) {
-        size_t vector_size = VEC_LEN * sizeof(uint32_t);
-        snrt_dma_start_1d(local_a, A, vector_size);
-        snrt_dma_start_1d(local_b, B, vector_size);
-    }
 
-    // Wait until DMA transfer is done
-    snrt_cluster_hw_barrier();
-
-    // Read the mcycle CSR (this is our way to mark/delimit a specific
-    // code region for benchmarking)
-    uint32_t pre_is_compute_core = snrt_mcycle();
 
     uint32_t tile_size = 4;
     // Warning: Manually make sure this is an integer number!
     uint32_t iterations = VEC_LEN/tile_size;
-
-    if (snrt_is_compute_core()) {
-        for (uint32_t i = 0; i < iterations; i ++) {
-            snax_mac_setup_simple_mult(local_a+i*tile_size, 
-                                       local_b+i*tile_size, 
-                                       local_o+i*tile_size, 
+    uint32_t dma_pre_tiling = snrt_mcycle();
+    // Main tiling loop
+    // I:
+    // | (0) | (1) | (2) | (3) | (4) | (5) |
+    // Phase:
+    // | in  | cal | out |
+    //       | in  | cal | out |
+    //             | in  | cal | out |
+    //                   | in  | cal | out |
+    //
+    // Add + 2 to iterations for end of pipeline
+    for (uint32_t i = 0; i < iterations + 1; i++) {
+        // Load in data: not in last iteration
+        if (snrt_is_dm_core() && i < iterations) {
+            // Use data mover core to bring data from L3 to TCDM
+            size_t transfer_size = tile_size * sizeof(uint32_t);
+            snrt_dma_start_1d(local_a+i*tile_size, A+i*tile_size, transfer_size);
+            snrt_dma_start_1d(local_b+i*tile_size, B+i*tile_size, transfer_size);
+        }
+        // Calculate a tile: not in first iteration
+        if (snrt_is_compute_core() && i > 0) {
+            snax_mac_setup_simple_mult(local_a+(i-1)*tile_size, 
+                                       local_b+(i-1)*tile_size, 
+                                       local_o+(i-1)*tile_size, 
                                        tile_size);
             snax_mac_launch();
             snax_mac_sw_barrier();
         }
+        // Wait until DMA transfer is done
+        snrt_cluster_hw_barrier();
     }
 
     // Perform correctness check
