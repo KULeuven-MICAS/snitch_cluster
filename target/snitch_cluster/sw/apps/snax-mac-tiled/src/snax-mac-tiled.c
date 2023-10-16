@@ -11,18 +11,19 @@ void snax_mac_launch() {
     write_csr(0x3c0, 0);
 }
 
-void snax_mac_sw_barrier() {
-    // poll csr 0x3c3 until HWPE MAC accelerator is finished
-    while (read_csr(0x3c3)) {
-    };
-}
-
 void snax_mac_sw_clear() {
     // poll csr 0x3c3 until HWPE MAC accelerator is finished
     write_csr(0x3c5, 0);
     asm volatile("nop\n");
     asm volatile("nop\n");
     asm volatile("nop\n");
+}
+
+void snax_mac_sw_barrier() {
+    // poll csr 0x3c3 until HWPE MAC accelerator is finished
+    while (read_csr(0x3c3)) {};
+    // This is necessary for the HWPE MAC accelerator to allow multiple runs
+    snax_mac_sw_clear();
 }
 
 void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
@@ -97,14 +98,9 @@ int main() {
 
     if (snrt_is_compute_core()) {
         for (uint32_t i = 0; i < 5; i++) {
-            // First run
             snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
-
             snax_mac_launch();
-
             snax_mac_sw_barrier();
-
-            snax_mac_sw_clear();
         }
     }
 
