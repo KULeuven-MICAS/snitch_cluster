@@ -81,7 +81,7 @@ int main() {
     local_o = local_b + VEC_LEN;
 
     uint32_t dma_pre_load = snrt_mcycle();
-
+    
     // Use data mover core to bring data from L3 to TCDM
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
@@ -96,9 +96,16 @@ int main() {
     // code region for benchmarking)
     uint32_t pre_is_compute_core = snrt_mcycle();
 
+    uint32_t tile_size = 4;
+    // Warning: Manually make sure this is an integer number!
+    uint32_t iterations = VEC_LEN/tile_size;
+
     if (snrt_is_compute_core()) {
-        for (uint32_t i = 0; i < 5; i++) {
-            snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
+        for (uint32_t i = 0; i < iterations; i ++) {
+            snax_mac_setup_simple_mult(local_a+i*tile_size, 
+                                       local_b+i*tile_size, 
+                                       local_o+i*tile_size, 
+                                       tile_size);
             snax_mac_launch();
             snax_mac_sw_barrier();
         }
