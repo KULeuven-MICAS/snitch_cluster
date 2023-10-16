@@ -98,7 +98,25 @@ int main() {
 
     if (snrt_is_compute_core()) {
 
+        // First run
+        snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
 
+        snax_mac_launch();
+
+        snax_mac_sw_barrier();
+
+        snax_mac_sw_clear();
+
+        // Second run
+        snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
+
+        snax_mac_launch();
+
+        snax_mac_sw_barrier();
+
+        snax_mac_sw_clear();
+
+        // Third run
         snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
 
         snax_mac_launch();
