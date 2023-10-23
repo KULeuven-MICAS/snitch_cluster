@@ -9,13 +9,21 @@
 
 #include "data.h"
 
+// * mac_mode = 0 
+//   performs multiply-accumulate over elements to perform dot product
+// * simple_mult_mode = 1
+//   performs simple elementwise multiplication
+enum mode{mac_mode, simple_mult_mode};
+
 void snax_mac_launch() {
     // Write start CSR to launch accelerator
     write_csr(0x3c0, 0);
 }
 
 void snax_mac_sw_clear() {
-    // poll csr 0x3c3 until HWPE MAC accelerator is finished
+    // write 0x3c5 to clear HWPE accelerator
+    // Otherwise the accelerator goes into undefined behaviour:
+    // It might stall/continue indefinitely
     write_csr(0x3c5, 0);
     asm volatile("nop\n");
     asm volatile("nop\n");
@@ -34,7 +42,7 @@ void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
                                 uint32_t vector_length) {
     /* Setup the hwpe_mac accelerator in simple_mult mode.
      * This computes the product A*B in 32 bits and stores it starting
-     * from the pointer given by O
+     * from the pointer given by o
      * args:
      *  a: pointer in TCDM (L1) to vector A
      *  b: pointer in TCDM (L1) to vector B
@@ -50,7 +58,7 @@ void snax_mac_setup_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
     // Set configs
     write_csr(0x3d4, 1);              // Number of iterations
     write_csr(0x3d5, vector_length);  // Vector length
-    write_csr(0x3d6, 1);              // Set simple multiplication
+    write_csr(0x3d6, simple_mult_mode);              // Set simple multiplication
 }
 
 void cpu_simple_mult(uint32_t* a, uint32_t* b, uint32_t* o,
@@ -93,10 +101,13 @@ int main() {
     // I:
     // | (0) | (1) | (2) | (3) | (4) | (5) |
     // Phase:
-    // | in  | cal | out |
-    //       | in  | cal | out |
-    //             | in  | cal | out |
-    //                   | in  | cal | out |
+    // |in---| cal |--out|
+    //       |in---| cal |  out|
+    //             |in---| cal |--out|
+    //                   |in---| cal |--out|
+    //
+    // Note:"in" and "out" can technically not execute at the same time,
+    // so they are "waiting" for each other to release the DMA.
     //
     // Add + 2 to iterations for end of pipeline
     for (uint32_t i = 0; i < iterations + 2; i++) {
