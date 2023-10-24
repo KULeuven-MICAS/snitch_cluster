@@ -95,7 +95,6 @@ int main() {
     uint32_t tile_size = TILE_SIZE;
     // Warning: Manually make sure this is an integer number!
     uint32_t iterations = VEC_LEN / tile_size;
-    uint32_t dma_pre_tiling = snrt_mcycle();
     size_t transfer_size = tile_size * sizeof(uint32_t);
     // Main tiling loop
     // I:
@@ -110,6 +109,7 @@ int main() {
     // so they are "waiting" for each other to release the DMA.
     //
     // Add + 2 to iterations for end of pipeline
+    uint32_t cycles_pre_loop = snrt_mcycle();
     for (uint32_t i = 0; i < iterations + 2; i++) {
         // Load in data: not in last two iterations
         if (snrt_is_dm_core() && i < iterations) {
@@ -136,6 +136,7 @@ int main() {
         // Wait until DMA transfers are done
         snrt_cluster_hw_barrier();
     }
+    uint32_t cycles_post_loop = snrt_mcycle();
     // Move tiled output data from L3 back to TCDM to check for correctness
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
