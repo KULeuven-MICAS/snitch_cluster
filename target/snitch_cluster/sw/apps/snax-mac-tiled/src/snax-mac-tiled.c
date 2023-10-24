@@ -92,7 +92,7 @@ int main() {
     local_b = local_a + VEC_LEN;
     local_o = local_b + VEC_LEN;
 
-    uint32_t tile_size = 4;
+    uint32_t tile_size = TILE_SIZE;
     // Warning: Manually make sure this is an integer number!
     uint32_t iterations = VEC_LEN / tile_size;
     uint32_t dma_pre_tiling = snrt_mcycle();

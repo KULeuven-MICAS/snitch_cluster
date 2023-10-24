@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import argparse
 import numpy as np
@@ -19,17 +20,19 @@ def golden_model(a, b):
 
 
 def main():
-    # Argument parsing
-    # Run: python datagen.py --length <insert num>
-    # E.g. python datagen.py --length 10
-    # Generates 10 elements
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--length',
         type=int,
-        help='Vector length. Do: python datagen.py --length <insert num>')
+        help='Vector length of the input and output vectors')
+    parser.add_argument(
+        '--tile_size',
+        type=int,
+        help='Tile size length. vector_length/tile_size has to be an integer number!')
     args = parser.parse_args()
+    tile_size = args.tile_size
     length = args.length
+    assert length % tile_size == 0, "vector_length/tile_size has to be an integer number!"
 
     # Randomly generate inputs
     a = np.random.randint(MIN, MAX, length)
@@ -39,11 +42,12 @@ def main():
 
     # Format header file
     l_str = format_scalar_definition('uint32_t', 'VEC_LEN', length)
+    t_str = format_scalar_definition('uint32_t', 'TILE_SIZE', tile_size)
     a_str = format_vector_definition('uint32_t', 'A', a)
     b_str = format_vector_definition('uint32_t', 'B', b)
     out_str = format_vector_definition('uint32_t', 'OUT', out)
     out_test_str = format_vector_definition('uint32_t', 'OUT_TEST', out_test)
-    f_str = '\n\n'.join([l_str, a_str, b_str, out_str, out_test_str])
+    f_str = '\n\n'.join([l_str, t_str, a_str, b_str, out_str, out_test_str])
     f_str += '\n'
 
     # Write to stdout
