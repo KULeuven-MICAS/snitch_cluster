@@ -4,16 +4,19 @@ import numpy as np
 import os
 
 # Add data utility path
-sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
-from data_utils import format_scalar_definition, format_vector_definition, \
-                       format_vector_declaration, format_ifdef_wrapper  # noqa: E402
+sys.path.append(os.path.join(os.path.dirname(__file__),
+                "../../../../../../util/sim/"))
+from data_utils import format_scalar_definition, \
+                       format_vector_definition  # noqa: E402
 
 # Hard parameters
 MIN = 0
 MAX = 100
 
-def golden_model(a,b):
+
+def golden_model(a, b):
     return a*b
+
 
 def main():
     # Argument parsing
@@ -31,7 +34,7 @@ def main():
     # Randomly generate inputs
     a = np.random.randint(MIN, MAX, length)
     b = np.random.randint(MIN, MAX, length)
-    out = golden_model(a,b)
+    out = golden_model(a, b)
     out_test = np.zeros(length, dtype=int)
 
     # Format header file
