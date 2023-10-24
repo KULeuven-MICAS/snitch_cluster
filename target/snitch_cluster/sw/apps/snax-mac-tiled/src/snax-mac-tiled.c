@@ -13,7 +13,7 @@
 //   performs multiply-accumulate over elements to perform dot product
 // * simple_mult_mode = 1
 //   performs simple elementwise multiplication
-enum mode{ mac_mode, simple_mult_mode };
+enum mode { mac_mode, simple_mult_mode };
 
 void snax_mac_launch() {
     // Write start CSR to launch accelerator
