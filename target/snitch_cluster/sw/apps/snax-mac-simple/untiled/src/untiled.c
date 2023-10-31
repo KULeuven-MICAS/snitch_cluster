@@ -7,9 +7,6 @@
 #include "data.h"
 
 int main() {
-    // Set err value for checking
-    int err = 0;
-
     uint32_t *local_a, *local_b;
     uint32_t *local_o;
 
@@ -18,6 +15,7 @@ int main() {
     local_b = local_a + VEC_LEN;
     local_o = local_b + VEC_LEN;
 
+    uint32_t cycles_pre = snrt_mcycle();
     // Use data mover core to bring data from L3 to TCDM
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
@@ -31,27 +29,33 @@ int main() {
     if (snrt_is_compute_core()) {
         snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
         snax_mac_launch();
-        // Poll until accelerator finishes
         snax_mac_sw_barrier();
+    }
 
-        uint32_t cpu_checker;
+    // Use data mover to send output from TCDM to L3
+    if (snrt_is_dm_core()) {
+        size_t vector_size = VEC_LEN * sizeof(uint32_t);
+        snrt_dma_start_1d(OUT_TEST, local_o, vector_size);
+    }
+    snrt_cluster_hw_barrier();
+    uint32_t cycles_post = snrt_mcycle();
+    // Move tiled output data from L3 back to TCDM to check for correctness
+    if (snrt_is_dm_core()) {
+        size_t vector_size = VEC_LEN * sizeof(uint32_t);
+        snrt_dma_start_1d(local_o, OUT_TEST, vector_size);
+    }
+    // Wait until DMA transfer is done
+    snrt_cluster_hw_barrier();
 
-        for (uint32_t i = 0; i < (uint32_t)VEC_LEN; i++) {
-            // Check if output is same as golden output
-            if (*(local_o + i) != OUT[i]) {
-                err++;
-            };
-
-            // Compute using CPU multiplier
-            // Not the MAC output
-            cpu_checker = (*(local_a + i)) * (*(local_b + i));
-
-            // Compare if MAC output is same as CPU multiplier
-            if (*(local_o + i) != cpu_checker) {
-                err++;
-            };
-        };
+    // Perform correctness check
+    int err = 0;
+    if (snrt_is_compute_core()) {
+        err = check_simple_mult(local_o, OUT, VEC_LEN);
+        // Compute using CPU multiplier and check
+        uint32_t cpu_output[VEC_LEN];
+        cpu_simple_mult(local_a, local_b, cpu_output, VEC_LEN);
+        // Compare CPU result with golden model
+        err += check_simple_mult(cpu_output, OUT, VEC_LEN);
     };
-
     return err;
 }
