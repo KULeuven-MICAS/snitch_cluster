@@ -29,16 +29,7 @@ int main() {
     snrt_cluster_hw_barrier();
 
     if (snrt_is_compute_core()) {
-        // Set addresses
-        write_csr(0x3d0, (uint32_t)local_a);
-        write_csr(0x3d1, (uint32_t)local_b);
-        write_csr(0x3d3, (uint32_t)local_o);
-
-        // Set configs
-        write_csr(0x3d4, 1);        // Number of iterations
-        write_csr(0x3d5, VEC_LEN);  // Vector length
-        write_csr(0x3d6, 1);        // Set simple multiplication
-
+        snax_mac_setup_simple_mult(local_a, local_b, local_o, VEC_LEN);
         snax_mac_launch();
         // Poll until accelerator finishes
         snax_mac_sw_barrier();
