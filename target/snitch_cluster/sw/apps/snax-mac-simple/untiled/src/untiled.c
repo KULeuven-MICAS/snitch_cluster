@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "snrt.h"
-
+#include "mac.h"
 #include "data.h"
 
 int main() {
@@ -48,21 +48,12 @@ int main() {
         write_csr(0x3d5, VEC_LEN);  // Vector length
         write_csr(0x3d6, 1);        // Set simple multiplication
 
-        // Write start CSR to launch accelerator
-        write_csr(0x3c0, 0);
+        snax_mac_launch();
 
         // Start of CSR start and poll until accelerator finishes
         uint32_t mac_start = snrt_mcycle();
 
-        uint32_t break_poll;
-
-        while (1) {
-            // 0x3c3 is the CSR address for accelerator status
-            break_poll = read_csr(0x3c3);
-            if (break_poll == 0) {
-                break;
-            };
-        };
+        snax_mac_sw_barrier();
 
         uint32_t mac_end = snrt_mcycle();
         uint32_t cpu_checker;
