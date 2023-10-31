@@ -18,8 +18,6 @@ int main() {
     local_b = local_a + VEC_LEN;
     local_o = local_b + VEC_LEN;
 
-    uint32_t dma_pre_load = snrt_mcycle();
-
     // Use data mover core to bring data from L3 to TCDM
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
@@ -30,14 +28,7 @@ int main() {
     // Wait until DMA transfer is done
     snrt_cluster_hw_barrier();
 
-    // Read the mcycle CSR (this is our way to mark/delimit a specific
-    // code region for benchmarking)
-    uint32_t pre_is_compute_core = snrt_mcycle();
-
     if (snrt_is_compute_core()) {
-        // This marks the start of the accelerator style of MAC operation
-        uint32_t csr_set = snrt_mcycle();
-
         // Set addresses
         write_csr(0x3d0, (uint32_t)local_a);
         write_csr(0x3d1, (uint32_t)local_b);
@@ -49,13 +40,9 @@ int main() {
         write_csr(0x3d6, 1);        // Set simple multiplication
 
         snax_mac_launch();
-
-        // Start of CSR start and poll until accelerator finishes
-        uint32_t mac_start = snrt_mcycle();
-
+        // Poll until accelerator finishes
         snax_mac_sw_barrier();
 
-        uint32_t mac_end = snrt_mcycle();
         uint32_t cpu_checker;
 
         for (uint32_t i = 0; i < (uint32_t)VEC_LEN; i++) {
@@ -73,8 +60,6 @@ int main() {
                 err++;
             };
         };
-
-        uint32_t end_of_check = snrt_mcycle();
     };
 
     return err;
