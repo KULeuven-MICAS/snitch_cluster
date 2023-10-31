@@ -10,6 +10,10 @@ MK_DIR   := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 SRC_DIR  := $(realpath $(MK_DIR)/$(APP)/src)
 
 INCDIRS += $(SRC_DIR)
+INCDIRS += ../../../snax/mac/include
+
+# Include this binary in the final build
+RISCV_LDFLAGS += ../../../snax/mac/build/mac.o
 
 SRCS     = $(realpath $(SRC_DIR)/$(APP).c)
 
@@ -22,6 +26,10 @@ $(DATA_H): $(MK_DIR)/datagen.py
 	$< --length=$(LENGTH) --tile_size=$(TILE_SIZE) > $@
 
 .PHONY: clean-data clean
+
+# Call the different makefile in case mac.o is not yet built
+mac.o:
+	$(MAKE) -C $(MK_DIR)../snax/mac/
 
 clean-data:
 	rm -f $(DATA_H)
