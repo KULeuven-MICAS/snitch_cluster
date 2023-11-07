@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "snrt.h"
-#include "mac.h"
 #include "data.h"
+#include "mac.h"
+#include "snrt.h"
 
 int main() {
     uint32_t *local_a, *local_b;

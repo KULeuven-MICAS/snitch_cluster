@@ -5,9 +5,9 @@
 // Josse Van Delm <jvandelm@esat.kuleuven.be>
 // Ryan Antonio <rgantonio@esat.kuleuven.be>
 
-#include "snrt.h"
-#include "mac.h"
 #include "data.h"
+#include "mac.h"
+#include "snrt.h"
 
 int main() {
     uint32_t *local_a, *local_b;
