@@ -23,11 +23,11 @@ SUBDIRS = runtime/banshee runtime/rtl $(SNAX) $(MATH) apps tests
 all: $(SUBDIRS)
 
 # Explicit dependency of apps on runtime
-apps: $(RUNTIME) $(SNAX) $(MATH)
+apps: $(RUNTIME) $(MATH) $(SNAX)
 	$(MAKE) -C $@ TARGET=$(TARGET)
 
 # Explicit dependency of tests on runtime
-tests: $(RUNTIME) $(MATH)
+tests: $(RUNTIME) $(MATH) $(SNAX)
 	$(MAKE) -C $@ $(TARGET)
 
 runtime/rtl runtime/banshee $(MATH) $(SNAX):
