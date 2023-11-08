@@ -36,6 +36,8 @@ int main() {
     // Wait until computation is done
     snrt_cluster_hw_barrier();
 
+    // Technically we can already check the output here, but we still perform
+    // the transfer to L3 to match the tiled example's flow.
     // Use data mover to send output from TCDM to L3
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
@@ -54,10 +56,11 @@ int main() {
     // Perform correctness check
     int err = 0;
     if (snrt_is_compute_core()) {
-        err = check_simple_mult(local_o, OUT, VEC_LEN);
-        // Compute using CPU multiplier and check
+        // Also perform calculation on CPU
         uint32_t cpu_output[VEC_LEN];
         cpu_simple_mult(local_a, local_b, cpu_output, VEC_LEN);
+        // Compare SNAX result with golden model
+        err = check_simple_mult(local_o, OUT, VEC_LEN);
         // Compare CPU result with golden model
         err += check_simple_mult(cpu_output, OUT, VEC_LEN);
     };
