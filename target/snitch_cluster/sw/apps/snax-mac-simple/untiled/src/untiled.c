@@ -33,6 +33,9 @@ int main() {
         snax_mac_sw_barrier();
     }
 
+    // Wait until computation is done
+    snrt_cluster_hw_barrier();
+
     // Use data mover to send output from TCDM to L3
     if (snrt_is_dm_core()) {
         size_t vector_size = VEC_LEN * sizeof(uint32_t);
