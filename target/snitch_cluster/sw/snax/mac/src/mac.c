@@ -4,8 +4,8 @@
 //
 // Josse Van Delm <jvandelm@esat.kuleuven.be>
 
-#include <stdint.h>
 #include "mac.h"
+#include <stdint.h>
 #include "snrt.h"
 
 void snax_mac_launch() {
