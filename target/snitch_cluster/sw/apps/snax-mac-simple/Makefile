@@ -27,10 +27,6 @@ $(DATA_H): $(MK_DIR)/datagen.py
 
 .PHONY: clean-data clean
 
-# Call the different makefile in case mac.o is not yet built
-mac.o:
-	$(MAKE) -C $(MK_DIR)../snax/mac/
-
 clean-data:
 	rm -f $(DATA_H)
 
