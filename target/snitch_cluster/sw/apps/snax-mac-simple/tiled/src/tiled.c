@@ -5,6 +5,7 @@
 // Josse Van Delm <jvandelm@esat.kuleuven.be>
 // Ryan Antonio <rgantonio@esat.kuleuven.be>
 
+#include <stdint.h>
 #include "data.h"
 #include "mac.h"
 #include "snrt.h"
