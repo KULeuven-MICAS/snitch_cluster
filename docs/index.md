@@ -1,6 +1,11 @@
-# Snitch
+# SNitch Acceleration eXtension (SNAX)
+SNitch Acceleration eXtension (SNAX) is a platform that provides the basic needs of an accelerator in a multi-core system.
 
-The Snitch project is an open-source RISC-V hardware research project of ETH Zurich and University of Bologna targeting highest possible energy-efficiency. The system is designed around a versatile and small integer core, which we call Snitch. The system is ought to be highly parameterizable and suitable for many use-cases, ranging from small, control-only cores, to large many-core system made for pure number crunching in the HPC domain.
+* Users can control their accelerator with RISCV control status register (CSR) instructions.
+* These accelerators can access a direct memory with high flexibility and bandwidth through the tightly-coupled data memory (TCDM).
+* The platform is a complete hw-sw test environment where users can also profile the performance immediately.
+
+SNAX is extension of the [Snitch cluster](https://pulp-platform.github.io/snitch_cluster/) made by [PULP platform](https://pulp-platform.org/). Visit the links for more information.
 
 ## Getting Started
 
@@ -8,12 +13,15 @@ See our dedicated [getting started guide](ug/getting_started.md).
 
 ## Documentation
 
-The documentation is built from the latest master and hosted at github pages: [https://pulp-platform.github.io/snitch_cluster](https://pulp-platform.github.io/snitch_cluster).
+The documentation is built from the latest master and hosted at github pages: [https://github.com/KULeuven-MICAS/snitch_cluster](https://github.com/KULeuven-MICAS/snitch_cluster).
 
 ## About this Repository
 
-The original repository [https://github.com/pulp-platform/snitch](https://github.com/pulp-platform/snitch) was developed as a monorepo where external dependencies are "vendored-in" and checked in. For easier integration into heterogeneous systems with other PULP Platform IPs, the original repo was archived. This new repository [https://github.com/pulp-platform/snitch_cluster](https://github.com/pulp-platform/snitch_cluster) handles depenencies with [Bender](https://github.com/pulp-platform/bender) and has a couple of repositories as submodules.
-The Occamy System part of the original repository is being moved to its own repository [https://github.com/pulp-platform/occamy](https://github.com/pulp-platform/occamy).
+This SNAX repository consists of several IPs from the original Snitch cluster:
+
+* The original repository [https://github.com/pulp-platform/snitch](https://github.com/pulp-platform/snitch) was developed as a monorepo where external dependencies are "vendored-in" and checked in. For easier integration into heterogeneous systems with other PULP Platform IPs, the original repo was archived.
+* The Snitch cluster repository [https://github.com/pulp-platform/snitch_cluster](https://github.com/pulp-platform/snitch_cluster) handles depenencies with [Bender](https://github.com/pulp-platform/bender) and has a couple of repositories as submodules.
+* The Occamy System part of the original repository is being moved to its own repository [https://github.com/pulp-platform/occamy](https://github.com/pulp-platform/occamy). 
 
 
 ## Licensing
