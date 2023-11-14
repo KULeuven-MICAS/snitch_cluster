@@ -38,7 +38,7 @@ FESVR          ?= ${MKFILE_DIR}work
 FESVR_VERSION  ?= 35d50bc40e59ea1d5566fbd3d9226023821b1bb6
 
 VLT_BENDER   += -t rtl
-VLT_SOURCES   = $(shell ${BENDER} script flist ${VLT_BENDER} | ${SED_SRCS})
+VLT_SOURCES   += $(shell ${BENDER} script flist ${VLT_BENDER} | ${SED_SRCS})
 VLT_BUILDDIR := work-vlt
 VLT_FESVR     = $(VLT_BUILDDIR)/riscv-isa-sim
 VLT_FLAGS    += -Wno-BLKANDNBLK
