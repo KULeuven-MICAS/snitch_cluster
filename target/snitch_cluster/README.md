@@ -1,8 +1,8 @@
-# SNAX Cluster Target
+# Snitch/SNAX Cluster Target
 
 ## Details
 The Snitch cluster target (`target/snitch_cluster`) is a simple RTL testbench
-around a SNAX cluster. It is still the same as the Snitch cluster but with SNAX modifications. The cluster can be configured using a config file. By default, the config file which will be picked up is `target/snitch_cluster/cfg/default.hsjon`.
+around a SNAX cluster. It is still the same as the Snitch cluster but with SNAX modifications. The cluster can be configured using a config file. By default, the config file which will be picked up is `target/snitch_cluster/cfg/default.hjson`.
 
 The configuration parameters are documented using JSON schema. Documentation for the schema and available configuration options can be found in `docs/schema-doc/snitch_cluster/`).
 
@@ -11,7 +11,7 @@ preloaded using RISC-V's Front-End Server (`fesvr`).
 
 ## Quick Start
 
-These steps demonstrate how you quickly run a simple accelerator in SNAX shell. This assumes you either have the necessary dependencies already or have the docker started (see [getting started](ug/getting_started.md)).
+These quick start steps demonstrate how you quickly run a simple MAC-engine accelerator in SNAX shell. This assumes you either have the necessary dependencies already or have the docker started (see [getting started](ug/getting_started.md)). Use this if you want to try out a simple test quickly. More details for each step are in the [Detailed Tutorial](#detailed-tutorial) section.
 
 1. Move into `./target/snitch_cluster/.`
 
@@ -37,7 +37,7 @@ make DEBUG=ON sw
 bin/snitch_cluster.vlt sw/apps/snax-mac/build/snax-mac.elf
 ```
 
-5. Make traces. See (TODO add section) section. This produces a `.txt` dump which are the traces you can inspect.
+5. Make traces. See [Debugging and Benchmarking](#debugging-and-benchmarking) section. This produces a `.txt` dump which are the traces you can inspect.
 
 ```shell
 make traces
@@ -79,7 +79,7 @@ Note that the Snitch cluster RTL sources are partly automatically generated from
 Under the `cfg` folder, different configurations are provided. The `cfg/default.hjson` configuration instantiates 8 compute cores + 1 DMA core in the cluster. If you need a specific configuration you can create your own configuration file.
 
 We have other architectures for different accelerators:
-* `cfg/snax-mac.hjson` - is a SNAX shell with the simple [HWPE MAC engine](https://github.com/pulp-platform/hwpe-mac-engine).
+* `cfg/snax-mac.hjson` - is a SNAX shell with the simple [HWPE MAC engine](https://github.com/KULeuven-MICAS/hwpe-mac-engine).
 * `cfg/snax-mac.hjson` - is a SNAX shell with a [GEMM engine](https://github.com/KULeuven-MICAS/snax-gemm).
 
 The command `make bin/snitch_cluster.vlt` automatically generates the default (Snitch cluster with 8 ccompute ores and 1 DMA core) templated RTL sources. It implicitly used the default configuration file. To override the default configuration file, define the following variable when you invoke `make` to use the custom config files:
@@ -156,6 +156,10 @@ bin/snitch_cluster.vlt sw/apps/blas/axpy/build/axpy.elf --vcd
 # Display the vcd file in gtkwave
 gtkwave sim.vcd
 ```
+!!! note "SNAX does not support Banshee"
+
+    Careful! SNAX does not support Banshee hence do not use the simulator for SNAX builds.
+
 
 For Banshee, you need to give a specific cluster configuration to the simulator with the flag `--configuration <cluster_config.yaml>`. A default Snitch cluster configuration is given (`src/banshee.yaml`). The flag `--trace` enables the printing of the traces similar to the RTL simulation.
 For more information and debug options, please have a look at the Banshee repository: [https://github.com/pulp-platform/banshee](https://github.com/pulp-platform/banshee).
@@ -276,6 +280,13 @@ questa-2022.3 bin/snitch_cluster.vsim sw/apps/axpy/build/axpy.elf
 ### Debugging and benchmarking
 
 When you run the simulation, every core will log all the instructions it executes (along with additional information, such as the value of the registers before/after the instruction) in a trace file, located in the `target/snitch_cluster/logs` directory. The traces are identified by their hart ID, that is a unique ID for every hardware thread (hart) in a RISC-V system (and since all our cores have a single thread that is a unique ID per core)
+
+You need to install `spike-dasm` first. After making the hardware build, it should create a `work-vlt` directory. Do the following to install `spike-dasm`:
+
+1. Go to: `target/snitch_cluster/work-vlt/riscv-isa-sim`
+2. Do: `./configure --prefix="/opt/spike"`
+3. Do: `make install`
+4. Add to path `export PATH="/opt/spike/bin:$PATH"`
 
 The simulation logs the traces in a non-human readable format with `.dasm` extension. To convert these to a human-readable form run:
 
