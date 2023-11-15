@@ -1,6 +1,6 @@
 # Tutorial
 
-The following tutorial will guide you through the use of the SNAX cluster. You will learn how to develop, simulate, debug and benchmark software for the SNAX cluster architecture.
+The following tutorial will guide you through the use of the Snitch/SNAX cluster. You will learn how to develop, simulate, debug and benchmark software for the Snitch/SNAX cluster architecture.
 
 ## Quick Start
 <!---
