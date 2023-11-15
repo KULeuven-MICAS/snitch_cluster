@@ -25,7 +25,7 @@ bool base_gemm(int m, int k, int n, int8_t * A, int8_t * B, int32_t* C_cpu, bool
 
 }
 
-bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A, int8_t* B, int32_t* C, uint32_t ldA, uint32_t ldB,uint32_t ldC, uint32_t strideA,uint32_t strideB,uint32_t strideC){
+bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A, int8_t* B, int32_t* C,uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t strideInnermostC, uint32_t ldA, uint32_t ldB,uint32_t ldC, uint32_t strideA,uint32_t strideB,uint32_t strideC){
 
     int8_t* start_addr_a = A;
     int8_t* start_addr_b = B;
@@ -46,9 +46,9 @@ bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A, i
             for (int m = 0; m < M; m++) {
                 for (int n = 0; n < N; n++) {
                     for (int k = 0; k < K; k++) {
-                        addr_a = start_addr_a + (b * strideA + m * ldA + k * baseAddrIncrementA) / sizeof(int8_t);
-                        addr_b = start_addr_b + (b * strideB + n * ldB + k * baseAddrIncrementB) / sizeof(int8_t);
-                        addr_c = start_addr_c + (b * strideC + m * ldC + n * baseAddrIncrementC) / sizeof(int32_t);
+                        addr_a = start_addr_a + (b * strideA + m * ldA + k * strideInnermostA) / sizeof(int8_t);
+                        addr_b = start_addr_b + (b * strideB + n * ldB + k * strideInnermostB) / sizeof(int8_t);
+                        addr_c = start_addr_c + (b * strideC + m * ldC + n * strideInnermostC) / sizeof(int32_t);
                         clear = k == 0;
                         printf("b = %d, m = %d, n = %d, k = %d, clear = %d \n",
                                b, m, n, k, clear);
@@ -83,7 +83,7 @@ uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t ldA, uint32_t ldB,
                 // for (int n = 0; n < N; n++) {
                     for (int k = 0; k < K; k++) {    
                         addr_a = local_a + (b * strideA + m * ldA + k * strideInnermostA) / sizeof(int8_t);
-                        addr_A = A + (b * M * meshRow * meshCol * N + m * meshRow * meshCol * N + k * meshRow * meshCol) / sizeof(int8_t);
+                        addr_A = A + (b * M * meshRow * tileSize * K + m * meshRow * tileSize * K + k * meshRow * tileSize) / sizeof(int8_t);
                         snrt_dma_start_1d(addr_a, addr_A, meshRow * tileSize * sizeof(int8_t));
                     }
                 // }
@@ -97,7 +97,7 @@ uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t ldA, uint32_t ldB,
                 for (int n = 0; n < N; n++) {
                     for (int k = 0; k < K; k++) {    
                         addr_b = local_b + (b * strideB + n * ldB + k * strideInnermostB) / sizeof(int8_t);
-                        addr_B = B + (b * M * meshRow * meshCol * N + n * meshRow * meshCol * N + k * meshRow * meshCol) / sizeof(int8_t);
+                        addr_B = B + (b * K * tileSize * meshCol * N + n * tileSize * meshCol * K + k * tileSize * meshCol) / sizeof(int8_t);
                         snrt_dma_start_1d(addr_b, addr_B, meshCol * tileSize * sizeof(int8_t));
                     }
                 }

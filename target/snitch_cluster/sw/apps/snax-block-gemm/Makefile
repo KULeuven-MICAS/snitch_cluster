@@ -6,7 +6,7 @@
 
 APP     = snax-block-gemm
 # SRCS    = src/snax-block-gemm.c
-SRCS    = src/snax-block-gemm-no-contention.c
+SRCS    = src/snax-block-gemm-load-with-stride.c
 SRCS    += src/snax-gemm-lib.c
 INCDIRS = data
 

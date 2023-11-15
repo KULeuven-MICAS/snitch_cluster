@@ -70,9 +70,10 @@ int main() {
     // snrt_cluster_hw_barrier();
 
     // if (snrt_is_compute_core()) {
-    //     batch_gemm_cpu(Batch, M, K, N, A, B, C_cpu, 128, 128, 512, 0, 0,0);
+    //     batch_gemm_cpu(Batch, M, K, N, A, B, C_cpu, strideInnermostA, strideInnermostB,strideInnermostC,
+    //     ldA,ldB, ldC, strideA, strideB, strideC);
 
-    //     err = check_result(C_cpu, C_golden, Batch, M, N, ldC, strideC);
+    //     err = check_result(C_cpu, C_golden, Batch, M, N,strideInnermostC, ldC, strideC);
     //     // for (int i = 0; i < M * meshRow; i++) {
     //     //     for (int j = 0; j < N * meshCol; j++) {
     //     //         printf("C_cpu[%d][%d] = %d\n", i, j, *(C_cpu + (i * n

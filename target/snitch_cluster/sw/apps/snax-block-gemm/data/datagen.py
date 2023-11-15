@@ -24,10 +24,10 @@ def block_gemm_golden_model(m,k,n,row,size,col,a,b):
                 for rr in range(row):
                     for cc in range(col):
                         for ss in range(size):
-                            c[mm * n * row * col + nn * row * col + rr * size + cc] = \
-                            c[mm * n * row * col + nn * row * col + rr * size + cc] + \
-                                a[mm * k * row * col + kk * row * col + rr * size + ss] * \
-                                b[nn * k * row * col + kk * row * col + cc * size + ss]
+                            c[mm * n * row * col + nn * row * col + rr * col + cc] = \
+                            c[mm * n * row * col + nn * row * col + rr * col + cc] + \
+                                a[mm * k * row * size + kk * row * size + rr * size + ss] * \
+                                b[nn * k * size * col + kk * size * col + cc * size + ss]
     return c  
 
 # Add stdint.h header
