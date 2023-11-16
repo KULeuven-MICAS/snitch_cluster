@@ -72,7 +72,7 @@ jobs:
     name: Simulate SW on SNAX GEMM Cluster w/ Verilator
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/pulp-platform/snitch_cluster:ipc-verification
+      image: rgantonio/snax-chisel-test
     steps:
       - uses: actions/checkout@v2
         with:
