@@ -1,6 +1,6 @@
-#include "stdint.h"
 #include <stdbool.h>
 #include "snrt.h"
+#include "stdint.h"
 
 // wrap some functions for tests
 #ifndef CSR_DEF_H
@@ -22,7 +22,7 @@
 
 #define STATE_CSR 0x3ca
 
-#endif // CSR_DEF_H
+#endif  // CSR_DEF_H
 
 #ifndef GEMM_PARAMETER_H
 #define GEMM_PARAMETER_H
@@ -45,22 +45,31 @@
 
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N);
 
-bool base_gemm(int m, int k, int n, int8_t * A, int8_t * B, int32_t* C_cpu, bool new_batch);
+bool base_gemm(int m, int k, int n, int8_t* A, int8_t* B, int32_t* C_cpu,
+               bool new_batch);
 
-bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A, int8_t* B, int32_t* C,
-uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t strideInnermostC,
-uint32_t ldA, uint32_t ldB,uint32_t ldC, uint32_t strideA,uint32_t strideB,uint32_t strideC);
+bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
+                    int8_t* B, int32_t* C, uint32_t strideInnermostA,
+                    uint32_t strideInnermostB, uint32_t strideInnermostC,
+                    uint32_t ldA, uint32_t ldB, uint32_t ldC, uint32_t strideA,
+                    uint32_t strideB, uint32_t strideC);
 
-bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,int8_t *local_a, int8_t *local_b,int8_t* A, int8_t* B,
-uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t ldA, uint32_t ldB, uint32_t strideA,uint32_t strideB);
+bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
+                     int8_t* local_a, int8_t* local_b, int8_t* A, int8_t* B,
+                     uint32_t strideInnermostA, uint32_t strideInnermostB,
+                     uint32_t ldA, uint32_t ldB, uint32_t strideA,
+                     uint32_t strideB);
 
-bool set_batch_gemm(uint32_t size_setting, int8_t *local_a, int8_t *local_b, int32_t *local_c,
-uint32_t strideInnermostA, uint32_t strideInnermostB,uint32_t strideInnermostC,
-uint32_t ldA, uint32_t ldB,uint32_t ldC, uint32_t strideA,uint32_t strideB,uint32_t strideC);
+bool set_batch_gemm(uint32_t size_setting, int8_t* local_a, int8_t* local_b,
+                    int32_t* local_c, uint32_t strideInnermostA,
+                    uint32_t strideInnermostB, uint32_t strideInnermostC,
+                    uint32_t ldA, uint32_t ldB, uint32_t ldC, uint32_t strideA,
+                    uint32_t strideB, uint32_t strideC);
 
 bool start_batch_gemm();
 
 bool wait_batch_gemm();
 
 uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
-                      uint8_t M, uint8_t N,uint32_t strideInnermostC,uint32_t ldC, uint32_t strideC);
+                      uint8_t M, uint8_t N, uint32_t strideInnermostC,
+                      uint32_t ldC, uint32_t strideC);
