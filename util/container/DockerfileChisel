@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Docker container for Snitch development.
+# Docker container for Snitch development with Chisel environment.
 
 # 1. Stage
 FROM ubuntu:18.04 AS builder

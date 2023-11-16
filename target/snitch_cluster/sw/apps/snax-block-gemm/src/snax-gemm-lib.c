@@ -5,7 +5,7 @@ int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
            (int32_t)N;
 }
 
-bool base_gemm(int m, int k, int n, int8_t* A, int8_t* B, int32_t* C_cpu,
+bool base_gemm(uint32_t m, uint32_t k, uint32_t n, int8_t* A, int8_t* B, int32_t* C_cpu,
                bool new_batch) {
     if (snrt_is_compute_core()) {
         for (int i = 0; i < m; i++) {
