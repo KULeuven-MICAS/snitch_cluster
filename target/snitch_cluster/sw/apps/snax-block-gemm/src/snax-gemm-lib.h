@@ -6,8 +6,8 @@
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N);
 
 // Golden model for base gemm
-void base_gemm(int m, int k, int n, int8_t* A, int8_t* B, int32_t* C_cpu,
-               bool new_batch);
+void base_gemm(uint8_t m, uint8_t k, uint8_t n, int8_t* A, int8_t* B,
+               int32_t* C_cpu, bool new_batch);
 
 // Golden model for batch gemm
 void batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,

@@ -3,6 +3,8 @@
 
 #include "snax-gemm-lib.h"
 
+#include "snax-gemm-params.h"
+
 // gen random data
 // allocate space in TCDM
 // write data from L3 to TCDM

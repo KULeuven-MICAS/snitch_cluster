@@ -1,5 +1,7 @@
 #include "snax-gemm-lib.h"
 
+#include "snax-gemm-params.h"
+
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
     return ((int32_t)Batch << 24) | ((int32_t)M << 16) | ((int32_t)K << 8) |
            (int32_t)N;
