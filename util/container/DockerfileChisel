@@ -59,7 +59,7 @@ ARG VERILATOR_VERSION=4.100
 
 LABEL version="0.1"
 LABEL description="Snitch container for hardware and software development."
-LABEL maintainer="zarubaf@iis.ee.ethz.ch"
+LABEL maintainer="xiaoling.yi@esat.kuleuven.be"
 LABEL org.opencontainers.image.source https://github.com/pulp-platform/snitch_cluster
 
 WORKDIR /tools
@@ -125,7 +125,7 @@ COPY --from=builder /root/.cargo/bin/banshee bin/
 ENV LC_ALL "C.UTF-8"
 ENV LANG   "C.UTF-8"
 
-# Install Chisle Environment
+# Install Chisel Environment
 
 RUN apt-get update && \
     apt-get install -y openjdk-11-jre-headless openjdk-11-jdk-headless

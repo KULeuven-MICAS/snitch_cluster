@@ -5,12 +5,14 @@ int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
            (int32_t)N;
 }
 
-bool base_gemm(uint32_t m, uint32_t k, uint32_t n, int8_t* A, int8_t* B, int32_t* C_cpu,
-               bool new_batch) {
+void base_gemm(uint8_t m, uint8_t k, uint8_t n, int8_t* A, int8_t* B,
+               int32_t* C_cpu, bool clear) {
     if (snrt_is_compute_core()) {
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                if (new_batch == true) {
+                // clear memory first before start matrix multiplication
+                // to accumulate in K dimension
+                if (clear == true) {
                     C_cpu[i * n + j] = 0;
                 }
                 for (int s = 0; s < k; s++) {
@@ -21,11 +23,9 @@ bool base_gemm(uint32_t m, uint32_t k, uint32_t n, int8_t* A, int8_t* B, int32_t
             }
         }
     };
-
-    return 0;
 }
 
-bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
+void batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
                     int8_t* B, int32_t* C, uint32_t strideInnermostA,
                     uint32_t strideInnermostB, uint32_t strideInnermostC,
                     uint32_t ldA, uint32_t ldB, uint32_t ldC, uint32_t strideA,
@@ -39,16 +39,13 @@ bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
 
     bool clear;
 
-    // Read the mcycle CSR (this is our way to mark/delimit a specific code
-    // region for benchmarking)
-    uint32_t start_cycle = snrt_mcycle();
-
     if (snrt_is_compute_core()) {
         for (int b = 0; b < Batch; b++) {
-            // new batch init
             for (int m = 0; m < M; m++) {
                 for (int n = 0; n < N; n++) {
                     for (int k = 0; k < K; k++) {
+                        // generate the start address of each sub-matrix
+                        // according to the strides definition
                         addr_a = start_addr_a + (b * strideA + m * ldA +
                                                  k * strideInnermostA) /
                                                     sizeof(int8_t);
@@ -58,9 +55,8 @@ bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
                         addr_c = start_addr_c + (b * strideC + m * ldC +
                                                  n * strideInnermostC) /
                                                     sizeof(int32_t);
+                        // when k == 0, clear the memory
                         clear = k == 0;
-                        printf("b = %d, m = %d, n = %d, k = %d, clear = %d \n",
-                               b, m, n, k, clear);
                         base_gemm(meshRow, tileSize, meshCol, addr_a, addr_b,
                                   addr_c, clear);
                     }
@@ -68,16 +64,9 @@ bool batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
             }
         }
     }
-
-    // Read the mcycle CSR
-    uint32_t end_cycle = snrt_mcycle();
-    printf("cycle number for CPU to do matrix multiply: %d \n",
-           end_cycle - start_cycle);
-
-    return 0;
 }
 
-bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
+void load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
                      int8_t* local_a, int8_t* local_b, int8_t* A, int8_t* B,
                      uint32_t strideInnermostA, uint32_t strideInnermostB,
                      uint32_t ldA, uint32_t ldB, uint32_t strideA,
@@ -91,11 +80,13 @@ bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
     if (snrt_is_dm_core()) {
         for (int b = 0; b < Batch; b++) {
             for (int m = 0; m < M; m++) {
-                // for (int n = 0; n < N; n++) {
                 for (int k = 0; k < K; k++) {
+                    // generate the start address of sub-matrix of A in TCDM
+                    // according to the strides definition
                     addr_a = local_a +
                              (b * strideA + m * ldA + k * strideInnermostA) /
                                  sizeof(int8_t);
+                    // element index of A
                     addr_A = A + (b * M * meshRow * tileSize * K +
                                   m * meshRow * tileSize * K +
                                   k * meshRow * tileSize) /
@@ -103,19 +94,20 @@ bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
                     snrt_dma_start_1d(addr_a, addr_A,
                                       meshRow * tileSize * sizeof(int8_t));
                 }
-                // }
             }
         }
     }
 
     if (snrt_is_dm_core()) {
         for (int b = 0; b < Batch; b++) {
-            // for (int m = 0; m < M; m++) {
             for (int n = 0; n < N; n++) {
                 for (int k = 0; k < K; k++) {
+                    // generate the start address of sub-matrix of B in TCDM
+                    // according to the strides definition
                     addr_b = local_b +
                              (b * strideB + n * ldB + k * strideInnermostB) /
                                  sizeof(int8_t);
+                    // element index of B
                     addr_B = B + (b * K * tileSize * meshCol * N +
                                   n * tileSize * meshCol * K +
                                   k * tileSize * meshCol) /
@@ -124,18 +116,16 @@ bool load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
                                       meshCol * tileSize * sizeof(int8_t));
                 }
             }
-            // }
         }
     }
-
-    return false;
 }
 
-bool set_batch_gemm(uint32_t size_setting, int8_t* local_a, int8_t* local_b,
+void set_batch_gemm(uint32_t size_setting, int8_t* local_a, int8_t* local_b,
                     int32_t* local_c, uint32_t strideInnermostA,
                     uint32_t strideInnermostB, uint32_t strideInnermostC,
                     uint32_t ldA, uint32_t ldB, uint32_t ldC, uint32_t strideA,
                     uint32_t strideB, uint32_t strideC) {
+    // Set matrix size
     write_csr(0x3c0, size_setting);
 
     // Set addresses
@@ -143,41 +133,37 @@ bool set_batch_gemm(uint32_t size_setting, int8_t* local_a, int8_t* local_b,
     write_csr(0x3c2, (uint32_t)local_b);
     write_csr(0x3c3, (uint32_t)local_c);
 
+    // Set strides
     write_csr(0x3c4, strideInnermostA);
-    // set_stride_A(ldA);
     write_csr(0x3c5, strideInnermostB);
     write_csr(0x3c6, strideInnermostC);
 
     write_csr(0x3c7, ldA);
-    // set_stride_A(ldA);
     write_csr(0x3c8, ldB);
     write_csr(0x3c9, ldC);
 
     write_csr(0x3ca, strideA);
     write_csr(0x3cb, strideB);
     write_csr(0x3cc, strideC);
-
-    return 0;
 }
 
-bool start_batch_gemm() {
-    // CSR start
+void start_batch_gemm() {
+    // 0x3ce is the CSR address for accelerator status
+    // set the lowest bit of state CSR  (state CSR[0]) to set start signal in
+    // GEMM
     write_csr(0x3ce, 1);
-    return 0;
 }
 
-bool wait_batch_gemm() {
+void wait_batch_gemm() {
     uint32_t break_poll;
 
     while (1) {
-        // STATE_CSR is the CSR address for accelerator status
+        // poll the state CSR[1] to see if GEMM is still busy
         break_poll = read_csr(0x3ce);
         if ((break_poll >> 1) == 1) {
             break;
         };
     };
-
-    return 0;
 }
 
 uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
@@ -195,9 +181,13 @@ uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
             for (int n = 0; n < N; n++) {
                 for (int i = 0; i < meshRow; i++) {
                     for (int j = 0; j < meshCol; j++) {
+                        // element index of golden results
                         golden_idx =
                             i * meshCol + j + b * M * meshRow * meshCol * N +
                             m * meshRow * meshCol * N + n * meshRow * meshCol;
+                        // generate the start address of
+                        // sub-matrix of output C in TCDM
+                        // according to the strides definition
                         out_addr =
                             output +
                             (b * strideC + m * ldC + n * strideInnermostC) /
@@ -205,9 +195,6 @@ uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
                             i * meshCol + j;
                         // Check if output is same as golden output
                         if ((int32_t)*out_addr != output_golden[golden_idx]) {
-                            printf("%dth not equal: output %d, golden %d \n",
-                                   golden_idx, (int32_t)*out_addr,
-                                   output_golden[golden_idx]);
                             err++;
                         };
                     };

@@ -5,7 +5,7 @@
 
 // gen random data
 // allocate space in TCDM
-// write data from l3 to tcdm
+// write data from L3 to TCDM
 // config csr
 // start
 // wait until finish
@@ -22,7 +22,6 @@ int main() {
     // Allocate space in TCDM
     local_a = (int8_t*)snrt_l1_next();
     local_b = local_a + delta_local_a * sizeof(int8_t);
-    // local_c = (int32_t*)(local_b + meshCol * tileSize * sizeof(int8_t));
     local_c = (int32_t*)(local_b + delta_local_b * sizeof(int8_t));
 
     uint32_t dma_pre_load = snrt_mcycle();
@@ -36,17 +35,17 @@ int main() {
     snrt_cluster_hw_barrier();
 
     if (snrt_is_compute_core()) {
-        // This marks the start of the accelerator style of MAC
-        // operation
-        uint32_t csr_set = snrt_mcycle();
-
-        // Start of CSR start and poll until accelerator finishes
+        // Pack matrix size setting to one CSR
         uint32_t size_setting = gen_size_config(Batch, M, K, N);
+
         uint32_t gemm_start = snrt_mcycle();
 
+        // Set GEMM configuration CSR
         set_batch_gemm(size_setting, local_a, local_b, local_c,
                        strideInnermostA, strideInnermostB, strideInnermostC,
                        ldA, ldB, ldC, strideA, strideB, strideC);
+
+        // Set CSR to start GEMM and poll until GEMM accelerator finishes
         start_batch_gemm();
         wait_batch_gemm();
 
@@ -55,37 +54,36 @@ int main() {
         printf("cycle number for Gemm to do matrix multiply: %d \n",
                gemm_end - gemm_start);
 
-        // for (int i = 0; i < M * meshRow; i++) {
-        //     for (int j = 0; j < N * meshCol; j++) {
-        //         printf("C[%d][%d] = %d\n", i, j, *(local_c + (i * n +
-        //         j)));
-        //     }
-        // }
-
-        uint32_t end_of_check = snrt_mcycle();
-
+        // Compare SNAX GEMM result with golden model
         err = check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
                            ldC, strideC);
         printf("gemm err: %d\n", err);
     };
 
-    // snrt_cluster_hw_barrier();
+    snrt_cluster_hw_barrier();
 
-    // if (snrt_is_compute_core()) {
-    //     batch_gemm_cpu(Batch, M, K, N, A, B, C_cpu, strideInnermostA,
-    //     strideInnermostB,strideInnermostC, ldA,ldB, ldC, strideA, strideB,
-    //     strideC);
+    if (snrt_is_compute_core()) {
+        // Also perform calculation on CPU
 
-    //     err = check_result(C_cpu, C_golden, Batch, M, N,strideInnermostC,
-    //     ldC, strideC);
-    //     // for (int i = 0; i < M * meshRow; i++) {
-    //     //     for (int j = 0; j < N * meshCol; j++) {
-    //     //         printf("C_cpu[%d][%d] = %d\n", i, j, *(C_cpu + (i * n
-    //     //         + j)));
-    //     //     }
-    //     // }
-    //     printf("cpu err: %d\n", err);
-    // }
+        // Read the mcycle CSR (this is our way to mark/delimit a specific code
+        // region for benchmarking)
+        uint32_t start_cycle = snrt_mcycle();
+
+        batch_gemm_cpu(Batch, M, K, N, A, B, C_cpu, strideInnermostA,
+                       strideInnermostB, strideInnermostC, ldA, ldB, ldC,
+                       strideA, strideB, strideC);
+
+        // Read the mcycle CSR
+        uint32_t end_cycle = snrt_mcycle();
+        printf("cycle number for CPU to do matrix multiply: %d \n",
+               end_cycle - start_cycle);
+
+        // Compare CPU result with golden model
+        err = check_result(C_cpu, C_golden, Batch, M, N, strideInnermostC, ldC,
+                           strideC);
+
+        printf("cpu err: %d\n", err);
+    }
 
     return err;
 }
