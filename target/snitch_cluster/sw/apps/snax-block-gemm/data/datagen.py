@@ -13,22 +13,24 @@ np.random.seed(42)
 sys.path.append(os.path.join(os.path.dirname(__file__),
                 "../../../../../../util/sim/"))
 from data_utils import format_scalar_definition, \
-                       format_vector_definition
+                       format_vector_definition  # noqa: E402
+
 
 # Golden model in python
-def block_gemm_golden_model(m,k,n,row,size,col,a,b):
-    c = np.zeros(m*row*n*col, dtype = (np.int32))
+def block_gemm_golden_model(m, k, n, row, size, col, a, b):
+    c = np.zeros(m*row*n*col, dtype=(np.int32))
     for mm in range(m):
         for nn in range(n):
             for kk in range(k):
                 for rr in range(row):
                     for cc in range(col):
                         for ss in range(size):
-                            c[mm * n * row * col + nn * row * col + rr * col + cc] = \
-                            c[mm * n * row * col + nn * row * col + rr * col + cc] + \
-                                a[mm * k * row * size + kk * row * size + rr * size + ss] * \
-                                b[nn * k * size * col + kk * size * col + cc * size + ss]
-    return c  
+                            c_index = mm * n * row * col + nn * row * col + rr * col + cc  # noqa: E501
+                            a_index = mm * k * row * size + kk * row * size + rr * size + ss  # noqa: E501
+                            b_index = nn * k * size * col + kk * size * col + cc * size + ss  # noqa: E501
+                            c[c_index] = c[c_index] + a[a_index] * b[b_index]
+    return c
+
 
 # Add stdint.h header
 def emit_header_file(**kwargs):
@@ -36,8 +38,10 @@ def emit_header_file(**kwargs):
     emit_str += emit_gemm_data(**kwargs)
     return emit_str
 
+
 MIN = -128
 MAX = 127
+
 
 def emit_gemm_data(**kwargs):
 
@@ -51,29 +55,29 @@ def emit_gemm_data(**kwargs):
 
     # Generating strides settings
 
-    data_str += [format_scalar_definition('int32_t', 'strideInnermostA', kwargs['strideInnermostA'])]
-    data_str += [format_scalar_definition('int32_t', 'strideInnermostB', kwargs['strideInnermostB'])]
-    data_str += [format_scalar_definition('int32_t', 'strideInnermostC', kwargs['strideInnermostC'])]
+    data_str += [format_scalar_definition('int32_t', 'strideInnermostA', kwargs['strideInnermostA'])]  # noqa: E501
+    data_str += [format_scalar_definition('int32_t', 'strideInnermostB', kwargs['strideInnermostB'])]  # noqa: E501
+    data_str += [format_scalar_definition('int32_t', 'strideInnermostC', kwargs['strideInnermostC'])]  # noqa: E501
 
     data_str += [format_scalar_definition('int32_t', 'ldA', kwargs['ldA'])]
     data_str += [format_scalar_definition('int32_t', 'ldB', kwargs['ldB'])]
     data_str += [format_scalar_definition('int32_t', 'ldC', kwargs['ldC'])]
 
-    data_str += [format_scalar_definition('int32_t', 'strideA', kwargs['strideA'])]
-    data_str += [format_scalar_definition('int32_t', 'strideB', kwargs['strideB'])]
-    data_str += [format_scalar_definition('int32_t', 'strideC', kwargs['strideC'])]
-    
-    data_str += [format_scalar_definition('int32_t', 'delta_local_a', kwargs['delta_local_a'])]
-    data_str += [format_scalar_definition('int32_t', 'delta_local_b', kwargs['delta_local_b'])]
+    data_str += [format_scalar_definition('int32_t', 'strideA', kwargs['strideA'])]  # noqa: E501
+    data_str += [format_scalar_definition('int32_t', 'strideB', kwargs['strideB'])]  # noqa: E501
+    data_str += [format_scalar_definition('int32_t', 'strideC', kwargs['strideC'])]  # noqa: E501
+
+    data_str += [format_scalar_definition('int32_t', 'delta_local_a', kwargs['delta_local_a'])]  # noqa: E501
+    data_str += [format_scalar_definition('int32_t', 'delta_local_b', kwargs['delta_local_b'])]  # noqa: E501
 
     # Generate random input matrices
-    length_a = kwargs['M'] * kwargs['K'] * kwargs['meshRow'] * kwargs['tileSize']
-    length_b = kwargs['N'] * kwargs['K'] * kwargs['meshCol'] * kwargs['tileSize']
+    length_a = kwargs['M'] * kwargs['K'] * kwargs['meshRow'] * kwargs['tileSize']  # noqa: E501
+    length_b = kwargs['N'] * kwargs['K'] * kwargs['meshCol'] * kwargs['tileSize']  # noqa: E501
     a = np.random.randint(MIN, MAX, length_a)
     b = np.random.randint(MIN, MAX, length_b)
 
     # Generating golden data
-    c_golden = block_gemm_golden_model(kwargs['M'], kwargs['K'], kwargs['N'], kwargs['meshRow'], kwargs['tileSize'], kwargs['meshCol'], a, b)
+    c_golden = block_gemm_golden_model(kwargs['M'], kwargs['K'], kwargs['N'], kwargs['meshRow'], kwargs['tileSize'], kwargs['meshCol'], a, b)  # noqa: E501
     c_init = np.zeros(c_golden.shape)
     c_cpu = np.zeros(c_golden.shape)
 
@@ -87,6 +91,7 @@ def emit_gemm_data(**kwargs):
     data_str = '\n\n'.join(data_str)
 
     return data_str
+
 
 def main():
 
@@ -106,6 +111,7 @@ def main():
 
     # Emit header file
     print(emit_header_file(**param))
+
 
 if __name__ == '__main__':
     main()
