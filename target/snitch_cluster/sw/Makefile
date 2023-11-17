@@ -15,6 +15,7 @@ endif
 
 MATH = ../../../sw/math
 SNAX = snax/mac
+SNAX += snax/gemm
 
 SUBDIRS = runtime/banshee runtime/rtl $(SNAX) $(MATH) apps tests 
 

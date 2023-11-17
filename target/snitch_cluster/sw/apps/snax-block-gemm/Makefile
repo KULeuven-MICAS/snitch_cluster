@@ -5,9 +5,15 @@
 # Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 APP     = snax-block-gemm
-SRCS    = src/snax-block-gemm.c
-SRCS    += src/snax-gemm-lib.c
+
 INCDIRS = data
+
+INCDIRS += ../../snax/gemm/include
+
+# Include this binary in the final build
+RISCV_LDFLAGS += ../../snax/gemm/build/snax-gemm-lib.o
+
+SRCS    = src/snax-block-gemm.c
 
 include ../common.mk
 include ./data/Makefile
