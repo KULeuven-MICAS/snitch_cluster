@@ -65,7 +65,9 @@ questa-2022.3 make bin/snitch_cluster.vsim
 vcs-2020.12 make bin/snitch_cluster.vcs
 ```
 
-You can find more details of the configuration file in the Cluster Configuration below.
+!!! note
+
+    You can find more details of the configuration file in the Cluster Configuration below.
 
 These commands compile the RTL sources respectively in `work-vlt`, `work-vsim` and `work-vcs`. Additionally, common C++ testbench sources (e.g. the [frontend server (fesvr)](https://github.com/riscv-software-src/riscv-isa-sim)) are compiled under `work`. Each command will also generate a script or an executable (e.g. `bin/snitch_cluster.vsim`) which you can invoke to simulate the hardware. We will see how to do this in a later section.
 
@@ -80,9 +82,9 @@ Under the `cfg` folder, different configurations are provided. The `cfg/default.
 
 We have other architectures for different accelerators:
 * `cfg/snax-mac.hjson` - is a SNAX shell with the simple [HWPE MAC engine](https://github.com/KULeuven-MICAS/hwpe-mac-engine).
-* `cfg/snax-mac.hjson` - is a SNAX shell with a [GEMM engine](https://github.com/KULeuven-MICAS/snax-gemm).
+* `cfg/snax-gemm.hjson` - is a SNAX shell with a [GEMM engine](https://github.com/KULeuven-MICAS/snax-gemm).
 
-The command `make bin/snitch_cluster.vlt` automatically generates the default (Snitch cluster with 8 ccompute ores and 1 DMA core) templated RTL sources. It implicitly used the default configuration file. To override the default configuration file, define the following variable when you invoke `make` to use the custom config files:
+The command `make bin/snitch_cluster.vlt` automatically generates the default (Snitch cluster with 8 compute ores and 1 DMA core) templated RTL sources. It implicitly used the default configuration file (`cfg/default.hjson`). To override the default configuration file, define the following variable when you invoke `make` to use the custom config files:
 
 ```shell
 make CFG_OVERRIDE=cfg/custom.hjson bin/snitch_cluster.vlt
@@ -110,7 +112,9 @@ The `DEBUG=ON` flag is used to tell the compiler to produce debugging symbols. I
 
 The `SELECT_RUNTIME` flag is set by default to `rtl`. To build the software with the Banshee runtime, set the flag to `banshee`.
 
-___Note:__ the RTL is not the only source which is generated from the configuration file. The software stack also depends on the configuration file. **Make sure you always build the software with the same configuration of the hardware you are going to run it on**._
+!!! note
+
+    the RTL is not the only source which is generated from the configuration file. The software stack also depends on the configuration file. **Make sure you always build the software with the same configuration of the hardware you are going to run it on**
 
 ### Running a simulation
 
@@ -281,11 +285,11 @@ questa-2022.3 bin/snitch_cluster.vsim sw/apps/axpy/build/axpy.elf
 
 When you run the simulation, every core will log all the instructions it executes (along with additional information, such as the value of the registers before/after the instruction) in a trace file, located in the `target/snitch_cluster/logs` directory. The traces are identified by their hart ID, that is a unique ID for every hardware thread (hart) in a RISC-V system (and since all our cores have a single thread that is a unique ID per core)
 
-You need to install `spike-dasm` first. After making the hardware build, it should create a `work-vlt` directory. Do the following to install `spike-dasm`:
+You need to build and install `spike-dasm` from source first. After making the hardware build, it should create a `work-vlt` directory. Do the following to install `spike-dasm`:
 
 1. Go to: `target/snitch_cluster/work-vlt/riscv-isa-sim`
-2. Do: `./configure --prefix="/opt/spike"`
-3. Do: `make install`
+2. `spike-dasm` uses GNU autoconf for makefile generation: `./configure --prefix="/opt/spike"`
+3. Build and install `spike-dasm` with: `make -j$(nproc) install`
 4. Add to path `export PATH="/opt/spike/bin:$PATH"`
 
 The simulation logs the traces in a non-human readable format with `.dasm` extension. To convert these to a human-readable form run:
