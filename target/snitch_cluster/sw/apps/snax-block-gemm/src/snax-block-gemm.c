@@ -57,7 +57,7 @@ int main() {
                gemm_end - gemm_start);
 
         // Compare SNAX GEMM result with golden model
-        err = check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
+        err += check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
                            ldC, strideC);
         printf("gemm err: %d\n", err);
     };
@@ -81,7 +81,7 @@ int main() {
                end_cycle - start_cycle);
 
         // Compare CPU result with golden model
-        err = check_result(C_cpu, C_golden, Batch, M, N, strideInnermostC, ldC,
+        err += check_result(C_cpu, C_golden, Batch, M, N, strideInnermostC, ldC,
                            strideC);
 
         printf("cpu err: %d\n", err);
