@@ -1,4 +1,10 @@
 
+// Copyright 2023 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
+
 #include "data.h"
 
 #include "snax-gemm-lib.h"
@@ -53,13 +59,9 @@ int main() {
 
         uint32_t gemm_end = snrt_mcycle();
 
-        printf("cycle number for Gemm to do matrix multiply: %d \n",
-               gemm_end - gemm_start);
-
         // Compare SNAX GEMM result with golden model
         err += check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
-                           ldC, strideC);
-        printf("gemm err: %d\n", err);
+                            ldC, strideC);
     };
 
     snrt_cluster_hw_barrier();
@@ -77,14 +79,9 @@ int main() {
 
         // Read the mcycle CSR
         uint32_t end_cycle = snrt_mcycle();
-        printf("cycle number for CPU to do matrix multiply: %d \n",
-               end_cycle - start_cycle);
-
         // Compare CPU result with golden model
         err += check_result(C_cpu, C_golden, Batch, M, N, strideInnermostC, ldC,
-                           strideC);
-
-        printf("cpu err: %d\n", err);
+                            strideC);
     }
 
     return err;

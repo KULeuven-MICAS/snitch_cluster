@@ -93,7 +93,6 @@ jobs:
             target/snitch_cluster/sw/apps/snax-mac-tiled/*
             target/snitch_cluster/sw/apps/snax-gemm-base/*
             target/snitch_cluster/sw/apps/snax-gemm-engine/*
-            target/snitch_cluster/sw/apps/snax-block-gemm/*
 
   ##################
   # Lint YML Files #
