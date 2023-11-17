@@ -1,6 +1,9 @@
-#include <stdbool.h>
+
+#include < stdbool.h>
 #include "snrt.h"
 #include "stdint.h"
+
+#pragma once
 
 // Pack matrix size setting to one CSR
 int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N);

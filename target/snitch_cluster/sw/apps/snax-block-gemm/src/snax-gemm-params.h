@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef GEMM_PARAMETER_H
 #define GEMM_PARAMETER_H
 

@@ -29,9 +29,6 @@ SNITCH_ROOT := $(ROOT)
 
 include $(ROOT)/target/common/common.mk
 
-SNAX_GEMM ?= $(shell $(BENDER) path snax-gemm)
-include $(SNAX_GEMM)/Makefile
-
 ############
 # Programs #
 ############
@@ -85,7 +82,6 @@ VLOG_FLAGS += -suppress 13314
 VLOG_FLAGS += ${VLOG_64BIT}
 
 VLT_FLAGS  += --trace
-VLT_FLAGS  += --trace-structs
 
 ###############
 # C testbench #

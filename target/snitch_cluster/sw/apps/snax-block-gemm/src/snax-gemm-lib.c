@@ -9,23 +9,20 @@ int32_t gen_size_config(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N) {
 
 void base_gemm(uint8_t m, uint8_t k, uint8_t n, int8_t* A, int8_t* B,
                int32_t* C_cpu, bool clear) {
-    if (snrt_is_compute_core()) {
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                // clear memory first before start matrix multiplication
-                // to accumulate in K dimension
-                if (clear == true) {
-                    C_cpu[i * n + j] = 0;
-                }
-                for (int s = 0; s < k; s++) {
-                    C_cpu[i * n + j] =
-                        C_cpu[i * n + j] +
-                        (int32_t)A[i * k + s] * (int32_t)B[s + j * k];
-                }
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            // clear memory first before start matrix multiplication
+            // to accumulate in K dimension
+            if (clear == true) {
+                C_cpu[i * n + j] = 0;
+            }
+            for (int s = 0; s < k; s++) {
+                C_cpu[i * n + j] = C_cpu[i * n + j] + (int32_t)A[i * k + s] *
+                                                          (int32_t)B[s + j * k];
             }
         }
-    };
-}
+    }
+};
 
 void batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
                     int8_t* B, int32_t* C, uint32_t strideInnermostA,
@@ -41,27 +38,25 @@ void batch_gemm_cpu(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N, int8_t* A,
 
     bool clear;
 
-    if (snrt_is_compute_core()) {
-        for (int b = 0; b < Batch; b++) {
-            for (int m = 0; m < M; m++) {
-                for (int n = 0; n < N; n++) {
-                    for (int k = 0; k < K; k++) {
-                        // generate the start address of each sub-matrix
-                        // according to the strides definition
-                        addr_a = start_addr_a + (b * strideA + m * ldA +
-                                                 k * strideInnermostA) /
-                                                    sizeof(int8_t);
-                        addr_b = start_addr_b + (b * strideB + n * ldB +
-                                                 k * strideInnermostB) /
-                                                    sizeof(int8_t);
-                        addr_c = start_addr_c + (b * strideC + m * ldC +
-                                                 n * strideInnermostC) /
-                                                    sizeof(int32_t);
-                        // when k == 0, clear the memory
-                        clear = k == 0;
-                        base_gemm(meshRow, tileSize, meshCol, addr_a, addr_b,
-                                  addr_c, clear);
-                    }
+    for (int b = 0; b < Batch; b++) {
+        for (int m = 0; m < M; m++) {
+            for (int n = 0; n < N; n++) {
+                for (int k = 0; k < K; k++) {
+                    // generate the start address of each sub-matrix
+                    // according to the strides definition
+                    addr_a = start_addr_a +
+                             (b * strideA + m * ldA + k * strideInnermostA) /
+                                 sizeof(int8_t);
+                    addr_b = start_addr_b +
+                             (b * strideB + n * ldB + k * strideInnermostB) /
+                                 sizeof(int8_t);
+                    addr_c = start_addr_c +
+                             (b * strideC + m * ldC + n * strideInnermostC) /
+                                 sizeof(int32_t);
+                    // when k == 0, clear the memory
+                    clear = k == 0;
+                    base_gemm(meshRow, tileSize, meshCol, addr_a, addr_b,
+                              addr_c, clear);
                 }
             }
         }
