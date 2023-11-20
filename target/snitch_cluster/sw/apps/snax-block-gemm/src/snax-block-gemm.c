@@ -72,9 +72,9 @@ int main() {
         // region for benchmarking)
         uint32_t start_cycle = snrt_mcycle();
 
-        batch_gemm_cpu(Batch, M, K, N, A, B, C_cpu, strideInnermostA,
-                       strideInnermostB, strideInnermostC, ldA, ldB, ldC,
-                       strideA, strideB, strideC);
+        batch_gemm_cpu(Batch, M, K, N, local_a, local_b, C_cpu,
+                       strideInnermostA, strideInnermostB, strideInnermostC,
+                       ldA, ldB, ldC, strideA, strideB, strideC);
 
         // Read the mcycle CSR
         uint32_t end_cycle = snrt_mcycle();

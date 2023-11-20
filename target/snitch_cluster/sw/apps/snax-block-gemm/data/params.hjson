@@ -10,9 +10,9 @@
 // large martix multiply 4 * 8 * 4 with no input data contention
 {
     Batch: 1
-    M: 4,
-    N: 4,
-    K: 8,
+    M: 2,
+    N: 2,
+    K: 2,
     strideInnermostA: 256,
     strideInnermostB: 256,
     strideInnermostC: 256,
