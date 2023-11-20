@@ -10,13 +10,14 @@
 
 #include "snax-gemm-params.h"
 
-// gen random data
-// allocate space in TCDM
-// write data from L3 to TCDM
-// config csr
-// start
-// wait until finish
-// check result
+// This tests the following:
+// 1) Generate random data with gendata.py
+// 2) Allocate space in TCDM
+// 3) Write data from L3 to TCDM
+// 4) Configure the csrs for performing a block GEMM
+// 5) Launch the accelerator
+// 6) Wait until the accelerator finishes
+// 7) Check the result of the CPU and the accelerator vs the golden model (gendata.py)
 
 int main() {
     // Set err value for checking
