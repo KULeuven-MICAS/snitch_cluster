@@ -80,44 +80,40 @@ void load_input_data(uint8_t Batch, uint8_t M, uint8_t K, uint8_t N,
     int8_t* addr_A;
     int8_t* addr_B;
 
-    if (snrt_is_dm_core()) {
-        for (int b = 0; b < Batch; b++) {
-            for (int m = 0; m < M; m++) {
-                for (int k = 0; k < K; k++) {
-                    // generate the start address of sub-matrix of A in TCDM
-                    // according to the strides definition
-                    addr_a = local_a +
-                             (b * strideA + m * ldA + k * strideInnermostA) /
-                                 sizeof(int8_t);
-                    // element index of A
-                    addr_A = A + (b * M * meshRow * tileSize * K +
-                                  m * meshRow * tileSize * K +
-                                  k * meshRow * tileSize) /
-                                     sizeof(int8_t);
-                    snrt_dma_start_1d(addr_a, addr_A,
-                                      meshRow * tileSize * sizeof(int8_t));
-                }
+    for (int b = 0; b < Batch; b++) {
+        for (int m = 0; m < M; m++) {
+            for (int k = 0; k < K; k++) {
+                // generate the start address of sub-matrix of A in TCDM
+                // according to the strides definition
+                addr_a =
+                    local_a + (b * strideA + m * ldA + k * strideInnermostA) /
+                                  sizeof(int8_t);
+                // element index of A
+                addr_A =
+                    A + (b * M * meshRow * tileSize * K +
+                         m * meshRow * tileSize * K + k * meshRow * tileSize) /
+                            sizeof(int8_t);
+                snrt_dma_start_1d(addr_a, addr_A,
+                                  meshRow * tileSize * sizeof(int8_t));
             }
         }
     }
 
-    if (snrt_is_dm_core()) {
-        for (int b = 0; b < Batch; b++) {
-            for (int n = 0; n < N; n++) {
-                for (int k = 0; k < K; k++) {
-                    // generate the start address of sub-matrix of B in TCDM
-                    // according to the strides definition
-                    addr_b = local_b +
-                             (b * strideB + n * ldB + k * strideInnermostB) /
-                                 sizeof(int8_t);
-                    // element index of B
-                    addr_B = B + (b * K * tileSize * meshCol * N +
-                                  n * tileSize * meshCol * K +
-                                  k * tileSize * meshCol) /
-                                     sizeof(int8_t);
-                    snrt_dma_start_1d(addr_b, addr_B,
-                                      meshCol * tileSize * sizeof(int8_t));
-                }
+    for (int b = 0; b < Batch; b++) {
+        for (int n = 0; n < N; n++) {
+            for (int k = 0; k < K; k++) {
+                // generate the start address of sub-matrix of B in TCDM
+                // according to the strides definition
+                addr_b =
+                    local_b + (b * strideB + n * ldB + k * strideInnermostB) /
+                                  sizeof(int8_t);
+                // element index of B
+                addr_B =
+                    B + (b * K * tileSize * meshCol * N +
+                         n * tileSize * meshCol * K + k * tileSize * meshCol) /
+                            sizeof(int8_t);
+                snrt_dma_start_1d(addr_b, addr_B,
+                                  meshCol * tileSize * sizeof(int8_t));
             }
         }
     }
@@ -168,6 +164,12 @@ void wait_batch_gemm() {
         };
     };
 }
+
+uint32_t read_performance_counter() {
+    uint32_t performance_counter;
+    performance_counter = read_csr(0x3cd);
+    return performance_counter;
+};
 
 uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
                       uint8_t M, uint8_t N, uint32_t strideInnermostC,

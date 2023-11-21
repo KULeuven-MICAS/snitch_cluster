@@ -17,7 +17,8 @@
 // 4) Configure the csrs for performing a block GEMM
 // 5) Launch the accelerator
 // 6) Wait until the accelerator finishes
-// 7) Check the result of the CPU and the accelerator vs the golden model (gendata.py)
+// 7) Check the result of the CPU and the accelerator vs the golden model
+// (gendata.py)
 
 int main() {
     // Set err value for checking
@@ -36,8 +37,11 @@ int main() {
 
     // Transfer data from L3 to L1
     // Using DMA only
-    load_input_data(Batch, M, K, N, local_a, local_b, A, B, strideInnermostA,
-                    strideInnermostB, ldA, ldB, strideA, strideB);
+    if (snrt_is_dm_core()){
+        load_input_data(Batch, M, K, N, local_a, local_b, A, B,
+                        strideInnermostA, strideInnermostB, ldA, ldB, strideA,
+                        strideB);
+    }
 
     // Wait for DMA to finish
     snrt_cluster_hw_barrier();

@@ -1,8 +1,8 @@
-# Copyright 2023 ETH Zurich and University of Bologna.
+# Copyright 2023 KU Leuven.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Luca Colagrande <colluca@iis.ee.ethz.ch>
+# Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
 # Usage of absolute paths is required to externally include
 # this Makefile from multiple different locations

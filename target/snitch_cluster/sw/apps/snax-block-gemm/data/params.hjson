@@ -7,7 +7,6 @@
 // Parameters for a block GEMM
 // need to fix batch = 1
 
-// large martix multiply 4 * 8 * 4 with no input data contention
 {
     Batch: 1
     M: 2,
