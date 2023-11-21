@@ -37,7 +37,7 @@ int main() {
 
     // Transfer data from L3 to L1
     // Using DMA only
-    if (snrt_is_dm_core()){
+    if (snrt_is_dm_core()) {
         load_input_data(Batch, M, K, N, local_a, local_b, A, B,
                         strideInnermostA, strideInnermostB, ldA, ldB, strideA,
                         strideB);
