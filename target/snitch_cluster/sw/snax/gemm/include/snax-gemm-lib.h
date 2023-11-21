@@ -44,9 +44,6 @@ void start_batch_gemm();
 // Poll until GEMM accelerator finishes
 void wait_batch_gemm();
 
-// Performance counter for GEMM busy cycles
-uint32_t read_performance_counter();
-
 // Check if output is same as golden output
 uint32_t check_result(int32_t* output, int32_t* output_golden, uint8_t Batch,
                       uint8_t M, uint8_t N, uint32_t strideInnermostC,
