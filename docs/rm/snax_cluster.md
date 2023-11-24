@@ -163,3 +163,36 @@ The signal definitions for the response port are:
 Notice that the `q_ready` signal of the TCDM was placed in the response ports. This is just to indicate that the direction is from the TCDM interconnect towards the Snitch core.
 
 ## Attaching a Custom Accelerator
+
+To attach an accelerator to the SNAX cluster, you only need:
+
+1. To attach the accelerator's ports to the SNAX ports for control.
+2. Attach the accelerator's memory ports to the TCDM ports.
+
+You can find the examples inside the `snitch_cluster.sv`:
+
+```systemverilog
+snax_mac # (
+    .DataWidth          ( 32                    ),
+    .SnaxTcdmPorts      ( LocalSnaxTcdmPorts    ),
+    .acc_req_t          ( acc_req_t             ),
+    .acc_rsp_t          ( acc_resp_t            ),
+    .tcdm_req_t         ( tcdm_req_t            ),
+    .tcdm_rsp_t         ( tcdm_rsp_t            )
+) i_snax_mac (
+    .clk_i              ( clk_i                 ),
+    .rst_ni             ( rst_ni                ),
+    .snax_req_i         ( snax_req[i]           ),
+    .snax_qvalid_i      ( snax_qvalid[i]        ),
+    .snax_qready_o      ( snax_qready[i]        ),
+    .snax_resp_o        ( snax_resp[i]          ),
+    .snax_pvalid_o      ( snax_pvalid[i]        ),
+    .snax_pready_i      ( snax_pready[i]        ),
+    .snax_tcdm_req_o    ( hang_snax_tcdm_req    ),
+    .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp    )
+);
+```
+
+The `snax_mac` is the top-level wrapper of the entire HWPE MAC engine. Observe that the main ports are just the accelerator ports and the TCDM ports.
+
+Moreover there is a `SnaxTcdmPorts` parameter at the top of the `snitch_cluster.sv`. This indicates the number of TCDM ports connected to the accelerator.
