@@ -100,6 +100,8 @@ module snitch_cluster
   parameter int unsigned  SNAX         [NrCores] = '{default: 0},
   /// Number of SNAX TCDM ports per core
   parameter int unsigned SnaxTcdmPorts [NrCores] = '{default: 0},
+  /// Total Number of SNAX TCDM ports
+  parameter int unsigned TotalSnaxTcdmPorts = 0,
   /// Physical Memory Attribute Configuration
   parameter snitch_pma_pkg::snitch_pma_t SnitchPMACfg = '0,
   /// # Per-core parameters
@@ -180,6 +182,11 @@ module snitch_cluster
   // Memory configuration input types; these vary depending on implementation.
   parameter type         sram_cfg_t        = logic,
   parameter type         sram_cfgs_t       = logic,
+  // Accelerator typedef
+  parameter type         acc_req_t         = logic,
+  parameter type         acc_resp_t        = logic,
+  parameter type         tcdm_req_t        = logic,
+  parameter type         tcdm_rsp_t        = logic,
   // Memory latency parameter. Most of the memories have a read latency of 1. In
   // case you have memory macros which are pipelined you want to adjust this
   // value here. This only applies to the TCDM. The instruction cache macros will break!
@@ -219,6 +226,15 @@ module snitch_cluster
   /// Bypass half-frequency clock. (`d2` = divide-by-two). This signal is
   /// pseudo-static.
   input  logic                          clk_d2_bypass_i,
+  /// SNAX ports
+  output acc_req_t  [NrCores-1:0]            snax_req_o,
+  output logic      [NrCores-1:0]            snax_qvalid_o,
+  input  logic      [NrCores-1:0]            snax_qready_i,
+  input  acc_resp_t [NrCores-1:0]            snax_resp_i,
+  input  logic      [NrCores-1:0]            snax_pvalid_i,
+  output logic      [NrCores-1:0]            snax_pready_o,
+  input  tcdm_req_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_req_i,
+  output tcdm_rsp_t [TotalSnaxTcdmPorts-1:0] snax_tcdm_rsp_o,
   /// AXI Core cluster in-port.
   input  narrow_in_req_t                narrow_in_req_i,
   output narrow_in_resp_t               narrow_in_resp_o,
@@ -275,7 +291,7 @@ module snitch_cluster
 
   // SNAX TCDM
   localparam int unsigned SnaxSystem         = check_if_snax(NrCores);
-  localparam int unsigned TotalSnaxTcdmPorts = get_snax_tcdm_port_offs(NrCores);
+  //localparam int unsigned TotalSnaxTcdmPorts = get_snax_tcdm_port_offs(NrCores);
 
   localparam int unsigned NrTCDMPortsCores = get_tcdm_port_offs(NrCores);
   localparam int unsigned NumTCDMIn = NrTCDMPortsCores + 1;
@@ -377,7 +393,7 @@ module snitch_cluster
   `MEM_TYPEDEF_ALL(mem, tcdm_mem_addr_t, data_t, strb_t, tcdm_user_t)
   `MEM_TYPEDEF_ALL(mem_dma, tcdm_mem_addr_t, data_dma_t, strb_dma_t, logic)
 
-  `TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
+  //`TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
   `TCDM_TYPEDEF_ALL(tcdm_dma, tcdm_addr_t, data_dma_t, strb_dma_t, logic)
 
   `REG_BUS_TYPEDEF_REQ(reg_req_t, addr_t, data_t, strb_t)
@@ -412,20 +428,20 @@ module snitch_cluster
     addr_t end_addr;
   } xbar_rule_t;
 
-  typedef struct packed {
-    acc_addr_e   addr;
-    logic [4:0]  id;
-    logic [31:0] data_op;
-    data_t       data_arga;
-    data_t       data_argb;
-    addr_t       data_argc;
-  } acc_req_t;
+  // typedef struct packed {
+  //   acc_addr_e   addr;
+  //   logic [4:0]  id;
+  //   logic [31:0] data_op;
+  //   data_t       data_arga;
+  //   data_t       data_argb;
+  //   addr_t       data_argc;
+  // } acc_req_t;
 
-    typedef struct packed {
-    logic [4:0] id;
-    logic       error;
-    data_t      data;
-  } acc_resp_t;
+  //   typedef struct packed {
+  //   logic [4:0] id;
+  //   logic       error;
+  //   data_t      data;
+  // } acc_resp_t;
 
   `SNITCH_VM_TYPEDEF(PhysicalAddrWidth)
 
@@ -784,7 +800,8 @@ module snitch_cluster
   end
 
   // generate TCDM for snax if any of the cores has SNAX enabled
-  if( SnaxSystem ) begin: gen_yes_snax_tcdm_interconnect
+  if( TotalSnaxTcdmPorts > 0 ) begin: gen_yes_snax_tcdm_interconnect
+
     snitch_tcdm_interconnect #(
       .NumInp (NumTCDMIn + TotalSnaxTcdmPorts),
       .NumOut (NrBanks),
@@ -801,12 +818,13 @@ module snitch_cluster
     ) i_tcdm_interconnect (
       .clk_i,
       .rst_ni,
-      .req_i ({axi_soc_req, tcdm_req, snax_tcdm_req}),
-      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp}),
+      .req_i ({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
+      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
       .mem_req_o (ic_req),
       .mem_rsp_i (ic_rsp)
     );
   end else begin: gen_no_snax_tcdm_interconnect
+
     snitch_tcdm_interconnect #(
       .NumInp (NumTCDMIn),
       .NumOut (NrBanks),
@@ -845,14 +863,6 @@ module snitch_cluster
 
   hive_req_t [NrCores-1:0] hive_req;
   hive_rsp_t [NrCores-1:0] hive_rsp;
-
-  // SNAX wiring
-  acc_req_t  [NrCores-1:0] snax_req;
-  logic      [NrCores-1:0] snax_qvalid;
-  logic      [NrCores-1:0] snax_qready;
-  acc_resp_t [NrCores-1:0] snax_resp;
-  logic      [NrCores-1:0] snax_pvalid;
-  logic      [NrCores-1:0] snax_pready;
 
   for (genvar i = 0; i < NrCores; i++) begin : gen_core
     localparam int unsigned TcdmPorts = get_tcdm_ports(i);
@@ -952,12 +962,12 @@ module snitch_cluster
         .axi_dma_busy_o (),
         .axi_dma_perf_o (),
         .axi_dma_events_o (dma_core_events),
-        .snax_req_o (snax_req[i]),
-        .snax_qvalid_o (snax_qvalid[i]),
-        .snax_qready_i (snax_qready[i]),
-        .snax_resp_i (snax_resp[i]),
-        .snax_pvalid_i (snax_pvalid[i]),
-        .snax_pready_o (snax_pready[i]),
+        .snax_req_o (snax_req_o[i]),
+        .snax_qvalid_o (snax_qvalid_o[i]),
+        .snax_qready_i (snax_qready_i[i]),
+        .snax_resp_i (snax_resp_i[i]),
+        .snax_pvalid_i (snax_pvalid_i[i]),
+        .snax_pready_o (snax_pready_o[i]),
         .core_events_o (core_events[i]),
         .tcdm_addr_base_i (tcdm_start_address)
       );
@@ -975,75 +985,76 @@ module snitch_cluster
       end
   end
 
-  for (genvar i = 0; i < NrCores; i++) begin : gen_snax_acc
+  // // This section re-arranges the SNAX TCDM ports
+  // for (genvar i = 0; i < NrCores; i++) begin : gen_snax_acc
 
-    // Calculate exact count of SNAX TCDM ports
-    localparam int unsigned LocalSnaxTcdmPorts  = get_snax_tcdm_ports(i);
-    localparam int unsigned LocalSnaxTcdmOffset = get_snax_tcdm_port_offs(i);
+  //   // Calculate exact count of SNAX TCDM ports
+  //   localparam int unsigned LocalSnaxTcdmPorts  = get_snax_tcdm_ports(i);
+  //   localparam int unsigned LocalSnaxTcdmOffset = get_snax_tcdm_port_offs(i);
 
-    tcdm_req_t [LocalSnaxTcdmPorts-1:0] hang_snax_tcdm_req;
-    tcdm_rsp_t [LocalSnaxTcdmPorts-1:0] hang_snax_tcdm_rsp;
+  //   tcdm_req_t [LocalSnaxTcdmPorts-1:0] hang_snax_tcdm_req;
+  //   tcdm_rsp_t [LocalSnaxTcdmPorts-1:0] hang_snax_tcdm_rsp;
 
-    // Remap SNAX TCDM ports to prune cores that
-    // do not use SNAX TCDM ports
-    for (genvar j = 0; j < LocalSnaxTcdmPorts; j++) begin : gen_snax_tcdm_map_per_core
-      always_comb begin
-        snax_tcdm_req[LocalSnaxTcdmOffset+j] = hang_snax_tcdm_req[j];
-        hang_snax_tcdm_rsp[j]                = snax_tcdm_rsp[LocalSnaxTcdmOffset+j];
-      end
-    end
+  //   // Remap SNAX TCDM ports to prune cores that
+  //   // do not use SNAX TCDM ports
+  //   for (genvar j = 0; j < LocalSnaxTcdmPorts; j++) begin : gen_snax_tcdm_map_per_core
+  //     always_comb begin
+  //       snax_tcdm_req[LocalSnaxTcdmOffset+j] = hang_snax_tcdm_req[j];
+  //       hang_snax_tcdm_rsp[j]                = snax_tcdm_rsp[LocalSnaxTcdmOffset+j];
+  //     end
+  //   end
 
-    if(SNAX[i] == 1) begin: gen_snax_mac
+  //   if(SNAX[i] == 1) begin: gen_snax_mac
 
-      snax_mac # (
-        .DataWidth          ( 32               ),
-        .SnaxTcdmPorts      ( LocalSnaxTcdmPorts ),
-        .acc_req_t          ( acc_req_t        ),
-        .acc_rsp_t          ( acc_resp_t       ),
-        .tcdm_req_t         ( tcdm_req_t       ),
-        .tcdm_rsp_t         ( tcdm_rsp_t       )
-      ) i_snax_mac (
-        .clk_i              ( clk_i            ),
-        .rst_ni             ( rst_ni           ),
-        .snax_req_i         ( snax_req[i]      ),
-        .snax_qvalid_i      ( snax_qvalid[i]   ),
-        .snax_qready_o      ( snax_qready[i]   ),
-        .snax_resp_o        ( snax_resp[i]     ),
-        .snax_pvalid_o      ( snax_pvalid[i]   ),
-        .snax_pready_i      ( snax_pready[i]   ),
-        .snax_tcdm_req_o    ( hang_snax_tcdm_req ),
-        .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp )
-      );
+  //     snax_mac # (
+  //       .DataWidth          ( 32               ),
+  //       .SnaxTcdmPorts      ( LocalSnaxTcdmPorts ),
+  //       .acc_req_t          ( acc_req_t        ),
+  //       .acc_rsp_t          ( acc_resp_t       ),
+  //       .tcdm_req_t         ( tcdm_req_t       ),
+  //       .tcdm_rsp_t         ( tcdm_rsp_t       )
+  //     ) i_snax_mac (
+  //       .clk_i              ( clk_i            ),
+  //       .rst_ni             ( rst_ni           ),
+  //       .snax_req_i         ( snax_req[i]      ),
+  //       .snax_qvalid_i      ( snax_qvalid[i]   ),
+  //       .snax_qready_o      ( snax_qready[i]   ),
+  //       .snax_resp_o        ( snax_resp[i]     ),
+  //       .snax_pvalid_o      ( snax_pvalid[i]   ),
+  //       .snax_pready_i      ( snax_pready[i]   ),
+  //       .snax_tcdm_req_o    ( hang_snax_tcdm_req ),
+  //       .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp )
+  //     );
 
-    end else if (SNAX[i] == 2) begin: gen_snax_gemm
+  //   end else if (SNAX[i] == 2) begin: gen_snax_gemm
 
-      snax_gemm_wrapper # (
-        .DataWidth          ( NarrowDataWidth  ),
-        .SnaxTcdmPorts      ( LocalSnaxTcdmPorts ),
-        .acc_req_t          ( acc_req_t        ),
-        .acc_rsp_t          ( acc_resp_t       ),
-        .tcdm_req_t         ( tcdm_req_t       ),
-        .tcdm_rsp_t         ( tcdm_rsp_t       )
-      ) i_snax_gemm (
-        .clk_i              ( clk_i            ),
-        .rst_ni             ( rst_ni           ),
-        .snax_req_i         ( snax_req[i]      ),
-        .snax_qvalid_i      ( snax_qvalid[i]   ),
-        .snax_qready_o      ( snax_qready[i]   ),
-        .snax_resp_o        ( snax_resp[i]     ),
-        .snax_pvalid_o      ( snax_pvalid[i]   ),
-        .snax_pready_i      ( snax_pready[i]   ),
-        .snax_tcdm_req_o    ( hang_snax_tcdm_req ),
-        .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp )
-      );
+  //     snax_gemm_wrapper # (
+  //       .DataWidth          ( NarrowDataWidth  ),
+  //       .SnaxTcdmPorts      ( LocalSnaxTcdmPorts ),
+  //       .acc_req_t          ( acc_req_t        ),
+  //       .acc_rsp_t          ( acc_resp_t       ),
+  //       .tcdm_req_t         ( tcdm_req_t       ),
+  //       .tcdm_rsp_t         ( tcdm_rsp_t       )
+  //     ) i_snax_gemm (
+  //       .clk_i              ( clk_i            ),
+  //       .rst_ni             ( rst_ni           ),
+  //       .snax_req_i         ( snax_req[i]      ),
+  //       .snax_qvalid_i      ( snax_qvalid[i]   ),
+  //       .snax_qready_o      ( snax_qready[i]   ),
+  //       .snax_resp_o        ( snax_resp[i]     ),
+  //       .snax_pvalid_o      ( snax_pvalid[i]   ),
+  //       .snax_pready_i      ( snax_pready[i]   ),
+  //       .snax_tcdm_req_o    ( hang_snax_tcdm_req ),
+  //       .snax_tcdm_rsp_i    ( hang_snax_tcdm_rsp )
+  //     );
 
-    end else begin: gen_no_snax_acc
-      // Tie these signal to low when no SNAX accelerator is present
-      assign snax_qready[i]   = '0;
-      assign snax_resp[i]     = '0;
-      assign snax_pvalid[i]   = '0;
-    end
-  end
+  //   end else begin: gen_no_snax_acc
+  //     // Tie these signal to low when no SNAX accelerator is present
+  //     assign snax_qready[i]   = '0;
+  //     assign snax_resp[i]     = '0;
+  //     assign snax_pvalid[i]   = '0;
+  //   end
+  // end
 
   for (genvar i = 0; i < NrHives; i++) begin : gen_hive
       localparam int unsigned HiveSize = get_hive_size(i);
