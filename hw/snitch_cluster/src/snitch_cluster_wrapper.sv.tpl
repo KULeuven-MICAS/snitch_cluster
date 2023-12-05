@@ -41,12 +41,15 @@ ${',' if not loop.last else ''}
 % endfor
 </%def>\
 
+// These includes are necessary for pre-defined typedefs
 `include "axi/typedef.svh"
 `include "tcdm_interface/typedef.svh"
 
+// Main cluster package
 // verilog_lint: waive-start package-filename
 package ${cfg['pkg_name']};
 
+  // Base and pre-calculated parameters
   localparam int unsigned NrCores = ${cfg['nr_cores']};
   localparam int unsigned NrHives = ${cfg['nr_hives']};
 
@@ -76,6 +79,7 @@ package ${cfg['pkg_name']};
 
   localparam int unsigned Hive [NrCores] = '{${core_cfg('hive')}};
 
+  // SRAM configurations
   typedef struct packed {
 % for field, width in cfg['sram_cfg_fields'].items():
     logic [${width-1}:0] ${field};
@@ -88,6 +92,7 @@ package ${cfg['pkg_name']};
     sram_cfg_t tcdm;
   } sram_cfgs_t;
 
+  // Re-defined typedefs used for other typedefs
   typedef logic [AddrWidth-1:0]         addr_t;
   typedef logic [NarrowDataWidth-1:0]   data_t;
   typedef logic [NarrowDataWidth/8-1:0] strb_t;
@@ -100,6 +105,7 @@ package ${cfg['pkg_name']};
   typedef logic [NarrowUserWidth-1:0]   user_t;
   typedef logic [WideUserWidth-1:0]     user_dma_t;
 
+  // Typedefs for the AXI connections
   `AXI_TYPEDEF_ALL(narrow_in, addr_t, narrow_in_id_t, data_t, strb_t, user_t)
   `AXI_TYPEDEF_ALL(narrow_out, addr_t, narrow_out_id_t, data_t, strb_t, user_t)
   `AXI_TYPEDEF_ALL(wide_in, addr_t, wide_in_id_t, data_dma_t, strb_dma_t, user_dma_t)
@@ -110,6 +116,7 @@ package ${cfg['pkg_name']};
   localparam int unsigned TCDMAddrWidth = $clog2(TCDMSize);
   typedef logic [TCDMAddrWidth-1:0] tcdm_addr_t;
 
+  // TCDM definitions
   typedef struct packed {
     logic [CoreIDWidth-1:0] core_id;
     bit                     is_core;
@@ -117,6 +124,8 @@ package ${cfg['pkg_name']};
 
   `TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
 
+  // Accelerator definitions for SNAX and other Snitch L0 accelerators
+  // (e.g., of L0 accelerators - DMA, FPSS, and so on)
   typedef struct packed {
     snitch_pkg::acc_addr_e   addr;
     logic [4:0]  id;
@@ -132,6 +141,7 @@ package ${cfg['pkg_name']};
     data_t      data;
   } acc_resp_t;
 
+  // Function pre-calculations
   function automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] get_cached_regions();
     automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] cached_regions;
     cached_regions = '{default: '0};
@@ -147,6 +157,7 @@ package ${cfg['pkg_name']};
       default: 0
   };
 
+  // FPU configurations per FPU that has a core
   localparam fpnew_pkg::fpu_implementation_t FPUImplementation [${cfg['nr_cores']}] = '{
   % for c in cfg['cores']:
     '{
@@ -246,6 +257,7 @@ ${ssr_cfg(core, '{reg_idx}', '/*None*/ 0', ',')}\
 endpackage
 // verilog_lint: waive-stop package-filename
 
+// Main snitch or SNAX cluster wrapper
 module ${cfg['name']}_wrapper (
   input  logic                                   clk_i,
   input  logic                                   rst_ni,
@@ -275,6 +287,7 @@ module ${cfg['name']}_wrapper (
   output ${cfg['pkg_name']}::wide_in_resp_t      wide_in_resp_o
 );
 
+  // Internal local parameters to be hooked into the Snitch / SNAX cluster
   localparam int unsigned NumIntOutstandingLoads [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_loads')}};
   localparam int unsigned NumIntOutstandingMem [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_mem')}};
   localparam int unsigned NumFPOutstandingLoads [${cfg['nr_cores']}] = '{${core_cfg('num_fp_outstanding_loads')}};
@@ -286,12 +299,14 @@ module ${cfg['name']}_wrapper (
   localparam int unsigned SsrMuxRespDepth [${cfg['nr_cores']}] = '{${core_cfg('ssr_mux_resp_depth')}};
   localparam int unsigned SnaxTcdmPorts [${cfg['nr_cores']}] = '{${core_cfg('snax_tcdm_ports')}};
 
+  // SNAX accelerator ports
   ${cfg['pkg_name']}::acc_req_t  [${cfg['pkg_name']}::NrCores-1:0] snax_req;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_qvalid;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_qready;
   ${cfg['pkg_name']}::acc_resp_t [${cfg['pkg_name']}::NrCores-1:0] snax_resp;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_pvalid;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_pready;
+  ## This set of lines are for the internal pre-calculations for SNAX ports
   <%
     extract_port_num_list = []
     for i in range(len(cfg['cores'])):
@@ -440,9 +455,8 @@ module ${cfg['name']}_wrapper (
     .wide_in_resp_o
   );
 
-  // This needs to be resolved via concatenation
-  // Due to SystemVerilog's limitations during compilation
-  // First we map out the names in the concatenation
+  // Accelerator instances if there are accelerator ports
+  // If there are not accelerator ports, we tie the input signals to 0
 % for idx, c in enumerate(cfg['cores']):
   % if c['snax_acc'] != "none":
 
