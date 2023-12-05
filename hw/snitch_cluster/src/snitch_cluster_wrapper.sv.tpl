@@ -352,9 +352,7 @@ module ${cfg['name']}_wrapper (
     .Xdma (${core_cfg_flat('xdma')}),
     .Xssr (${core_cfg_flat('xssr')}),
     .Xfrep (${core_cfg_flat('xfrep')}),
-    //.SNAX(SNAX),
-    .SnaxTcdmPorts(SnaxTcdmPorts),
-    .TotalSnaxTcdmPorts(${init_offset-1}),
+    .TotalSnaxTcdmPorts(${init_offset}),
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
     .SnitchPMACfg (${cfg['pkg_name']}::SnitchPMACfg),
     .NumIntOutstandingLoads (NumIntOutstandingLoads),
@@ -467,6 +465,12 @@ module ${cfg['name']}_wrapper (
     .snax_tcdm_req_o ( snax_tcdm_req[${offset_list[idx+1]-1}:${offset_list[idx]}] ),
     .snax_tcdm_rsp_i ( snax_tcdm_rsp[${offset_list[idx+1]-1}:${offset_list[idx]}] )
   );
+  % else:
+
+  assign snax_qready[${idx}] = '0;
+  assign snax_resp[${idx}] = '0;
+  assign snax_pvalid[${idx}] = '0;
+  
   % endif
 % endfor
 
