@@ -366,7 +366,6 @@ module snitch_cluster
   `MEM_TYPEDEF_ALL(mem, tcdm_mem_addr_t, data_t, strb_t, tcdm_user_t)
   `MEM_TYPEDEF_ALL(mem_dma, tcdm_mem_addr_t, data_dma_t, strb_dma_t, logic)
 
-  //`TCDM_TYPEDEF_ALL(tcdm, tcdm_addr_t, data_t, strb_t, tcdm_user_t)
   `TCDM_TYPEDEF_ALL(tcdm_dma, tcdm_addr_t, data_dma_t, strb_dma_t, logic)
 
   `REG_BUS_TYPEDEF_REQ(reg_req_t, addr_t, data_t, strb_t)
@@ -400,21 +399,6 @@ module snitch_cluster
     addr_t start_addr;
     addr_t end_addr;
   } xbar_rule_t;
-
-  // typedef struct packed {
-  //   acc_addr_e   addr;
-  //   logic [4:0]  id;
-  //   logic [31:0] data_op;
-  //   data_t       data_arga;
-  //   data_t       data_argb;
-  //   addr_t       data_argc;
-  // } acc_req_t;
-
-  //   typedef struct packed {
-  //   logic [4:0] id;
-  //   logic       error;
-  //   data_t      data;
-  // } acc_resp_t;
 
   `SNITCH_VM_TYPEDEF(PhysicalAddrWidth)
 
