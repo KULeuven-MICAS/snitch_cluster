@@ -29,7 +29,7 @@ jobs:
     name: Simulate SW on Snitch Cluster w/ Verilator
     runs-on: ubuntu-22.04
     container:
-      image: rgantonio/snax-chisel-test
+      image: ghcr.io/kuleuven-micas/snax:latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -50,7 +50,7 @@ jobs:
     name: Simulate SW on SNAX MAC Cluster w/ Verilator
     runs-on: ubuntu-22.04
     container:
-      image: rgantonio/snax-chisel-test
+      image: ghcr.io/kuleuven-micas/snax:latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -72,7 +72,7 @@ jobs:
     name: Simulate SW on SNAX GEMM Cluster w/ Verilator
     runs-on: ubuntu-22.04
     container:
-      image: rgantonio/snax-chisel-test
+      image: ghcr.io/kuleuven-micas/snax:latest
     steps:
       - uses: actions/checkout@v2
         with:
