@@ -22,7 +22,8 @@ np.random.seed(42)
 
 
 # Golden model in python
-def block_gemm_golden_model(m, k, n, row, size, col, a, b,subtraction_a,subtraction_b):
+def block_gemm_golden_model(m, k, n, row, size, col, a, b,
+                            subtraction_a, subtraction_b):
     c = np.zeros(m * row * n * col, dtype=(np.int32))
     for mm in range(m):
         for nn in range(n):
@@ -48,7 +49,9 @@ def block_gemm_golden_model(m, k, n, row, size, col, a, b,subtraction_a,subtract
                                 + cc * size
                                 + ss
                             )
-                            c[c_index] = c[c_index] + (a[a_index] - subtraction_a) * (b[b_index] - subtraction_b)
+                            c[c_index] = c[c_index] + \
+                                (a[a_index] - subtraction_a) * \
+                                (b[b_index] - subtraction_b)
     return c
 
 
