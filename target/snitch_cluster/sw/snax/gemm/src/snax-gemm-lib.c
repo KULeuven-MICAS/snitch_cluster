@@ -35,8 +35,8 @@ void base_gemm(uint8_t m, uint8_t k, uint8_t n, int8_t* A, int8_t* B,
             }
             for (int s = 0; s < k; s++) {
                 C_cpu[i * n + j] = C_cpu[i * n + j] +
-                                   ((int32_t)A[i * k + s] - subtraction_a) *
-                                       ((int32_t)B[s + j * k] - subtraction_b);
+                                   ((int32_t)A[i * k + s] - (int32_t)subtraction_a) *
+                                       ((int32_t)B[s + j * k] - (int32_t)subtraction_b);
             }
         }
     }
