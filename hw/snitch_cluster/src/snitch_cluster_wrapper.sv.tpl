@@ -407,8 +407,8 @@ module ${cfg['name']}_wrapper (
     .CaqTagWidth (${int(cfg['caq_tag_width'])}),
     .DebugSupport (${int(cfg['enable_debug'])}),
     .AliasRegionEnable (${int(cfg['alias_region_enable'])}),
-    .AliasRegionBase (${int(cfg['alias_region_base'])})
-    .DebugSupport (${int(cfg['enable_debug'])})
+    .AliasRegionBase (${int(cfg['alias_region_base'])}),
+    .DebugSupport (${int(cfg['enable_debug'])}),
     .acc_req_t (${cfg['pkg_name']}::acc_req_t),
     .acc_resp_t (${cfg['pkg_name']}::acc_resp_t),
     .tcdm_req_t (${cfg['pkg_name']}::tcdm_req_t),
