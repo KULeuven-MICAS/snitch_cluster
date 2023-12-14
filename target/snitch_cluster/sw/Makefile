@@ -18,7 +18,7 @@ endif
 SNAX_MAC = snax/mac
 SNAX_GEMM = snax/gemm
 
-SUBDIRS = runtime/banshee runtime/rtl runtime/rtl-generic $(SNAX_MAC) $(SNAX_GEMM) math apps tests
+SUBDIRS += $(RUNTIME) $(SNAX_MAC) $(SNAX_GEMM) math apps tests
 
 .PHONY: all $(SUBDIRS)
 

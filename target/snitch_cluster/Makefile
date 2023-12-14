@@ -12,6 +12,9 @@
 DEBUG            ?= OFF  # ON to turn on debugging symbols
 CFG_OVERRIDE     ?=      # Override default config file
 SELECT_RUNTIME   ?=      # Select snRuntime implementation: "banshee", "rtl-generic" or "rtl" (default)
+SELECT_TOOLCHAIN ?=      # Select Toolchain: "llvm-generic" = llvm17 generic or "llvm-snitch" llvm 12 snitch_specific (default)
+ 					     # Note that the default toolchain only works with some applications 
+						 # since it requires the rtl-generic runtime
 
 .DEFAULT_GOAL := help
 .PHONY: all clean

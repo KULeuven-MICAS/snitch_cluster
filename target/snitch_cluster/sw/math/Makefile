@@ -4,5 +4,9 @@
 #
 # Luca Colagrande <colluca@iis.ee.ethz.ch>
 
+ifeq ($(SELECT_TOOLCHAIN), llvm-generic)
+include ../toolchain-generic.mk
+else
 include ../toolchain.mk
+endif
 include ../../../../sw/math/Makefile
