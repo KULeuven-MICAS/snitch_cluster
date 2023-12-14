@@ -9,9 +9,9 @@
 # Makefile invocation #
 #######################
 
-DEBUG          ?= OFF  # ON to turn on debugging symbols
-CFG_OVERRIDE   ?=      # Override default config file
-SELECT_RUNTIME ?=      # Select snRuntime implementation: "banshee" or "rtl" (default)
+DEBUG            ?= OFF  # ON to turn on debugging symbols
+CFG_OVERRIDE     ?=      # Override default config file
+SELECT_RUNTIME   ?=      # Select snRuntime implementation: "banshee", "rtl-generic" or "rtl" (default)
 
 .DEFAULT_GOAL := help
 .PHONY: all clean

@@ -6,7 +6,8 @@ runs:
   - elf: tests/build/atomics.elf
     simulators: [vsim, vcs, verilator] # banshee fails with exit code 0x4
   - elf: tests/build/barrier.elf
-  - elf: tests/build/data_mover.elf
+  # data mover support has been removed in generic runtime
+  #- elf: tests/build/data_mover.elf
   - elf: tests/build/dma_simple.elf
   - elf: tests/build/event_unit.elf
   - elf: tests/build/fence_i.elf
@@ -55,9 +56,10 @@ runs:
   # - elf: tests/build/interrupt.elf
   - elf: tests/build/interrupt_local.elf
   - elf: tests/build/multi_cluster.elf
-  - elf: tests/build/openmp_parallel.elf
-  - elf: tests/build/openmp_for_static_schedule.elf
-  - elf: tests/build/openmp_double_buffering.elf
+  # openmp does not compile with generic runtime
+  # - elf: tests/build/openmp_parallel.elf 
+  # - elf: tests/build/openmp_for_static_schedule.elf
+  # - elf: tests/build/openmp_double_buffering.elf
   - elf: tests/build/perf_cnt.elf
   - elf: tests/build/printf_simple.elf
   - elf: tests/build/printf_fmtint.elf

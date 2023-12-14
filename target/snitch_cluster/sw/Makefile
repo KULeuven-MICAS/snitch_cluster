@@ -9,6 +9,8 @@ SELECT_RUNTIME ?= rtl
 
 ifeq ($(SELECT_RUNTIME), banshee)
 RUNTIME = runtime/banshee
+else ifeq ($(SELECT_RUNTIME), rtl-generic)
+RUNTIME = runtime/rtl-generic
 else
 RUNTIME = runtime/rtl
 endif
@@ -16,7 +18,7 @@ endif
 SNAX_MAC = snax/mac
 SNAX_GEMM = snax/gemm
 
-SUBDIRS = runtime/banshee runtime/rtl $(SNAX_MAC) $(SNAX_GEMM) math apps tests
+SUBDIRS = runtime/banshee runtime/rtl runtime/rtl-generic $(SNAX_MAC) $(SNAX_GEMM) math apps tests
 
 .PHONY: all $(SUBDIRS)
 
@@ -30,5 +32,5 @@ apps: $(RUNTIME) math $(SNAX_MAC) $(SNAX_GEMM)
 tests: $(RUNTIME) math $(SNAX_MAC) $(SNAX_GEMM)
 	$(MAKE) -C $@ $(TARGET)
 
-runtime/rtl runtime/banshee math $(SNAX_MAC) $(SNAX_GEMM):
+runtime/rtl runtime/banshee runtime/rtl-generic math $(SNAX_MAC) $(SNAX_GEMM):
 	$(MAKE) -C $@ $(TARGET)
