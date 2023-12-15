@@ -56,7 +56,7 @@ runs:
   # - elf: tests/build/interrupt.elf
   - elf: tests/build/interrupt_local.elf
   - elf: tests/build/multi_cluster.elf
-  - elf: tests/build/openmp_parallel.elf 
+  - elf: tests/build/openmp_parallel.elf
   - elf: tests/build/openmp_for_static_schedule.elf
   - elf: tests/build/openmp_double_buffering.elf
   - elf: tests/build/perf_cnt.elf
