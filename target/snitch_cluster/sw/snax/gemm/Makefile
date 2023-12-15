@@ -8,11 +8,7 @@
 # this Makefile from multiple different locations
 
 MK_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-ifeq ($(SELECT_TOOLCHAIN), llvm-generic)
-include $(MK_DIR)/../../toolchain-generic.mk
-else
 include $(MK_DIR)/../../toolchain.mk
-endif
 
 # Banshee runtime is not supported
 ifeq ($(SELECT_RUNTIME), rtl-generic)
