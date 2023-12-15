@@ -18,7 +18,7 @@ DEBUG ?= OFF # ON to turn on debugging symbols
 # Compiler toolchain
 ifneq ($(SELECT_TOOLCHAIN), llvm-generic)
 # specialized version does not use a version specifier in the binary
-LLVM_BINROOT    = $(dir $(shell which riscv32-unknown-elf-clang))
+LLVM_BINROOT    = /tools/riscv-llvm/bin
 LLVM_VERSION    = 
 else
 LLVM_BINROOT    = /usr/bin
