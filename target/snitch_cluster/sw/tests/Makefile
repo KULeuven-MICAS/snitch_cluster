@@ -13,6 +13,23 @@ else
 include $(MK_DIR)../toolchain.mk
 endif
 
+########
+# Apps #
+########
+
+# Note, various tests only work with the non-generic runtime and the specific llvm toolchain
+# moving to the generic runtime there are less tests that work, 
+# and moving to generic llvm even less tests work
+ifneq ($(SELECT_RUNTIME), rtl-generic)
+APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run.yaml)
+else
+ifeq ($(SELECT_TOOLCHAIN), llvm-generic)
+APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run-llvm-generic.yaml)
+else
+APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run-generic.yaml)
+endif
+endif
+
 ###############
 # Directories #
 ###############
@@ -50,7 +67,6 @@ RISCV_LDFLAGS += -lsnRuntime
 # Outputs #
 ###########
 
-APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run.yaml)
 ELFS        = $(abspath $(addprefix $(BUILDDIR)/,$(addsuffix .elf,$(APPS))))
 DEPS        = $(abspath $(addprefix $(BUILDDIR)/,$(addsuffix .d,$(APPS))))
 DUMPS       = $(abspath $(addprefix $(BUILDDIR)/,$(addsuffix .dump,$(APPS))))
