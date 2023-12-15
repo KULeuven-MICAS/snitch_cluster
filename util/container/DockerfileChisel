@@ -28,7 +28,4 @@ RUN wget https://github.com/llvm/circt/releases/download/firtool-1.42.0/firrtl-b
 # Install generic LLVM toolchain in /usr/bin - latest stable release is 17
 RUN  wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 17 && rm llvm.sh
 
-# Install generic LLVM toolchain in /usr/bin - latest stable release is 17
-RUN  wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 17 && rm llvm.sh
-
 ENV PATH "/tools/firtool-1.42.0/bin/:${PATH}"
