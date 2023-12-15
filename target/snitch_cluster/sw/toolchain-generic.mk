@@ -28,7 +28,7 @@ RISCV_DWARFDUMP ?= $(LLVM_BINROOT)/llvm-dwarfdump-$(LLVM_VERSION)
 RISCV_CFLAGS += $(addprefix -I,$(INCDIRS))
 RISCV_CFLAGS += --target=riscv32-unknown-elf
 RISCV_CFLAGS += -mcpu=generic-rv32
-RISCV_CFLAGS += -march=rv32imafd
+RISCV_CFLAGS += -march=rv32imafdzfh
 RISCV_CFLAGS += -menable-experimental-extensions
 RISCV_CFLAGS += -mabi=ilp32d
 RISCV_CFLAGS += -mcmodel=medany
