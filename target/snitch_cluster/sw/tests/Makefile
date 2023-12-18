@@ -14,15 +14,19 @@ include $(MK_DIR)/../toolchain.mk
 ########
 
 # Note, various tests only work with the non-generic runtime and the specific llvm toolchain
-# moving to the generic runtime there are less tests that work, 
+# moving to the generic runtime there are less tests that work,
 # and moving to generic llvm even less tests work
+APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../runtime.yaml)
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../standard-fp.yaml)
+# These tests only need custom riscv instructions, no custom builtins
+ifneq ($(SELECT_TOOLCHAIN), llvm-generic)
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../custom-fp.yaml)
 ifneq ($(SELECT_RUNTIME), rtl-generic)
-APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run.yaml)
-else
-ifeq ($(SELECT_TOOLCHAIN), llvm-generic)
-APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run-llvm-generic.yaml)
-else
-APPS        = $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../run-generic.yaml)
+# These tests need custom builtins in the runtime
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../openmp.yaml)
+# These tests need custom builtins in the runtime and custom riscv instructions
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../dnn.yaml)
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../blas.yaml)
 endif
 endif
 

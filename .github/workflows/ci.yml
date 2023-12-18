@@ -48,7 +48,12 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |
-          ./run.py sw/run.yaml --simulator verilator -j
+          ./run.py sw/runtime.yaml --simulator verilator -j
+          ./run.py sw/custom-fp.yaml --simulator verilator -j
+          ./run.py sw/standard-fp.yaml --simulator verilator -j
+          ./run.py sw/openmp.yaml --simulator verilator -j
+          ./run.py sw/blas.yaml --simulator verilator -j
+          ./run.py sw/dnn.yaml --simulator verilator -j
 
 
   ##############################################
@@ -73,6 +78,12 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
+          ./run.py sw/runtime.yaml --simulator verilator -j
+          ./run.py sw/custom-fp.yaml --simulator verilator -j
+          ./run.py sw/standard-fp.yaml --simulator verilator -j
+          ./run.py sw/openmp.yaml --simulator verilator -j
+          ./run.py sw/blas.yaml --simulator verilator -j
+          ./run.py sw/dnn.yaml --simulator verilator -j
           ./run.py sw/snax-mac-run.yaml --simulator verilator
 
   sw-snax-mac-cluster-vlt-generic:
@@ -96,6 +107,8 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
+          ./run.py sw/runtime.yaml --simulator verilator -j
+          ./run.py sw/standard-fp.yaml --simulator verilator -j
           ./run.py sw/snax-mac-run.yaml --simulator verilator
 
   sw-snax-gemm-cluster-vlt:
@@ -117,6 +130,12 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
+          ./run.py sw/runtime.yaml --simulator verilator -j
+          ./run.py sw/custom-fp.yaml --simulator verilator -j
+          ./run.py sw/standard-fp.yaml --simulator verilator -j
+          ./run.py sw/openmp.yaml --simulator verilator -j
+          ./run.py sw/blas.yaml --simulator verilator -j
+          ./run.py sw/dnn.yaml --simulator verilator -j
           ./run.py sw/snax-gemm-run.yaml --simulator verilator
 
   sw-snax-gemm-cluster-vlt-generic:
@@ -140,6 +159,12 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
+          ./run.py sw/runtime.yaml --simulator verilator -j
+          ./run.py sw/custom-fp.yaml --simulator verilator -j
+          ./run.py sw/standard-fp.yaml --simulator verilator -j
+          ./run.py sw/openmp.yaml --simulator verilator -j
+          ./run.py sw/blas.yaml --simulator verilator -j
+          ./run.py sw/dnn.yaml --simulator verilator -j
           ./run.py sw/snax-gemm-run.yaml --simulator verilator
 
   ############################################
@@ -164,4 +189,9 @@ jobs:
           SNITCH_LOG: info
         working-directory: target/snitch_cluster
         run: |
-          ./run.py sw/run.yaml --simulator banshee -j
+          ./run.py sw/runtime.yaml --simulator banshee -j
+          ./run.py sw/custom-fp.yaml --simulator banshee -j
+          ./run.py sw/standard-fp.yaml --simulator banshee -j
+          ./run.py sw/openmp.yaml --simulator banshee -j
+          ./run.py sw/blas.yaml --simulator banshee -j
+          ./run.py sw/dnn.yaml --simulator banshee -j

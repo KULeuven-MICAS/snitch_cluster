@@ -1,0 +1,13 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This file contains all tests that require the software to be built with
+# custom builtins and custom RISC-V instructions
+
+runs:
+  - elf: tests/build/data_mover.elf
+  - elf: tests/build/interrupt.elf
+  - elf: tests/build/openmp_parallel.elf
+  - elf: tests/build/openmp_for_static_schedule.elf
+  - elf: tests/build/openmp_double_buffering.elf
