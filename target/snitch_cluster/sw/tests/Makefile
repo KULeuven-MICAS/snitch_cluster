@@ -24,6 +24,8 @@ APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir test
 ifneq ($(SELECT_RUNTIME), rtl-generic)
 # These tests need custom builtins in the runtime
 APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../openmp.yaml)
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../snitch-cluster-openmp.yaml)
+APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../snitch-cluster-runtime.yaml)
 # These tests need custom builtins in the runtime and custom riscv instructions
 APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../dnn.yaml)
 APPS        += $(shell $(MK_DIR)/../../../../util/sim/list_apps.py --in-dir tests/ ../blas.yaml)
