@@ -31,7 +31,7 @@ RISCV_OBJCOPY   ?= $(LLVM_BINROOT)/llvm-objcopy$(LLVM_VERSION)
 RISCV_OBJDUMP   ?= $(LLVM_BINROOT)/llvm-objdump$(LLVM_VERSION)
 RISCV_DWARFDUMP ?= $(LLVM_BINROOT)/llvm-dwarfdump$(LLVM_VERSION)
 
-LLVM_VER        ?= $(shell $(LLVM_BINROOT)/llvm-config --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+LLVM_VER        ?= $(shell /tools/riscv-llvm/bin/llvm-config --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 
 # Compiler flags
 ifneq ($(SELECT_TOOLCHAIN), llvm-generic)
@@ -68,6 +68,7 @@ RISCV_LDFLAGS += -L/tools/riscv-llvm/riscv32-unknown-elf/lib/
 endif
 # Common flags
 RISCV_LDFLAGS += -lclang_rt.builtins-riscv32
+# Use custom version here regardless
 RISCV_LDFLAGS += -L/tools/riscv-llvm/lib/clang/$(LLVM_VER)/lib/
 RISCV_LDFLAGS += -fuse-ld=$(RISCV_LD)
 RISCV_LDFLAGS += -nostdlib
