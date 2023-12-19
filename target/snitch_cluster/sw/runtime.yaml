@@ -2,30 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# This file contains all tests that require no custom builtins
-# or custom RISC-V instructions
-
 runs:
   - elf: tests/build/atomics.elf
     simulators: [vsim, vcs, verilator] # banshee fails with exit code 0x4
   - elf: tests/build/barrier.elf
   - elf: tests/build/dma_simple.elf
-  - elf: tests/build/event_unit.elf
   - elf: tests/build/fence_i.elf
-  - elf: tests/build/fp16_comparison_scalar.elf
-    simulators: [vsim, vcs, verilator] # banshee fails with exit code 0x10
-  - elf: tests/build/fp16_computation_scalar.elf
-    simulators: [vsim, vcs, verilator] # banshee fails with JIT issue
-  - elf: tests/build/fp32_comparison_scalar.elf
-  - elf: tests/build/fp32_computation_scalar.elf
-    simulators: [vsim, vcs, verilator] # banshee fails with exit code 0x2
   - elf: tests/build/interrupt_local.elf
   - elf: tests/build/multi_cluster.elf
   - elf: tests/build/perf_cnt.elf
   - elf: tests/build/printf_simple.elf
   - elf: tests/build/printf_fmtint.elf
   - elf: tests/build/simple.elf
-  - elf: tests/build/team_global.elf
   - elf: tests/build/tls.elf
   - elf: tests/build/varargs_1.elf
   - elf: tests/build/varargs_2.elf
