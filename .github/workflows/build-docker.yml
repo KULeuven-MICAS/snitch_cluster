@@ -27,6 +27,6 @@ jobs:
           context: .
           file: util/container/DockerfileChisel
           push: true
-          tags: ghcr.io/kuleuven-micas/snax:${{ github.ref_name }}
+          tags: ghcr.io/kuleuven-micas/snax:latest
           build-args: |-
             SNITCH_LLVM_VERSION=latest
