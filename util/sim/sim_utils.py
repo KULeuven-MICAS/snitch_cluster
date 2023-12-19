@@ -91,7 +91,11 @@ def get_simulations(testlists, simulator):
         for test in tests:
             test['elf'] = testlist_path.parent / test['elf']
             if 'cmd' in test:
-                test['cmd'] = [resolve_relative_path(testlist_path.parent, arg) for arg in test['cmd']]
+                resolved_paths = []
+                for arg in test['cmd']:
+                    resolved_path = resolve_relative_path(testlist_path.parent, arg)
+                    resolved_paths.append(resolved_path)
+                test['cmd'] = resolved_paths
         all_tests.extend(tests)
     # Create simulation object for every test which supports the specified simulator
     simulations = [simulator.get_simulation(test) for test in all_tests if simulator.supports(test)]
