@@ -48,7 +48,10 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |
-          ./util/run.py sw/run.yaml --simulator verilator -j
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/snitch-cluster-runtime.yaml sw/custom-fp.yaml \
+          sw/standard-fp.yaml sw/openmp.yaml sw/snitch-cluster-openmp.yaml \
+          sw/blas.yaml sw/dnn.yaml -j
       - name: Annotate traces
         working-directory: target/snitch_cluster
         run: |
@@ -78,10 +81,10 @@ jobs:
         run: |
           ./util/run.py sw/fdiv.yaml --simulator verilator -j
 
+  ##############################################
+  # Simulate SW on SNAX Cluster w/ Verilator #
+  ##############################################
 
-  ##############################################
-  # Simulate SW on Snitch Cluster w/ Verilator #
-  ##############################################
   sw-snax-mac-cluster-vlt:
     name: Simulate SW on SNAX MAC Cluster w/ Verilator
     runs-on: ubuntu-22.04
@@ -101,7 +104,33 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
-          ./run.py sw/snax-mac-run.yaml --simulator verilator
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/custom-fp.yaml sw/standard-fp.yaml \
+          sw/openmp.yaml sw/blas.yaml sw/dnn.yaml sw/snax-mac-run.yaml -j
+
+  sw-snax-mac-cluster-vlt-generic:
+    name: Simulate SW on SNAX MAC Cluster w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-mac.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          SELECT_RUNTIME=rtl-generic \
+          SELECT_TOOLCHAIN=llvm-generic
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/standard-fp.yaml sw/snax-mac-run.yaml -j
 
   sw-snax-gemm-cluster-vlt:
     name: Simulate SW on SNAX GEMM Cluster w/ Verilator
@@ -122,7 +151,33 @@ jobs:
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
-          ./run.py sw/snax-gemm-run.yaml --simulator verilator
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/custom-fp.yaml sw/standard-fp.yaml \
+          sw/openmp.yaml sw/blas.yaml sw/dnn.yaml sw/snax-gemm-run.yaml -j
+
+  sw-snax-gemm-cluster-vlt-generic:
+    name: Simulate SW on SNAX GEMM Cluster w/ Verilator (Generic LLVM
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-gemm.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          SELECT_RUNTIME=rtl-generic \
+          SELECT_TOOLCHAIN=llvm-generic
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/standard-fp.yaml sw/snax-gemm-run.yaml -j
 
   ############################################
   # Build SW on Snitch Cluster w/ Banshee #
@@ -146,4 +201,11 @@ jobs:
           SNITCH_LOG: info
         working-directory: target/snitch_cluster
         run: |
+<<<<<<< HEAD
           ./util/run.py sw/run.yaml --simulator banshee -j
+=======
+          ./run.py --simulator banshee \
+          sw/runtime.yaml sw/snitch-cluster-runtime.yaml sw/custom-fp.yaml \
+          sw/standard-fp.yaml sw/openmp.yaml sw/snitch-cluster-openmp.yaml \
+          sw/blas.yaml sw/dnn.yaml -j
+>>>>>>> d87720fd (sw: Add minimal runtime and toolchain file for generic llvm compilation (#57))
