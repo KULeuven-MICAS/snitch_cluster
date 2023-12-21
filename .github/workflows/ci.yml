@@ -55,8 +55,9 @@ jobs:
 
 
   ##############################################
-  # Simulate SW on Snitch Cluster w/ Verilator #
+  # Simulate SW on SNAX Cluster w/ Verilator #
   ##############################################
+
   sw-snax-mac-cluster-vlt:
     name: Simulate SW on SNAX MAC Cluster w/ Verilator
     runs-on: ubuntu-22.04
