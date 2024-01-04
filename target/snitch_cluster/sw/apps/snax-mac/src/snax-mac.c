@@ -53,7 +53,7 @@ int main() {
         write_csr(0x3d5, 19);  // Vector length
 
         // Enable SNAX barrier
-        write_csr(0x7c3, 1); 
+        write_csr(0x7c3, 1);
 
         // Write start CSR to launch accelerator
         write_csr(0x3c0, 0);
