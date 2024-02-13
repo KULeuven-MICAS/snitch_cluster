@@ -203,11 +203,7 @@ jobs:
           SNITCH_LOG: info
         working-directory: target/snitch_cluster
         run: |
-<<<<<<< HEAD
-          ./util/run.py sw/run.yaml --simulator banshee -j
-=======
           ./run.py --simulator banshee \
           sw/runtime.yaml sw/snitch-cluster-runtime.yaml sw/custom-fp.yaml \
           sw/standard-fp.yaml sw/openmp.yaml sw/snitch-cluster-openmp.yaml \
           sw/blas.yaml sw/dnn.yaml -j
->>>>>>> d87720fd (sw: Add minimal runtime and toolchain file for generic llvm compilation (#57))
