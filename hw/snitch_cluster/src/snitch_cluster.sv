@@ -648,9 +648,9 @@ module snitch_cluster
   // Multiplexing between connecting large accelerators to this part
   // Note that we are limited by the 512 bit DMA bandwidth
   // Therefore we allocate 8 TCDM ports for each bandwidth
-  // Current GEMM and streamer contains 
+  // Current GEMM and streamer contains
 
-  if (|ConnectSnaxAccWide) begin
+  if (|ConnectSnaxAccWide) begin: gen_yes_wide_acc_connect
 
     // Use this ports for the total number and needs to be cute into multiple versions
     // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
@@ -759,7 +759,7 @@ module snitch_cluster
       .mem_rsp_i (sb_dma_rsp)
     );
 
-  end else begin
+  end else begin: gen_no_wide_acc_connect
 
     snitch_tcdm_interconnect #(
       .NumInp (1),
