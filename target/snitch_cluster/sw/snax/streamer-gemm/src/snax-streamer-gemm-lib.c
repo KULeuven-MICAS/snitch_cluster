@@ -59,7 +59,7 @@ void set_streamer_start() { write_csr(981, 1); }
 // Set GEMM configuration CSR
 void set_block_gemm_csr(int tempLoop0, int tempLoop1, int tempLoop2,
                         int subtractions) {
-    // set loop bounds, from M to K to N
+    // set loop bounds, from K M to  to N
     write_csr(982, tempLoop0);
     write_csr(983, tempLoop1);
     write_csr(984, tempLoop2);
