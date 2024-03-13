@@ -650,7 +650,7 @@ module snitch_cluster
   // Therefore we allocate 8 TCDM ports for each bandwidth
   // Current GEMM and streamer contains
 
-  if (|ConnectSnaxAccWide) begin: gen_yes_wide_acc_connect
+  if (ConnectSnaxAccWide != 0) begin: gen_yes_wide_acc_connect
 
     // Use this ports for the total number and needs to be cute into multiple versions
     // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
@@ -715,27 +715,23 @@ module snitch_cluster
           snax_tcdm_rsp_o[i*8].p.data
         } = snax_wide_rsp[i].p.data;
 
-        {
-          snax_tcdm_rsp_o[i*8+7].p.data,
-          snax_tcdm_rsp_o[i*8+6].p.data,
-          snax_tcdm_rsp_o[i*8+5].p.data,
-          snax_tcdm_rsp_o[i*8+4].p.data,
-          snax_tcdm_rsp_o[i*8+3].p.data,
-          snax_tcdm_rsp_o[i*8+2].p.data,
-          snax_tcdm_rsp_o[i*8+1].p.data,
-          snax_tcdm_rsp_o[i*8].p.data
-        } = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+7].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+6].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+5].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+4].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+3].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+2].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8+1].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_o[i*8].p_valid = snax_wide_rsp[i].p_valid;
 
-        {
-          snax_tcdm_rsp_o[i*8+7].q_ready,
-          snax_tcdm_rsp_o[i*8+6].q_ready,
-          snax_tcdm_rsp_o[i*8+5].q_ready,
-          snax_tcdm_rsp_o[i*8+4].q_ready,
-          snax_tcdm_rsp_o[i*8+3].q_ready,
-          snax_tcdm_rsp_o[i*8+2].q_ready,
-          snax_tcdm_rsp_o[i*8+1].q_ready,
-          snax_tcdm_rsp_o[i*8].q_ready
-        } = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+7].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+6].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+5].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+4].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+3].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+2].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8+1].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_o[i*8].q_ready = snax_wide_rsp[i].q_ready;
       end
     end
 
