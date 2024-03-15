@@ -648,23 +648,20 @@ module snitch_cluster
   // Multiplexing between connecting large accelerators to this part
   // Note that we are limited by the 512 bit DMA bandwidth
   // Therefore we allocate 8 TCDM ports for each bandwidth
-  // Current GEMM and streamer contains
+
+  // Use this ports for the total number and needs to be cute into multiple versions
+  // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
+  localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxTcdmPorts/8;
 
   if (ConnectSnaxAccWide != 0) begin: gen_yes_wide_acc_connect
-
-    // Use this ports for the total number and needs to be cute into multiple versions
-    // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-    // assert (TotalSnaxTcdmPorts % 8 != 0) else $error("TotalSnaxTcdmPorts is not divisible by 8! %d", TotalSnaxTcdmPorts);
-
-    localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxTcdmPorts/8;
 
     // First declare the wide SNAX tcdm ports
     tcdm_dma_req_t [NumSnaxWideTcdmPorts-1:0] snax_wide_req;
     tcdm_dma_rsp_t [NumSnaxWideTcdmPorts-1:0] snax_wide_rsp;
 
     // This is for hard remapping of signals
-    // TODO: Debug later why part-select method fails in in tyepdef setups
-    //       Otherwise need to find an ugly workaround to make this work
+    // !!! Note that System verilog does not support
+    // Part-select method for unpacked signals
     always_comb begin
       for (int i = 0; i < NumSnaxWideTcdmPorts; i++) begin
         // Request ports
