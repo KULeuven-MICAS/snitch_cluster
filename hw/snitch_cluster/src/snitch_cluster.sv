@@ -96,6 +96,10 @@ module snitch_cluster
   /// FPU configuration.
   parameter fpnew_pkg::fpu_implementation_t FPUImplementation [NrCores] =
     '{default: fpnew_pkg::fpu_implementation_t'(0)},
+    /// SNAX Acc initial narrow TCDM ports
+  parameter int unsigned SnaxAccNarrowTcdmPorts = 0,
+  /// SNAX Acc initial wide TCDM ports
+  parameter int unsigned SnaxAccWideTcdmPorts = 0,
   /// Total Number of SNAX TCDM ports
   parameter int unsigned TotalSnaxTcdmPorts = 0,
   /// SNAX Acc Narrow Wide Selection
@@ -668,9 +672,9 @@ module snitch_cluster
 
   // Use this ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-  localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxTcdmPorts/8;
+  localparam int unsigned NumSnaxWideTcdmPorts = SnaxAccWideTcdmPorts / 8;
 
-  if (ConnectSnaxAccWide != 0) begin: gen_yes_wide_acc_connect
+  if (NumSnaxWideTcdmPorts != 0) begin: gen_yes_wide_acc_connect
 
     // First declare the wide SNAX tcdm ports
     tcdm_dma_req_t [NumSnaxWideTcdmPorts-1:0] snax_wide_req;
@@ -890,10 +894,10 @@ module snitch_cluster
   // generate TCDM for snax if any of the cores has SNAX enabled
   // Make ConnectSnaxAccWide a switcher for now that all accelerators connect to wide
   // if this happens
-  if( (TotalSnaxTcdmPorts > 0) && !(|ConnectSnaxAccWide)) begin: gen_yes_snax_tcdm_interconnect
+  if( (SnaxAccNarrowTcdmPorts > 0)) begin: gen_yes_snax_tcdm_interconnect
 
     snitch_tcdm_interconnect #(
-      .NumInp (NumTCDMIn + TotalSnaxTcdmPorts),
+      .NumInp (NumTCDMIn + SnaxAccNarrowTcdmPorts),
       .NumOut (NrBanks),
       .tcdm_req_t (tcdm_req_t),
       .tcdm_rsp_t (tcdm_rsp_t),
@@ -908,8 +912,8 @@ module snitch_cluster
     ) i_tcdm_interconnect (
       .clk_i,
       .rst_ni,
-      .req_i ({axi_soc_req, tcdm_req, snax_tcdm_req_i}),
-      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o}),
+      .req_i ({axi_soc_req, tcdm_req, snax_tcdm_req_i[TotalSnaxTcdmPorts - 1 : TotalSnaxTcdmPorts - SnaxAccNarrowTcdmPorts]}),
+      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o[TotalSnaxTcdmPorts - 1 : TotalSnaxTcdmPorts - SnaxAccNarrowTcdmPorts]}),
       .mem_req_o (ic_req),
       .mem_rsp_i (ic_rsp)
     );
