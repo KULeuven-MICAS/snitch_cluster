@@ -444,6 +444,42 @@
                                             "title": "SNAX TCDM Port",
                                             "description": "Number of ports dedicated for an accelerator",
                                             "default": 0
+                                        },
+                                        "snax_connect_tcdm_wide_only": {
+                                            "type": "boolean",
+                                            "title": "Connect SNAX TCDM to Wide TCDM MUX",
+                                            "description": "Connects a SNAX accelerator's TCDM ports to the wide TCDM MUX only. If false, it connects to narrow TCDM only.",
+                                            "default": false
+                                        },
+                                        "snax_connect_narrow_wide_mix": {
+                                            "type": "boolean",
+                                            "title": "Connect SNAX TCDM to narrow and wide MUX",
+                                            "description": "Connects a SNAX accelerator's TCDM ports to both narrow and wide. If true, it uses the indices specified below.",
+                                            "default": false
+                                        },
+                                        "snax_narrow_tcdm_start_idx": {
+                                            "type": "number",
+                                            "title": "Narrow TCDM Starting Index",
+                                            "description": "The starting index of the narrow TCDM port. Indexing starts from 0.",
+                                            "default": 0
+                                        },
+                                        "snax_narrow_tcdm_end_idx": {
+                                            "type": "number",
+                                            "title": "Narrow TCDM Ending Index",
+                                            "description": "The ending index of the narrow TCDM port. Indexing starts from 0.",
+                                            "default": 0
+                                        },
+                                        "snax_wide_tcdm_start_idx": {
+                                            "type": "number",
+                                            "title": "Wide TCDM Starting Index",
+                                            "description": "The starting index of the wide TCDM port. Indexing starts from 0.",
+                                            "default": 0
+                                        },
+                                        "snax_wide_tcdm_end_idx": {
+                                            "type": "number",
+                                            "title": "Wide TCDM Ending Index",
+                                            "description": "The ending index of the wide TCDM port. Indexing starts from 0.",
+                                            "default": 0
                                         }
                                     }
                                 },

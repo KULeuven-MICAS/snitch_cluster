@@ -1,35 +1,185 @@
-// Copyright 2021 ETH Zurich and University of Bologna.
-// Solderpad Hardware License, Version 0.51, see LICENSE for details.
-// SPDX-License-Identifier: SHL-0.51
-
 ${disclaimer}
+<%
+# Just some working variables
+tcdm_offset_start = 0
+tcdm_offset_stop = -1
+total_snax_tcdm_ports = 0
+snax_core_acc = {}
 
+# Make me elegant later :P
+narrow_start_idx_list = []
+narrow_end_idx_list = []
+wide_start_idx_list = []
+wide_end_idx_list = []
+
+idx_offset = 0
+SnaxWideOnly = 0
+SnaxWideOnlyNum = 0
+SnaxNarrowAndWide = 0
+SnaxNarrowAndWideNum = 0
+SnaxWidePorts = 0
+SnaxNarrowPorts = 0
+
+# Cycle through each core
+# and check if an accelerator setting exists
+
+for i in range(len(cfg['cores'])):
+
+  # Make sure to initialize a dictionary
+  # that describes accelerators each core
+  curr_snax_acc_core = 'snax_core_' + str(i)
+  snax_acc_dict = {}
+  snax_acc_flag = False
+  snax_acc_multi_flag = False
+  snax_acc_wide_only = False
+  snax_tcdm_config_count = 0
+  snax_acc_narrow_wide_mix = False
+  snax_num_acc = None
+  snax_num_csr = None
+  prefix_snax_nonacc_count = 0
+  prefix_snax_count = 0
+
+  # If an accelerator setting exists
+  # Layout all possible accelerator configurations
+  # Per snitch cluster core
+  if ('snax_acc_set' in cfg['cores'][i]):
+    snax_acc_flag = True
+
+    # This part checks for the TCDM port configuration
+    if(cfg['cores'][i]['snax_acc_set']['snax_num_acc'] > 1):
+      snax_acc_multi_flag = True
+      snax_num_csr = cfg['cores'][i]['snax_acc_set']['snax_num_csr']
+      snax_num_acc = cfg['cores'][i]['snax_acc_set']['snax_num_acc']
+      snax_tcdm_config_count += 1
+
+    if (cfg['cores'][i]['snax_acc_set']['snax_connect_tcdm_wide_only']):
+      snax_acc_wide_only = True
+      snax_tcdm_config_count += 1
+      SnaxWideOnlyNum += 1
+
+    if (cfg['cores'][i]['snax_acc_set']['snax_connect_narrow_wide_mix']):
+      snax_acc_narrow_wide_mix = True
+      snax_tcdm_config_count += 1
+      SnaxNarrowAndWideNum += 1
+    
+    # Assertion check just to make sure
+    # No one makes a mistake in setting the configurations
+    assert (snax_tcdm_config_count <= 1), "Error! Can only have 1 tcdm configuration. Multi port, wide only, or narrow-wide mix. Default is narrow only."
+
+    # Pre-saving ports
+    snax_tcdm_ports = cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+    snax_narrow_tcdm_start_idx = cfg['cores'][i]['snax_acc_set']['snax_narrow_tcdm_start_idx']
+    snax_narrow_tcdm_end_idx = cfg['cores'][i]['snax_acc_set']['snax_narrow_tcdm_end_idx']
+    snax_wide_tcdm_start_idx = cfg['cores'][i]['snax_acc_set']['snax_wide_tcdm_start_idx']
+    snax_wide_tcdm_end_idx = cfg['cores'][i]['snax_acc_set']['snax_wide_tcdm_end_idx']
+
+    narrow_start_idx_list.append(snax_narrow_tcdm_start_idx + idx_offset)
+    narrow_end_idx_list.append(snax_narrow_tcdm_end_idx + idx_offset)
+    wide_start_idx_list.append(snax_wide_tcdm_start_idx + idx_offset)
+    wide_end_idx_list.append(snax_wide_tcdm_end_idx + idx_offset)
+    idx_offset += snax_tcdm_ports
+
+    if (SnaxWideOnlyNum == len(cfg['cores']) - 1):
+      SnaxWideOnly = 1
+    if (SnaxNarrowAndWideNum != 0):
+      SnaxNarrowAndWide = 1
+    
+    if( snax_wide_tcdm_end_idx != 0):
+      SnaxWidePorts += snax_wide_tcdm_end_idx - snax_wide_tcdm_start_idx + 1
+    if( snax_narrow_tcdm_end_idx != 0):
+      SnaxNarrowPorts += snax_narrow_tcdm_end_idx - snax_narrow_tcdm_start_idx + 1
+    
+    # Cycle through each accelerator setting per Snitch core
+    for j in range(cfg['cores'][i]['snax_acc_set']['snax_num_acc']):
+
+      # Check for narrow and wide TCDM ports
+      if(snax_acc_narrow_wide_mix):
+        total_narrow_mix = snax_narrow_tcdm_end_idx - snax_narrow_tcdm_start_idx + 1
+        total_wide_mix = snax_wide_tcdm_end_idx - snax_wide_tcdm_start_idx + 1
+        total_mix = total_narrow_mix + total_wide_mix
+        assert (snax_tcdm_ports == total_mix), "Error! Total TCDM ports should match the index mix."
+
+
+      # Prepare accelerator tags
+      curr_snax_acc = ''
+      curr_snax_acc = "i_snax_core_" + str(i) + "_acc_" + str(prefix_snax_count)
+
+      # Set tcdm offset ports
+      tcdm_offset_stop += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+
+      # Save settings in the dictionary
+      snax_acc_dict[curr_snax_acc] = {
+            'snax_module': cfg['cores'][i]['snax_acc_set']['snax_module'],
+            'snax_tcdm_ports': snax_tcdm_ports,
+            'snax_tcdm_offset_start': tcdm_offset_start,
+            'snax_tcdm_offset_stop': tcdm_offset_stop,
+            'snax_acc_wide_only': snax_acc_wide_only,
+            'snax_acc_narrow_wide_mix': snax_acc_narrow_wide_mix,
+            'snax_narrow_tcdm_start_idx': snax_narrow_tcdm_start_idx,
+            'snax_narrow_tcdm_end_idx': snax_narrow_tcdm_end_idx,
+            'snax_wide_tcdm_start_idx': snax_wide_tcdm_start_idx,
+            'snax_wide_tcdm_end_idx': snax_wide_tcdm_end_idx,
+          }
+
+      # This one pre-computes for the multi-accelerator connection
+      tcdm_offset_start += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+      prefix_snax_count += 1
+      total_snax_tcdm_ports += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+
+  else:
+
+    # Consider cases without accelerators
+    # Just leave them as none
+    curr_snax_acc = "i_snax_core_" + str(i) + "_noacc_" + str(prefix_snax_nonacc_count)
+    snax_acc_dict[curr_snax_acc] = None
+
+    narrow_start_idx_list.append(0)
+    narrow_end_idx_list.append(0)
+    wide_start_idx_list.append(0)
+    wide_end_idx_list.append(0)
+    
+  # This is the packed configuration
+  snax_core_acc[curr_snax_acc_core] = {
+    'snax_acc_flag': snax_acc_flag,
+    'snax_acc_multi_flag':snax_acc_multi_flag,
+    'snax_num_csr': snax_num_csr,
+    'snax_num_acc': snax_num_acc,
+    'snax_acc_dict':snax_acc_dict
+  }
+### for i in snax_core_acc:
+###     print(i)
+###     for j in snax_core_acc[i]['snax_acc_dict']:
+###       print(snax_core_acc[i]['snax_acc_dict'][j])
+
+### ${snax_core_acc['snax_core_0']['snax_acc_dict']['i_snax_core_0_acc_0']['snax_module']}
+%>\
 <%def name="icache_cfg(prop)">
   % for lw in cfg['hives']:
     ${lw['icache'][prop]}${',' if not loop.last else ''}
   % endfor
-</%def>
-
+</%def>\
 <%def name="core_cfg(prop)">\
   % for c in cfg['cores']:
 ${c[prop]}${', ' if not loop.last else ''}\
   % endfor
 </%def>\
-
+<%def name="acc_cfg(prop)">\
+  % for a in prop:
+${a}${', ' if not loop.last else ''}\
+  % endfor
+</%def>\
 <%def name="core_cfg_flat(prop)">\
 ${cfg['nr_cores']}'b\
   % for c in cfg['cores'][::-1]:
 ${int(c[prop])}\
   % endfor
 </%def>\
-
 <%def name="core_isa(isa)">\
 ${cfg['nr_cores']}'b\
   % for c in cfg['cores'][::-1]:
 ${int(getattr(c['isa_parsed'], isa))}\
   % endfor
 </%def>\
-
 <%def name="ssr_cfg(core, ssr_fmt_str, none_str, inner_sep)">\
 % for core in cfg['cores']:
   % for s in list(reversed(core['ssrs'] + [None]*(cfg['num_ssrs_max']-len(core['ssrs'])))):
@@ -40,6 +190,9 @@ ${("    '{" if loop.first else ' ') + \
 ${',' if not loop.last else ''}
 % endfor
 </%def>\
+// Copyright 2021 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
 
 // These includes are necessary for pre-defined typedefs
 `include "axi/typedef.svh"
@@ -297,6 +450,10 @@ module ${cfg['name']}_wrapper (
   localparam int unsigned NumSequencerInstr [${cfg['nr_cores']}] = '{${core_cfg('num_sequencer_instructions')}};
   localparam int unsigned NumSsrs [${cfg['nr_cores']}] = '{${core_cfg('num_ssrs')}};
   localparam int unsigned SsrMuxRespDepth [${cfg['nr_cores']}] = '{${core_cfg('ssr_mux_resp_depth')}};
+  localparam int unsigned SnaxNarrowStartIdx [${cfg['nr_cores']}] = '{${acc_cfg(narrow_start_idx_list)}};
+  localparam int unsigned SnaxNarrowEndIdx [${cfg['nr_cores']}] = '{${acc_cfg(narrow_end_idx_list)}};
+  localparam int unsigned SnaxWideStartIdx [${cfg['nr_cores']}] = '{${acc_cfg(wide_start_idx_list)}};
+  localparam int unsigned SnaxWideEndIdx [${cfg['nr_cores']}] = '{${acc_cfg(wide_end_idx_list)}};
 
   // SNAX accelerator ports per core
   ${cfg['pkg_name']}::acc_req_t  [${cfg['pkg_name']}::NrCores-1:0] snax_req;
@@ -306,76 +463,7 @@ module ${cfg['name']}_wrapper (
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_pvalid;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_pready;
   logic      [${cfg['pkg_name']}::NrCores-1:0] snax_barrier;
-<%
-# Just some working variables
-tcdm_offset_start = 0
-tcdm_offset_stop = -1
-total_snax_tcdm_ports = 0
-snax_core_acc = {}
 
-# Cycle through each core
-# and check if an accelerator setting exists
-
-for i in range(len(cfg['cores'])):
-
-  # Make sure to initialize a dictionary
-  # that describes accelerators each core
-  curr_snax_acc_core = 'snax_core_' + str(i)
-  snax_acc_dict = {}
-  snax_acc_flag = False
-  snax_acc_multi_flag = False
-  snax_num_acc = None
-  snax_num_csr = None
-  prefix_snax_nonacc_count = 0
-  prefix_snax_count = 0
-
-  # If an accelerator setting exists
-  # Layout all possible accelerator configurations
-  # Per snitch cluster core
-  if ('snax_acc_set' in cfg['cores'][i]):
-    snax_acc_flag = True
-
-    if(cfg['cores'][i]['snax_acc_set']['snax_num_acc'] > 1):
-      snax_acc_multi_flag = True
-      snax_num_csr = cfg['cores'][i]['snax_acc_set']['snax_num_csr']
-      snax_num_acc = cfg['cores'][i]['snax_acc_set']['snax_num_acc']
-
-    for j in range(cfg['cores'][i]['snax_acc_set']['snax_num_acc']):
-
-      # Prepare accelerator tags
-      curr_snax_acc = ''
-      curr_snax_acc = "i_snax_core_" + str(i) + "_acc_" + str(prefix_snax_count)
-
-      # Set tcdm offset ports
-      tcdm_offset_stop += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
-
-      # Save settings in the dictionary
-      snax_acc_dict[curr_snax_acc] = {
-            'snax_module': cfg['cores'][i]['snax_acc_set']['snax_module'],
-            'snax_tcdm_ports': cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports'],
-            'snax_tcdm_offset_start': tcdm_offset_start,
-            'snax_tcdm_offset_stop': tcdm_offset_stop
-          }
-      tcdm_offset_start += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
-      prefix_snax_count += 1
-      total_snax_tcdm_ports += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
-
-  else:
-
-    # Consider cases without accelerators
-    # Just leave them as none
-    curr_snax_acc = "i_snax_core_" + str(i) + "_noacc_" + str(prefix_snax_nonacc_count)
-    snax_acc_dict[curr_snax_acc] = None
-    
-  # This is the packed configuration
-  snax_core_acc[curr_snax_acc_core] = {
-    'snax_acc_flag': snax_acc_flag,
-    'snax_acc_multi_flag':snax_acc_multi_flag,
-    'snax_num_csr': snax_num_csr,
-    'snax_num_acc': snax_num_acc,
-    'snax_acc_dict':snax_acc_dict
-  }
-%>
   // SNAX TCDM wires
   // Wires need to be declared before use
   ${cfg['pkg_name']}::tcdm_req_t [${total_snax_tcdm_ports-1}:0] snax_tcdm_req;
@@ -424,7 +512,15 @@ for i in range(len(cfg['cores'])):
     .Xdma (${core_cfg_flat('xdma')}),
     .Xssr (${core_cfg_flat('xssr')}),
     .Xfrep (${core_cfg_flat('xfrep')}),
+    .SnaxWideOnly(${SnaxWideOnly}),
+    .SnaxNarrowAndWide(${SnaxNarrowAndWide}),
+    .SnaxWidePorts(${SnaxWidePorts}),
+    .SnaxNarrowPorts(${SnaxNarrowPorts}),
     .TotalSnaxTcdmPorts(${total_snax_tcdm_ports}),
+    .SnaxNarrowStartIdx ( SnaxNarrowStartIdx  ),
+    .SnaxNarrowEndIdx   ( SnaxNarrowEndIdx    ),
+    .SnaxWideStartIdx   ( SnaxWideStartIdx    ),
+    .SnaxWideEndIdx     ( SnaxWideEndIdx      ),
     .ConnectSnaxAccWide(${core_cfg_flat('snax_acc_wide')}),
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
     .SnitchPMACfg (${cfg['pkg_name']}::SnitchPMACfg),
@@ -593,8 +689,9 @@ for i in range(len(cfg['cores'])):
   );
       %endfor
     % else:
-      % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
 
+  // One core controlling one accelerator
+      % for jdx, jdx_key in enumerate(snax_core_acc[idx_key]['snax_acc_dict']):
   ${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_module']} # (
     .DataWidth ( ${cfg['pkg_name']}::NarrowDataWidth ),
     .SnaxTcdmPorts ( ${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_ports']} ),
