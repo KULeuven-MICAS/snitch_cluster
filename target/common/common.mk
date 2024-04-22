@@ -33,6 +33,7 @@ EVENTVIS_PY      ?= $(UTIL_DIR)/trace/eventvis.py
 
 VERILATOR_ROOT ?= $(dir $(shell $(VERILATOR_SEPP) which verilator))..
 VLT_ROOT       ?= ${VERILATOR_ROOT}
+VERILATOR_VERSION ?= $(shell verilator --version | grep -oP 'Verilator \K\d+')
 
 MATCH_END := '/+incdir+/ s/$$/\/*\/*/'
 MATCH_BGN := 's/+incdir+//g'
@@ -57,7 +58,9 @@ VLT_BENDER   += -t rtl
 VLT_SOURCES   = $(shell ${BENDER} script flist ${VLT_BENDER} | ${SED_SRCS})
 VLT_BUILDDIR := work-vlt
 VLT_FESVR     = $(VLT_BUILDDIR)/riscv-isa-sim
-VLT_FLAGS	 += --timing
+ifeq ($(VERILATOR_VERSION), 5)
+	VLT_FLAGS += --timing
+endif
 VLT_FLAGS    += -Wno-BLKANDNBLK
 VLT_FLAGS    += -Wno-LITENDIAN
 VLT_FLAGS    += -Wno-CASEINCOMPLETE
