@@ -73,9 +73,9 @@ VLT_FLAGS    += -Wno-fatal
 VLT_FLAGS    += +define+SYNTHESIS
 VLT_FLAGS    += --unroll-count 1024
 ifeq ($VERILATOR_VERSION, 5)
-	VLT_FLAGS += -std=c++20 -pthread
+	VLT_CFLAGS += -std=c++20 -pthread
 else 
-	VLT_FLAGS += -std=c++14 -pthread
+	VLT_CFLAGS += -std=c++14 -pthread
 endif
 VLT_CFLAGS   +=-I ${VLT_BUILDDIR} -I $(VLT_ROOT)/include -I $(VLT_ROOT)/include/vltstd -I $(VLT_FESVR)/include -I $(TB_DIR) -I ${MKFILE_DIR}/test
 
