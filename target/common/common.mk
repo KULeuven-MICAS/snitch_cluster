@@ -102,7 +102,7 @@ ifeq ($(VLT_USE_LLVM),ON)
     CC         = $(CLANG_CC)
     CXX        = $(CLANG_CXX)
     CFLAGS     = $(CLANG_CXXFLAGS)
-    # CXXFLAGS   = $(CLANG_CXXFLAGS)
+    CXXFLAGS   = $(CLANG_CXXFLAGS)
     LDFLAGS    = $(CLANG_LDFLAGS)
     VLT_FLAGS += --compiler clang
     VLT_FLAGS += -CFLAGS "${CLANG_CXXFLAGS}"
