@@ -44,8 +44,6 @@ RISCV_CFLAGS += -march=rv32imafdzfh
 RISCV_CFLAGS += -fno-builtin-memset
 # Required by printf lib such that svnprintf does not emit __udivdi3
 RISCV_CFLAGS += -DPRINTF_DISABLE_SUPPORT_LONG_LONG
-# Required by math library to avoid conflict with stdint definition
-RISCV_CFLAGS += -D__DEFINED_uint64_t
 endif
 # Common flags
 RISCV_CFLAGS += $(addprefix -I,$(INCDIRS))
@@ -62,6 +60,8 @@ RISCV_CFLAGS += -O3
 ifeq ($(DEBUG), ON)
 RISCV_CFLAGS += -g
 endif
+# Required by math library to avoid conflict with stdint definition
+RISCV_CFLAGS += -D__DEFINED_uint64_t
 
 # Linker flags
 ifneq ($(SELECT_TOOLCHAIN), llvm-generic)
