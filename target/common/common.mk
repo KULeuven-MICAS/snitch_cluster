@@ -33,7 +33,7 @@ EVENTVIS_PY      ?= $(UTIL_DIR)/trace/eventvis.py
 
 VERILATOR_ROOT ?= $(dir $(shell $(VERILATOR_SEPP) which verilator))..
 VLT_ROOT       ?= ${VERILATOR_ROOT}
-VERILATOR_VERSION ?= $(shell verilator --version | grep -oP 'Verilator \K\d+')
+VERILATOR_VERSION ?= $(shell $(VLT) --version | grep -oP 'Verilator \K\d+')
 
 MATCH_END := '/+incdir+/ s/$$/\/*\/*/'
 MATCH_BGN := 's/+incdir+//g'
@@ -72,7 +72,7 @@ VLT_FLAGS    += -Wno-UNOPTFLAT
 VLT_FLAGS    += -Wno-fatal
 VLT_FLAGS    += +define+SYNTHESIS
 VLT_FLAGS    += --unroll-count 1024
-ifeq ($VERILATOR_VERSION, 5)
+ifeq ($(VERILATOR_VERSION), 5)
 	VLT_CFLAGS += -std=c++20 -pthread
 else 
 	VLT_CFLAGS += -std=c++14 -pthread
