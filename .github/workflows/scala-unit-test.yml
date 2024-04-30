@@ -14,28 +14,11 @@ on:
 jobs:
   run:
     name: Build and Test
-    strategy:
-      matrix:
-        java-version: [17]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:pr-96
     steps:
-      - name: Checkout current branch (full)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.java-version }}
-          cache: sbt
-
-      - name: Setup Firtool
-        run: |-
-          wget https://github.com/llvm/circt/releases/download/firtool-1.42.0/firrtl-bin-ubuntu-20.04.tar.gz
-          tar -xvzf firrtl-bin-ubuntu-20.04.tar.gz
-          echo "$PWD/firtool-1.42.0/bin" >> $GITHUB_PATH
-
       - name: Run the unit tests
-        run: sbt test
+        working-directory: util/chiselgen
+        run: |
+          sbt test
