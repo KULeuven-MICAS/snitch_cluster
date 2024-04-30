@@ -18,6 +18,7 @@ jobs:
     container:
       image: ghcr.io/kuleuven-micas/snax:pr-96
     steps:
+      - uses: actions/checkout@v2
       - name: Run the unit tests
         working-directory: util/chiselgen
         run: |
