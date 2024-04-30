@@ -158,7 +158,7 @@ jobs:
   ######################
   # Lint Scala Files #
   ######################
-  scalafmt:
+  run:
     name: Lint Scala Files
     strategy:
       matrix:
