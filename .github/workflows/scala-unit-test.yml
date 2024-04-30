@@ -8,10 +8,10 @@
 name: Unit Test
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-  
-jobs: 
+
+jobs:
   run:
     name: Build and Test
     strategy:
@@ -34,8 +34,8 @@ jobs:
       - name: Setup Firtool
         run: |-
           wget https://github.com/llvm/circt/releases/download/firtool-1.42.0/firrtl-bin-ubuntu-20.04.tar.gz
-          tar -xvzf firrtl-bin-ubuntu-20.04.tar.gz 
-          echo "$PWD/firtool-1.42.0/bin" >> $GITHUB_PATH          
+          tar -xvzf firrtl-bin-ubuntu-20.04.tar.gz
+          echo "$PWD/firtool-1.42.0/bin" >> $GITHUB_PATH
 
       - name: Run the unit tests
         run: sbt test
