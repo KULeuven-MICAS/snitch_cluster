@@ -37,8 +37,8 @@ def main():
     outdir = args.outdir
 
     # call chisel environment and generate the system verilog file
-
-    cmd = f'sbt "runMain streamer.{streamer_cfg_para} {outdir}"'
+    chisel_dir = "../../hw/chisel"
+    cmd = f' cd {chisel_dir} && sbt "runMain snax.streamer.{streamer_cfg_para} {outdir}"'
     os.system(cmd)
 
 
