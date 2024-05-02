@@ -178,5 +178,5 @@ jobs:
           cache: sbt
 
       - name: check format
-        working-directory: util/chiselgen
+        working-directory: hw/chisel
         run: sbt scalafmtCheck
