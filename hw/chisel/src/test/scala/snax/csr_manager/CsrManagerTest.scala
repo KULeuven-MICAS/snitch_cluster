@@ -1,6 +1,4 @@
-package snax
-
-package csr_manager
+package snax.csr_manager
 
 import chisel3._
 import org.scalatest.flatspec.AnyFlatSpec

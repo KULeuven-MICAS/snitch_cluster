@@ -1,6 +1,4 @@
-package snax
-
-package csr_manager
+package snax.csr_manager
 
 import chisel3._
 import chisel3.util._

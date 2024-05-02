@@ -1,6 +1,4 @@
-package snax
-
-package streamer
+package snax.streamer
 
 import snax.csr_manager._
 
