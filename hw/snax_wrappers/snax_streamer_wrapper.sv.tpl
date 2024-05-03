@@ -12,7 +12,7 @@
 //-----------------------------
 // Streamer wrapper
 //-----------------------------
-module streamer_wrapper #(
+module ${cfg["tagName"]}_streamer_wrapper #(
   parameter int unsigned NarrowDataWidth = ${cfg["tcdmDataWidth"]},
   parameter int unsigned TCDMDepth = ${cfg["tcdmDepth"]},
   parameter int unsigned TCDMReqPorts = ${sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])},
@@ -66,16 +66,16 @@ module streamer_wrapper #(
   // CSR control ports
   //-----------------------------
   // Request
-  input logic [31:0] io_csr_req_bits_data_i,
-  input logic [31:0] io_csr_req_bits_addr_i,
-  input logic io_csr_req_bits_write_i,
-  input logic io_csr_req_valid_i,
-  output logic io_csr_req_ready_o,
+  input logic [31:0] csr_req_bits_data_i,
+  input logic [31:0] csr_req_bits_addr_i,
+  input logic csr_req_bits_write_i,
+  input logic csr_req_valid_i,
+  output logic csr_req_ready_o,
 
   // Response
-  input logic io_csr_rsp_ready_i,
-  output logic io_csr_rsp_valid_o,
-  output logic [31:0] io_csr_rsp_bits_data_o
+  input logic csr_rsp_ready_i,
+  output logic csr_rsp_valid_o,
+  output logic [31:0] csr_rsp_bits_data_o
 );
 
   // Fixed ports that are defaulted
@@ -102,13 +102,13 @@ module streamer_wrapper #(
     // Accelerator ports
     //-----------------------------
 % for idx, dw in enumerate(cfg["fifoWriterParams"]['fifoWidth']):
-    .io_data_accelerator2streamer_data_${idx}_bits ( acc2stream_data_${idx}_bits_i ),
+    .io_data_accelerator2streamer_data_${idx}_bits  ( acc2stream_data_${idx}_bits_i  ),
     .io_data_accelerator2streamer_data_${idx}_valid ( acc2stream_data_${idx}_valid_i ),
     .io_data_accelerator2streamer_data_${idx}_ready ( acc2stream_data_${idx}_ready_o ),
 
 % endfor
 % for idx, dw in enumerate(cfg["fifoReaderParams"]['fifoWidth']):
-    .io_data_streamer2accelerator_data_${idx}_bits ( stream2acc_data_${idx}_bits_o ),
+    .io_data_streamer2accelerator_data_${idx}_bits  ( stream2acc_data_${idx}_bits_o  ),
     .io_data_streamer2accelerator_data_${idx}_valid ( stream2acc_data_${idx}_valid_o ),
     .io_data_streamer2accelerator_data_${idx}_ready ( stream2acc_data_${idx}_ready_i ),
 
@@ -118,33 +118,33 @@ module streamer_wrapper #(
     //-----------------------------
     // Request
 % for idx in range(0, sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])):
-    .io_data_tcdm_rsp_${idx}_bits_data ( tcdm_rsp_data_i[${idx}] ),
-    .io_data_tcdm_rsp_${idx}_valid ( tcdm_rsp_p_valid_i[${idx}] ),
-    .io_data_tcdm_req_${idx}_ready ( tcdm_rsp_q_ready_i[${idx}] ),
+    .io_data_tcdm_rsp_${idx}_bits_data  ( tcdm_rsp_data_i[${idx}]    ),
+    .io_data_tcdm_rsp_${idx}_valid      ( tcdm_rsp_p_valid_i[${idx}] ),
+    .io_data_tcdm_req_${idx}_ready      ( tcdm_rsp_q_ready_i[${idx}] ),
 
 % endfor
     // Response
 % for idx in range(0, sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])):
-    .io_data_tcdm_req_${idx}_valid ( tcdm_req_q_valid_o[${idx}] ),
-    .io_data_tcdm_req_${idx}_bits_addr ( tcdm_req_addr_o[${idx}] ),
-    .io_data_tcdm_req_${idx}_bits_write ( tcdm_req_write_o[${idx}] ),
-    .io_data_tcdm_req_${idx}_bits_data ( tcdm_req_data_o[${idx}] ),
+    .io_data_tcdm_req_${idx}_valid      ( tcdm_req_q_valid_o[${idx}] ),
+    .io_data_tcdm_req_${idx}_bits_addr  ( tcdm_req_addr_o[${idx}]    ),
+    .io_data_tcdm_req_${idx}_bits_write ( tcdm_req_write_o[${idx}]   ),
+    .io_data_tcdm_req_${idx}_bits_data  ( tcdm_req_data_o[${idx}]    ),
 
 % endfor
     //-----------------------------
     // CSR control ports
     //-----------------------------
     // Request
-    .io_csr_req_bits_data ( io_csr_req_bits_data_i ),
-    .io_csr_req_bits_addr ( io_csr_req_bits_addr_i ),
-    .io_csr_req_bits_write ( io_csr_req_bits_write_i ),
-    .io_csr_req_valid ( io_csr_req_valid_i ),
-    .io_csr_req_ready ( io_csr_req_ready_o ),
+    .io_csr_req_bits_data  ( csr_req_bits_data_i  ),
+    .io_csr_req_bits_addr  ( csr_req_bits_addr_i  ),
+    .io_csr_req_bits_write ( csr_req_bits_write_i ),
+    .io_csr_req_valid      ( csr_req_valid_i      ),
+    .io_csr_req_ready      ( csr_req_ready_o      ),
 
     // Response
-    .io_csr_rsp_bits_data ( io_csr_rsp_bits_data_o ),	
-    .io_csr_rsp_valid ( io_csr_rsp_valid_o ),
-    .io_csr_rsp_ready ( io_csr_rsp_ready_i )
+    .io_csr_rsp_bits_data  ( csr_rsp_bits_data_o  ),	
+    .io_csr_rsp_valid      ( csr_rsp_valid_o      ),
+    .io_csr_rsp_ready      ( csr_rsp_ready_i      )
   );
 
 endmodule
