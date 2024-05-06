@@ -1,22 +1,12 @@
-<%
-  import math
 
-  num_loop_dim = cfg["temporalAddrGenUnitParams"]["loopDim"]
-  num_data_mover = (len(cfg["dataReaderParams"]["tcdmPortsNum"]) + len(cfg["dataWriterParams"]["tcdmPortsNum"])) 
-  num_dmove_x_loop_dim = num_data_mover * num_loop_dim
-  num_spatial_dim = sum(cfg["dataReaderParams"]["spatialDim"]) + sum(cfg["dataWriterParams"]["spatialDim"])
-  
-  csr_num = num_loop_dim + num_dmove_x_loop_dim + num_data_mover + num_spatial_dim + 1
-  csr_width = math.ceil(math.log2(csr_num))
-%>
 //-----------------------------
 // Streamer wrapper
 //-----------------------------
-module ${cfg["tagName"]}_streamer_wrapper #(
-  parameter int unsigned NarrowDataWidth = ${cfg["tcdmDataWidth"]},
-  parameter int unsigned TCDMDepth = ${cfg["tcdmDepth"]},
-  parameter int unsigned TCDMReqPorts = ${sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])},
-  parameter int unsigned NrBanks = ${cfg["numBanks"]},
+module ${cfg["tag_name"]}_streamer_wrapper #(
+  parameter int unsigned NarrowDataWidth = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMDepth = ${cfg["tcdm_depth"]},
+  parameter int unsigned TCDMReqPorts = ${sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])},
+  parameter int unsigned NrBanks = ${cfg["num_banks"]},
   parameter int unsigned TCDMSize = NrBanks * TCDMDepth * (NarrowDataWidth/8),
   parameter int unsigned TCDMAddrWidth = $clog2(TCDMSize)
 )(
@@ -31,14 +21,14 @@ module ${cfg["tagName"]}_streamer_wrapper #(
   // Accelerator ports
   //-----------------------------
   // Output ports from accelerator to streamer
-% for idx, dw in enumerate(cfg["fifoWriterParams"]['fifoWidth']):
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
   input logic [${dw-1}:0] acc2stream_data_${idx}_bits_i,
   input logic acc2stream_data_${idx}_valid_i,
   output logic acc2stream_data_${idx}_ready_o,
 
 % endfor
   // Input ports from streamer to accelerator
-% for idx, dw in enumerate(cfg["fifoReaderParams"]['fifoWidth']):
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
   output logic [${dw-1}:0] stream2acc_data_${idx}_bits_o,
   output logic stream2acc_data_${idx}_valid_o,
   input logic stream2acc_data_${idx}_ready_i,
@@ -101,13 +91,13 @@ module ${cfg["tagName"]}_streamer_wrapper #(
     //-----------------------------
     // Accelerator ports
     //-----------------------------
-% for idx, dw in enumerate(cfg["fifoWriterParams"]['fifoWidth']):
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
     .io_data_accelerator2streamer_data_${idx}_bits  ( acc2stream_data_${idx}_bits_i  ),
     .io_data_accelerator2streamer_data_${idx}_valid ( acc2stream_data_${idx}_valid_i ),
     .io_data_accelerator2streamer_data_${idx}_ready ( acc2stream_data_${idx}_ready_o ),
 
 % endfor
-% for idx, dw in enumerate(cfg["fifoReaderParams"]['fifoWidth']):
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
     .io_data_streamer2accelerator_data_${idx}_bits  ( stream2acc_data_${idx}_bits_o  ),
     .io_data_streamer2accelerator_data_${idx}_valid ( stream2acc_data_${idx}_valid_o ),
     .io_data_streamer2accelerator_data_${idx}_ready ( stream2acc_data_${idx}_ready_i ),
@@ -117,14 +107,14 @@ module ${cfg["tagName"]}_streamer_wrapper #(
     // TCDM Ports
     //-----------------------------
     // Request
-% for idx in range(0, sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])):
+% for idx in range(0, sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])):
     .io_data_tcdm_rsp_${idx}_bits_data  ( tcdm_rsp_data_i[${idx}]    ),
     .io_data_tcdm_rsp_${idx}_valid      ( tcdm_rsp_p_valid_i[${idx}] ),
     .io_data_tcdm_req_${idx}_ready      ( tcdm_rsp_q_ready_i[${idx}] ),
 
 % endfor
     // Response
-% for idx in range(0, sum(cfg["dataReaderParams"]["tcdmPortsNum"]) + sum(cfg["dataWriterParams"]["tcdmPortsNum"])):
+% for idx in range(0, sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])):
     .io_data_tcdm_req_${idx}_valid      ( tcdm_req_q_valid_o[${idx}] ),
     .io_data_tcdm_req_${idx}_bits_addr  ( tcdm_req_addr_o[${idx}]    ),
     .io_data_tcdm_req_${idx}_bits_write ( tcdm_req_write_o[${idx}]   ),
