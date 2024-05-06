@@ -91,6 +91,7 @@
             snax_acc_name: "snax_alu_core1"
             snax_module: "snax_alu_wrapper",
             snax_tcdm_ports: 4,
+            snax_acc_num_csr: 5,
             snax_streamer_cfg: {$ref: "#/snax_alu_streamer_template" }
         },
         num_int_outstanding_loads: 1,
@@ -118,8 +119,8 @@
             snax_acc_name: "snax_alu_core2"
             snax_module: "snax_alu_wrapper",
             snax_tcdm_ports: 4,
-            snax_streamer_cfg: {$ref: "#/snax_alu_streamer_template" },
-            snax_acc_num_csr: 5
+            snax_acc_num_csr: 5,
+            snax_streamer_cfg: {$ref: "#/snax_alu_streamer_template" }
         },
         num_int_outstanding_loads: 1,
         num_int_outstanding_mem: 4,
@@ -155,33 +156,33 @@
     // SNAX Streamer Templates
     snax_alu_streamer_template :{
 
-        temporalAddrGenUnitParams: {
-            loopDim: 1,
-            loopBoundWidth: 8,
+        temporal_addrgen_unit_params: {
+            loop_dim: 1,
+            loop_bound_width: 8,
         }
 
-        fifoReaderParams: {
-            fifoWidth: [256, 256],
-            fifoDepth: [2, 2],
+        fifo_reader_params: {
+            fifo_width: [256, 256],
+            fifo_depth: [2, 2],
         }
 
-        fifoWriterParams: {
-            fifoWidth: [256],
-            fifoDepth: [2],
+        fifo_writer_params: {
+            fifo_width: [256],
+            fifo_depth: [2],
         }
 
-        dataReaderParams:{
-        tcdmPortsNum: [4, 4],
-        spatialBounds: [[4], [4]],
-        spatialDim: [1,1],
-        elementWidth: [64,64],
+        data_reader_params:{
+            tcdm_ports_num: [4, 4],
+            spatial_bounds: [[4], [4]],
+            spatial_dim: [1,1],
+            element_width: [64,64],
         }
 
-        dataWriterParams:{
-        tcdmPortsNum: [4],
-        spatialBounds: [[4]],
-        spatialDim: [1],
-        elementWidth: [64],
+        data_writer_params:{
+            tcdm_ports_num: [4],
+            spatial_bounds: [[4]],
+            spatial_dim: [1],
+            element_width: [64],
         }
 
         stationarity: [0,0,0]
