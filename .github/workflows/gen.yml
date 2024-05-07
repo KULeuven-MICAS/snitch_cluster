@@ -1,0 +1,42 @@
+# Copyright 2020 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Run functional regression checks
+name: gen
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+jobs:
+
+  #####################
+  # Generation Checks #
+  #####################
+
+  docs:
+    name: Generation checks
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/pulp-platform/snitch_cluster:main
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check wrapper and parameter generations
+        run: |
+        ./util/wrappergen/wrappergen.py \
+        --cfg_path="./target/snitch_cluster/cfg/snax-alu.hjson" \
+        --tpl_path="./hw/templates/" \
+        --streamer_chisel_path="./hw/chisel/src/main/scala/snax/" \
+        --gen_path="./target/snitch_cluster/generated/"
+      - name: Check sbt generation for CSR manager
+        run: |
+        ./util/chiselgen/chiselgen.py \
+        --chisel_param="snax.csr_manager.CsrManagerGen" \
+        --chisel_path "./hw/chisel" \
+        --gen_path="./../../target/snitch_cluster/generated/"
+      - name: Check sbt generation for streamer
+        ./util/chiselgen/chiselgen.py \
+        --chisel_param="snax.streamer.StreamerTopGen" \
+        --chisel_path "./hw/chisel" \
+        --gen_path="./../../target/snitch_cluster/generated/"
+
