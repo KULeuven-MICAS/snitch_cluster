@@ -23,7 +23,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   // Touch at your own risk!
   parameter int unsigned NumInputPorts     = ${num_input_ports},
   parameter int unsigned NumOutputPorts    = ${num_output_ports},
-  parameter int unsigned StreamerDataWidth = ${data_width}
+  parameter int unsigned StreamerDataWidth = ${stream_data_width}
 )(
   //-----------------------------
   // Clocks and reset
