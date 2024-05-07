@@ -1,3 +1,9 @@
+// Copyright 2024 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// author: Ryan Antonio <ryan.antonio@east.kuleuven.be>
+
 package snax.csr_manager
 
 import snax.utils._
