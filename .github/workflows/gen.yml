@@ -25,7 +25,7 @@ jobs:
           ./util/wrappergen/wrappergen.py \
           --cfg_path="./target/snitch_cluster/cfg/snax-alu.hjson" \
           --tpl_path="./hw/templates/" \
-          --streamer_chisel_path="./hw/chisel/src/main/scala/snax/" \
+          --chisel_path="./hw/chisel/src/main/scala/snax/" \
           --gen_path="./target/snitch_cluster/generated/"
       - name: Check sbt generation for CSR manager
         run: |
