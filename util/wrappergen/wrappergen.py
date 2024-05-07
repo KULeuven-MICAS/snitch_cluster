@@ -87,8 +87,8 @@ def main():
             num_core_w_acc += 1
             acc_cfgs.append(cfg_cores[i]['snax_acc_cfg'].copy())
     
-    # Placing the TCDM components again into compiled streamer configurations
-    # First initialize empty dictionaries to add
+    # Placing the TCDM components again into accelerator configurations
+    # Because they are part of the cluster-level configurations
     for i in range(len(acc_cfgs)):
         acc_cfgs[i]["tcdm_data_width"] = cfg['cluster']['data_width']
         acc_cfgs[i]["tcdm_dma_data_width"] = cfg['cluster']['dma_data_width']
@@ -96,9 +96,6 @@ def main():
         acc_cfgs[i]["tcdm_depth"] = tcdm_depth
         acc_cfgs[i]["num_banks"] = cfg['cluster']['tcdm']['banks']
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]['snax_acc_name']
-
-    print(acc_cfgs)
-    
 
     # Generate template out of given configurations
     # TODO: Make me a generation for the necessary files!
@@ -119,20 +116,29 @@ def main():
         tpl_scala_param = get_template(tpl_scala_param_file)
         gen_file(cfg=acc_cfgs[i], tpl=tpl_scala_param, target_path=chisel_target_path, file_name=file_name)
 
-        # # This is for RTl wrapper generation
-        # # This first one generates the streamer wrappers
+        # This is for RTl wrapper generation
+
+        # This first one generates the CSR manager wrapper
         rtl_target_path = args.gen_path + acc_cfgs[i]['snax_acc_name'] + '/'
+        file_name = acc_cfgs[i]['snax_acc_name'] + "_csrman_wrapper.sv"
+        tpl_csrman_wrapper_file = args.tpl_path + "snax_csrman_wrapper.sv.tpl"
+        tpl_csrman_wrapper = get_template(tpl_csrman_wrapper_file)
+        gen_file(cfg=acc_cfgs[i], tpl=tpl_csrman_wrapper, target_path=rtl_target_path, file_name=file_name)
+
+
+        # This first one generates the streamer wrapper
         file_name = acc_cfgs[i]['snax_acc_name'] + "_streamer_wrapper.sv"
         tpl_streamer_wrapper_file = args.tpl_path + "snax_streamer_wrapper.sv.tpl"
         tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
         gen_file(cfg=acc_cfgs[i], tpl=tpl_streamer_wrapper, target_path=rtl_target_path, file_name=file_name)
 
-        # # This generates the top-wrapper
-        # file_name = acc_cfgs[i]['snax_acc_name'] + "_wrapper.sv"
-        # tpl_rtl_wrapper_file = args.tpl_path + "snax_accelerator_top_wrapper.sv.tpl"
-        # tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
-        # # print(acc_streamer_cfgs[i])
-        # gen_file(cfg=acc_streamer_cfgs[i], tpl=tpl_rtl_wrapper, target_path=rtl_target_path, file_name=file_name)
+        # This generates the top wrapper
+        file_name = acc_cfgs[i]['snax_acc_name'] + "_top_wrapper.sv"
+        tpl_rtl_wrapper_file = args.tpl_path + "snax_accelerator_top_wrapper.sv.tpl"
+        tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
+        gen_file(cfg=acc_cfgs[i], tpl=tpl_rtl_wrapper, target_path=rtl_target_path, file_name=file_name)
+
+    print("Generation done!")
 
 if __name__ == "__main__":
     main()
