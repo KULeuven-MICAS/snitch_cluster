@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+# Copyright 2023 KU Leuven.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Ryan Antonio <ryan.antonio@east.kuleuven.be>
+
 # -------------------------------------------------------
 # This wrappergen is specific to configure the templates
 # and wrappers towards the SNAX shell
@@ -64,7 +71,7 @@ def main():
         help="Points to the streamer template file path",
     )
     parser.add_argument(
-        "--streamer_chisel_path",
+        "--chisel_path",
         type=str,
         default="./",
         help="Points to the streamer chisel source path",
@@ -116,7 +123,7 @@ def main():
     for i in range(len(acc_cfgs)):
         # First part is for chisel generation
         # Generate the parameter files for chisel streamer generation
-        chisel_target_path = args.streamer_chisel_path + "streamer/"
+        chisel_target_path = args.chisel_path + "streamer/"
         file_name = "StreamParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "stream_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
@@ -128,7 +135,7 @@ def main():
         )
 
         # CSR manager scala parameter generation
-        chisel_target_path = args.streamer_chisel_path + "csr_manager/"
+        chisel_target_path = args.chisel_path + "csr_manager/"
         file_name = "CsrManParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "csrman_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
