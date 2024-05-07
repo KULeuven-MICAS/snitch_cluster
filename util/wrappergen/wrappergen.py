@@ -4,7 +4,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Ryan Antonio <ryan.antonio@east.kuleuven.be>
+# Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 # -------------------------------------------------------
 # This wrappergen is specific to configure the templates
