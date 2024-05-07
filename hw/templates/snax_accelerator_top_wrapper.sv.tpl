@@ -1,15 +1,11 @@
 <%
-  import math
-
-  num_loop_dim = cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]
   num_input_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
   num_output_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
   num_tcdm_ports = num_input_ports + num_output_ports
-  num_dmove_x_loop_dim = num_tcdm_ports * num_loop_dim
-  num_spatial_dim = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]) + sum(cfg["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"])
-  
-  csr_num = num_loop_dim + num_dmove_x_loop_dim + num_tcdm_ports + num_spatial_dim + 1
-  csr_width = math.ceil(math.log2(csr_num))
+
+  # We make the assumption that all reader and writers
+  # Have the same data widths
+  stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
 %>
 //-------------------------------
 // Streamer-MUL wrapper
@@ -18,17 +14,18 @@
 //-------------------------------
 module ${cfg["tag_name"]}_top_wrapper # (
   // Reconfigurable parameters
-  parameter int unsigned NarrowDataWidth = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMDepth       = ${cfg["tcdm_depth"]},
-  parameter int unsigned TCDMReqPorts    = ${num_tcdm_ports}
-  parameter int unsigned TCDMSize        = TCDMReqPorts * TCDMDepth * (NarrowDataWidth/8),
-  parameter int unsigned TCDMAddrWidth   = $clog2(TCDMSize),
+  parameter int unsigned NarrowDataWidth   = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMDepth         = ${cfg["tcdm_depth"]},
+  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports}
+  parameter int unsigned TCDMSize          = TCDMReqPorts * TCDMDepth * (NarrowDataWidth/8),
+  parameter int unsigned TCDMAddrWidth     = $clog2(TCDMSize),
   // Don't touch parameters (or modify at your own risk)
-  parameter int unsigned RegCount        = 8,
-  parameter int unsigned RegDataWidth    = 32,
-  parameter int unsigned RegAddrWidth    = 32,
-  parameter int unsigned NumInputPorts   = ${num_input_ports },
-  parameter int unsigned NumOutputPorts  = ${num_output_ports}
+  parameter int unsigned RegCount          = 8,
+  parameter int unsigned RegDataWidth      = 32,
+  parameter int unsigned RegAddrWidth      = 32,
+  parameter int unsigned StreamerDataWidth = ${stream_data_width},
+  parameter int unsigned NumInputPorts     = ${num_input_ports },
+  parameter int unsigned NumOutputPorts    = ${num_output_ports}
 )(
   //-----------------------------
   // Clocks and reset
@@ -75,35 +72,33 @@ module ${cfg["tag_name"]}_top_wrapper # (
   //-----------------------------
   localparam int unsigned NumCsr = ${cfg["snax_acc_num_csr"]};
 
-  // Ports from accelerator to streamer
-% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]['fifo_width']):
-  logic [${dw-1}:0] acc2stream_data_${idx}_bits;
-  logic acc2stream_data_${idx}_valid;
-  logic acc2stream_data_${idx}_ready;
+  //-----------------------------
+  // Accelerator ports
+  //-----------------------------
+  // Input ports from accelerator to streamer
+  logic [ NumInputPorts-1:0][StreamerDataWidth-1:0] acc2stream_data;
+  logic [ NumInputPorts-1:0]                        acc2stream_valid;
+  logic [ NumInputPorts-1:0]                        acc2stream_ready,
 
-% endfor
-  // Ports from streamer to accelerator
-% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]['fifo_width']):
-  logic [${dw-1}:0] stream2acc_data_${idx}_bits;
-  logic stream2acc_data_${idx}_valid;
-  logic stream2acc_data_${idx}_ready;
-
-% endfor
+  // Ouput ports from accelerator to streamer
+  logic [NumOutputPorts-1:0][StreamerDataWidth-1:0] stream2acc_data;
+  logic [NumOutputPorts-1:0]                        stream2acc_valid;
+  logic [NumOutputPorts-1:0]                        stream2acc_ready;
 
   // CSR MUXing
   logic [1:0][RegAddrWidth-1:0] acc_csr_req_addr;
   logic [1:0][RegDataWidth-1:0] acc_csr_req_data;
-	logic [1:0] acc_csr_req_wen;
-	logic [1:0] acc_csr_req_valid;
-	logic [1:0] acc_csr_req_ready;
+	logic [1:0]                   acc_csr_req_wen;
+	logic [1:0]                   acc_csr_req_valid;
+	logic [1:0]                   acc_csr_req_ready;
 	logic [1:0][RegDataWidth-1:0] acc_csr_rsp_data;
-	logic [1:0] acc_csr_rsp_valid;
-	logic [1:0] acc_csr_rsp_ready;
+	logic [1:0]                   acc_csr_rsp_valid;
+	logic [1:0]                   acc_csr_rsp_ready;
 
   // Register set signals
   logic [NumCsr-1:0][31:0] acc_csr_reg_set;
-  logic acc_csr_reg_set_valid;
-  logic acc_csr_reg_set_ready;
+  logic                    acc_csr_reg_set_valid;
+  logic                    acc_csr_reg_set_ready;
 
   //-------------------------------
   // MUX and DEMUX for control signals
@@ -111,60 +106,60 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // and accelerator CRS
   //-------------------------------
   csr_mux_demux #(
-    .AddrSelOffSet        ( 8                ),
-    .TotalRegCount        ( RegCount         ),
-    .RegDataWidth         ( RegDataWidth     ),
+    .AddrSelOffSet        ( 8                     ),
+    .TotalRegCount        ( RegCount              ),
+    .RegDataWidth         ( RegDataWidth          ),
   ) i_csr_mux_demux (
     //-------------------------------
     // Input Core
     //-------------------------------
-    .csr_req_addr_i       ( snax_req_addr_i  ),
-    .csr_req_data_i       ( snax_req_data_i  ),
-    .csr_req_wen_i        ( snax_req_write_i ),
-    .csr_req_valid_i      ( snax_req_valid_i ),
-    .csr_req_ready_o      ( snax_req_ready_o ),
-    .csr_rsp_data_o       ( snax_rsp_data_o  ),
-    .csr_rsp_valid_o      ( snax_rsp_valid_o ),
-    .csr_rsp_ready_i      ( snax_rsp_ready_i ),
+    .csr_req_addr_i       ( snax_req_addr_i       ),
+    .csr_req_data_i       ( snax_req_data_i       ),
+    .csr_req_wen_i        ( snax_req_write_i      ),
+    .csr_req_valid_i      ( snax_req_valid_i      ),
+    .csr_req_ready_o      ( snax_req_ready_o      ),
+    .csr_rsp_data_o       ( snax_rsp_data_o       ),
+    .csr_rsp_valid_o      ( snax_rsp_valid_o      ),
+    .csr_rsp_ready_i      ( snax_rsp_ready_i      ),
 
     //-------------------------------
     // Output Port
     //-------------------------------
-    .acc_csr_req_addr_o   ( acc_csr_req_addr  ),
-    .acc_csr_req_data_o   ( acc_csr_req_data  ),
-    .acc_csr_req_wen_o    ( acc_csr_req_wen   ),
-    .acc_csr_req_valid_o  ( acc_csr_req_valid ),
-    .acc_csr_req_ready_i  ( acc_csr_req_ready ),
-    .acc_csr_rsp_data_i   ( acc_csr_rsp_data  ),
-    .acc_csr_rsp_valid_i  ( acc_csr_rsp_valid ),
-    .acc_csr_rsp_ready_o  ( acc_csr_rsp_ready )
+    .acc_csr_req_addr_o   ( acc_csr_req_addr      ),
+    .acc_csr_req_data_o   ( acc_csr_req_data      ),
+    .acc_csr_req_wen_o    ( acc_csr_req_wen       ),
+    .acc_csr_req_valid_o  ( acc_csr_req_valid     ),
+    .acc_csr_req_ready_i  ( acc_csr_req_ready     ),
+    .acc_csr_rsp_data_i   ( acc_csr_rsp_data      ),
+    .acc_csr_rsp_valid_i  ( acc_csr_rsp_valid     ),
+    .acc_csr_rsp_ready_o  ( acc_csr_rsp_ready     )
   );
 
   //-----------------------------
   // CSR Manager to control the accelerator
   //-----------------------------
   ${cfg["tag_name"]}_csrman_wrapper #(
-    .NumCsr           ( NumCsr          )
+    .NumCsr               ( NumCsr                )
   ) i_${cfg["tag_name"]}_csrman_wrapper (
     //-------------------------------
     // Clocks and reset
     //-------------------------------
-    .clk_i                ( clk_i           ),
-    .rst_ni               ( rst_ni          ),
+    .clk_i                ( clk_i                 ),
+    .rst_ni               ( rst_ni                ),
     //-----------------------------
     // CSR control ports
     //-----------------------------
     // Request
-    .csr_req_addr_i       ( acc_csr_req_addr [0] ),
-    .csr_req_data_i       ( acc_csr_req_data [0] ),
-    .csr_req_write_i      ( acc_csr_req_wen  [0] ),
-    .csr_req_valid_i      ( acc_csr_req_valid[0] ),
-    .csr_req_ready_o      ( acc_csr_req_ready[0] ),
+    .csr_req_addr_i       ( acc_csr_req_addr [0]  ),
+    .csr_req_data_i       ( acc_csr_req_data [0]  ),
+    .csr_req_write_i      ( acc_csr_req_wen  [0]  ),
+    .csr_req_valid_i      ( acc_csr_req_valid[0]  ),
+    .csr_req_ready_o      ( acc_csr_req_ready[0]  ),
 
     // Response
-    .csr_rsp_data_o       ( acc_csr_rsp_data [0] ),
-    .csr_rsp_ready_i      ( acc_csr_rsp_valid[0] ),
-    .csr_rsp_valid_o      ( acc_csr_rsp_ready[0] ),
+    .csr_rsp_data_o       ( acc_csr_rsp_data [0]  ),
+    .csr_rsp_ready_i      ( acc_csr_rsp_valid[0]  ),
+    .csr_rsp_valid_o      ( acc_csr_rsp_ready[0]  ),
 
     //-----------------------------
     // Packed CSR register signals
@@ -181,33 +176,29 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // It needs to have the correct connections to the control and data ports!
 
   ${cfg["tag_name"]}_wrapper #(
-    .NumInputPorts    ( NumInputPorts   ),
-    .NumOutputPorts   ( NumOutputPorts  ),
-    .DataWidth        ( NarrowDataWidth )
+    .NumInputPorts        ( NumInputPorts         ),
+    .NumOutputPorts       ( NumOutputPorts        ),
+    .DataWidth            ( NarrowDataWidth       )
   ) i_${cfg["tag_name"]}_wrapper (
     //-------------------------------
     // Clocks and reset
     //-------------------------------
-    .clk_i            ( clk_i           ),
-    .rst_ni           ( rst_ni          ),
+    .clk_i                ( clk_i                 ),
+    .rst_ni               ( rst_ni                ),
 
     //-----------------------------
     // Accelerator ports
     //-----------------------------
-    // Accelerator output ports to streamer
-    % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
-    .acc2stream_data_${idx}_o  ( acc2stream_data_${idx}_bits ),
-    .acc2stream_${idx}_valid_o ( acc2stream_data_${idx}_valid ),
-    .acc2stream_${idx}_ready_i ( acc2stream_data_${idx}_ready ),
+    // Input ports from streamer to accelerator
+    .stream2acc_data_i    ( stream2acc_data       ),
+    .stream2acc_valid_i   ( stream2acc_valid      ),
+    .stream2acc_ready_o   ( stream2acc_ready      ),
 
-    % endfor
-    // Accelerator input ports to streamer
-    % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
-    .stream2acc_data_${idx}_i  ( stream2acc_data_${idx}_bits ),
-    .stream2acc_${idx}_valid_i ( stream2acc_data_${idx}_valid ),
-    .stream2acc_${idx}_ready_o ( stream2acc_data_${idx}_ready ),
+    // Output ports from accelerator to streamer
+    .acc2stream_data_o    ( acc2stream_data       ),
+    .acc2stream_valid_o   ( acc2stream_valid      ),
+    .acc2stream_ready_i   ( acc2stream_ready      ),
 
-    % endfor
     //-----------------------------
     // Packed CSR register signals
     //-----------------------------
@@ -220,35 +211,30 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Streamer Wrapper
   //-----------------------------
   ${cfg["tag_name"]}_streamer_wrapper #(
-    .NarrowDataWidth            ( NarrowDataWidth ),
-    .TCDMDepth                  ( TCDMDepth       ),
-    .TCDMReqPorts               ( TCDMReqPorts    ),
-    .TCDMSize                   ( TCDMSize        ),
-    .TCDMAddrWidth              ( TCDMAddrWidth   )
+    .NarrowDataWidth          ( NarrowDataWidth         ),
+    .TCDMDepth                ( TCDMDepth               ),
+    .TCDMReqPorts             ( TCDMReqPorts            ),
+    .TCDMSize                 ( TCDMSize                ),
+    .TCDMAddrWidth            ( TCDMAddrWidth           )
   ) i_streamer_wrapper (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
-    .clk_i                      ( clk_i           ),
-    .rst_ni                     ( rst_ni          ),
+    .clk_i                    ( clk_i                   ),
+    .rst_ni                   ( rst_ni                  ),
 
-    //-----------------------------
+    //-------------------------------
     // Accelerator ports
-    //-----------------------------
-    // Ports from acclerator to streamer
-    % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
-    .acc2stream_data_${idx}_bits_i  ( acc2stream_data_${idx}_bits ),
-    .acc2stream_data_${idx}_valid_i ( acc2stream_data_${idx}_valid ),
-    .acc2stream_data_${idx}_ready_o ( acc2stream_data_${idx}_ready ),
+    //-------------------------------
+    // Input ports from acceleartor to streamer
+    .acc2stream_data_i        ( acc2stream_data         ),
+    .acc2stream_valid_i       ( acc2stream_valid        ),
+    .acc2stream_ready_o       ( acc2stream_ready        ),
 
-    % endfor
-    // Ports from streamer to accelerator
-    % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
-    .stream2acc_data_${idx}_bits_o  ( stream2acc_data_${idx}_bits ),
-    .stream2acc_data_${idx}_valid_o ( stream2acc_data_${idx}_valid ),
-    .stream2acc_data_${idx}_ready_i ( stream2acc_data_${idx}_ready ),
-
-    % endfor
+    // Output ports from streamer to accelerator
+    .stream2acc_data_o        ( stream2acc_data         ),
+    .stream2acc_valid_o       ( stream2acc_valid        ),
+    .stream2acc_ready_i       ( stream2acc_ready        ),
 
     //-----------------------------
     // TCDM ports 
@@ -271,15 +257,15 @@ module ${cfg["tag_name"]}_top_wrapper # (
     // CSR control ports
     //-----------------------------
     // Request
-    .io_csr_req_bits_data_i   ( acc_csr_req_data [1]  ),
-    .io_csr_req_bits_addr_i   ( acc_csr_req_addr [1]  ),
-    .io_csr_req_bits_write_i  ( acc_csr_req_wen  [1]  ),
-    .io_csr_req_valid_i       ( acc_csr_req_valid[1]  ),
-    .io_csr_req_ready_o       ( acc_csr_req_ready[1]  ),
+    .io_csr_req_bits_data_i   ( acc_csr_req_data [1]    ),
+    .io_csr_req_bits_addr_i   ( acc_csr_req_addr [1]    ),
+    .io_csr_req_bits_write_i  ( acc_csr_req_wen  [1]    ),
+    .io_csr_req_valid_i       ( acc_csr_req_valid[1]    ),
+    .io_csr_req_ready_o       ( acc_csr_req_ready[1]    ),
     // Response
-    .io_csr_rsp_ready_i       ( acc_csr_rsp_ready[1]  ),
-    .io_csr_rsp_valid_o       ( acc_csr_rsp_valid[1]  ),
-    .io_csr_rsp_bits_data_o   ( acc_csr_rsp_data [1]  )
+    .io_csr_rsp_ready_i       ( acc_csr_rsp_ready[1]    ),
+    .io_csr_rsp_valid_o       ( acc_csr_rsp_valid[1]    ),
+    .io_csr_rsp_bits_data_o   ( acc_csr_rsp_data [1]    )
   );
 
 endmodule
