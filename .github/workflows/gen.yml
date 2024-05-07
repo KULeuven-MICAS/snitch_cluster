@@ -13,8 +13,7 @@ jobs:
   #####################
   # Generation Checks #
   #####################
-
-  docs:
+  gen_checks:
     name: Generation checks
     runs-on: ubuntu-22.04
     container:
@@ -35,6 +34,7 @@ jobs:
           --chisel_path "./hw/chisel" \
           --gen_path="./../../target/snitch_cluster/generated/"
       - name: Check sbt generation for streamer
+        run: |
           ./util/chiselgen/chiselgen.py \
           --chisel_param="snax.streamer.StreamerTopGen" \
           --chisel_path "./hw/chisel" \
