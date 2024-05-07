@@ -1,0 +1,100 @@
+// Copyright 2023 KU Leuven.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
+
+// {
+//     op: 'rowmajor2tiledrowmajor',
+//     tempLoop0: 4,
+//     tempLoop1: 4,
+//     DMAtempStride0_in: 64,
+//     DMAtempStride1_in: 256,
+//     DMAspatialStride1_in: 8,
+//     tempStride0_in: 32,
+//     tempStride1_in: 256,
+//     spatialStride1_in: 8,
+//     tempStride0_out: 32,
+//     tempStride1_out: 256,
+//     spatialStride1_out: 8,
+//     delta_local_in: 0,
+//     delta_local_out: 1024,
+//     spatial_len_0: 8,
+//     spatial_len_1: 8
+// }
+
+{
+    op: 'rowmajor2tiledrowmajor',
+    tempLoop0: 8,
+    tempLoop1: 8,
+    DMAtempStride0_in: 64,
+    DMAtempStride1_in: 256,
+    DMAspatialStride1_in: 8,
+    tempStride0_in: 64,
+    tempStride1_in: 256,
+    spatialStride1_in: 8,
+    tempStride0_out: 64,
+    tempStride1_out: 256,
+    spatialStride1_out: 8,
+    delta_local_in: 0,
+    delta_local_out: 2048,
+    spatial_len_0: 8,
+    spatial_len_1: 8
+}
+
+// rowmajor2tiledrowmajor
+// {
+//     tempLoop0: 2,
+//     tempLoop1: 8,
+//     DMAtempStride0_in: 64,
+//     DMAtempStride1_in: 128,
+//     DMAspatialStride1_in: 8,
+//     tempStride0_in: 8,
+//     tempStride1_in: 128,
+//     spatialStride1_in: 16,
+//     tempStride0_out: 64,
+//     tempStride1_out: 128,
+//     spatialStride1_out: 8,
+//     delta_local_in: 0,
+//     delta_local_out: 1024,
+//     spatial_len_0: 8,
+//     spatial_len_1: 8
+// }
+
+// rowmajor2tiledcolmajor
+// {
+//     tempLoop0: 2,
+//     tempLoop1: 2,
+//     DMAtempStride0_in: 64,
+//     DMAtempStride1_in: 128,
+//     DMAspatialStride1_in: 8,
+//     tempStride0_in: 128,
+//     tempStride1_in: 8,
+//     spatialStride1_in: 16,
+//     tempStride0_out: 64,
+//     tempStride1_out: 128,
+//     spatialStride1_out: 8,
+//     delta_local_in: 0,
+//     delta_local_out: 256,
+//     spatial_len_0: 8
+//     spatial_len_1: 8
+// }
+
+// tiledrowmajor2tiledcolmajor
+// {
+//     tempLoop0: 2,
+//     tempLoop1: 2,
+//     DMAtempStride0_in: 64,
+//     DMAtempStride1_in: 128,
+//     DMAspatialStride1_in: 8,
+//     tempStride0_in: 64,
+//     tempStride1_in: 128,
+//     spatialStride1_in: 8,
+//     tempStride0_out: 64,
+//     tempStride1_out: 128,
+//     spatialStride1_out: 8,
+//     delta_local_in: 0,
+//     delta_local_out: 4096,
+//     spatial_len_0: 8
+//     spatial_len_1: 8
+// }

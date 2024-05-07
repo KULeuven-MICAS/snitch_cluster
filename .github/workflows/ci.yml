@@ -161,6 +161,31 @@ jobs:
           sw/runtime.yaml sw/standard-fp.yaml sw/snax-mac-run.yaml \
           sw/snax-mac-mult-run.yaml -j
 
+  sw-snax-streamer-simd-cluster-vlt-generic:
+    name: Simulate SW on SNAX Streamer SIMD Cluster w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          SELECT_RUNTIME=rtl-generic \
+          SELECT_TOOLCHAIN=llvm-generic \
+          CFG_OVERRIDE=cfg/snax-streamer-simd.hjson
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-streamer-simd.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml sw/standard-fp.yaml sw/snax-streamer-simd-run.yaml -j
+
   ############################################
   # Build SW on Snitch Cluster w/ Banshee #
   #########################################
@@ -190,3 +215,4 @@ jobs:
           sw/runtime.yaml sw/snitch-cluster-runtime.yaml sw/custom-fp.yaml \
           sw/standard-fp.yaml sw/openmp.yaml sw/snitch-cluster-openmp.yaml \
           sw/blas.yaml sw/dnn.yaml -j
+

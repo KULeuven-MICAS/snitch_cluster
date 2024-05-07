@@ -312,6 +312,8 @@ tcdm_offset_start = 0
 tcdm_offset_stop = -1
 total_snax_tcdm_ports = 0
 snax_core_acc = {}
+snax_narrow_ports = 0
+snax_wide_ports = 0
 
 # Cycle through each core
 # and check if an accelerator setting exists
@@ -359,6 +361,10 @@ for i in range(len(cfg['cores'])):
       tcdm_offset_start += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
       prefix_snax_count += 1
       total_snax_tcdm_ports += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+      if (cfg['cores'][i]['snax_acc_wide']):
+        snax_wide_ports += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
+      else:
+        snax_narrow_ports += cfg['cores'][i]['snax_acc_set']['snax_tcdm_ports']
 
   else:
 
@@ -424,6 +430,8 @@ for i in range(len(cfg['cores'])):
     .Xdma (${core_cfg_flat('xdma')}),
     .Xssr (${core_cfg_flat('xssr')}),
     .Xfrep (${core_cfg_flat('xfrep')}),
+    .SnaxAccNarrowTcdmPorts(${snax_narrow_ports}),
+    .SnaxAccWideTcdmPorts(${snax_wide_ports}),
     .TotalSnaxTcdmPorts(${total_snax_tcdm_ports}),
     .ConnectSnaxAccWide(${core_cfg_flat('snax_acc_wide')}),
     .FPUImplementation (${cfg['pkg_name']}::FPUImplementation),
