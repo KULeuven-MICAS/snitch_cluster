@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// author: Ryan Antonio <ryan.antonio@east.kuleuven.be>
+// Author: Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 package snax.csr_manager
 
