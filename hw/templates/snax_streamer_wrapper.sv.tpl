@@ -2,26 +2,27 @@
 <%
   num_input_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
   num_output_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
-  
+  num_tcdm_ports = num_input_ports + num_output_ports
+
   # We make the assumption that all reader and writers
   # Have the same data widths
-  data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
+  stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
 %>
 //-----------------------------
 // Streamer wrapper
 //-----------------------------
 module ${cfg["tag_name"]}_streamer_wrapper #(
   // Parameters related to TCDM
-  parameter int unsigned NarrowDataWidth = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMDepth = ${cfg["tcdm_depth"]},
-  parameter int unsigned TCDMReqPorts = ${sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])},
-  parameter int unsigned NrBanks = ${cfg["num_banks"]},
-  parameter int unsigned TCDMSize = NrBanks * TCDMDepth * (NarrowDataWidth/8),
-  parameter int unsigned TCDMAddrWidth = $clog2(TCDMSize),
+  parameter int unsigned NarrowDataWidth   = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMDepth         = ${cfg["tcdm_depth"]},
+  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports},
+  parameter int unsigned NrBanks           = ${cfg["num_banks"]},
+  parameter int unsigned TCDMSize          = NrBanks * TCDMDepth * (NarrowDataWidth/8),
+  parameter int unsigned TCDMAddrWidth     = $clog2(TCDMSize),
   // Parameters related to streamers
   // Touch at your own risk!
-  parameter int unsigned NumInputPorts = ${num_input_ports},
-  parameter int unsigned NumOutputPorts = ${num_output_ports},
+  parameter int unsigned NumInputPorts     = ${num_input_ports},
+  parameter int unsigned NumOutputPorts    = ${num_output_ports},
   parameter int unsigned StreamerDataWidth = ${data_width}
 )(
   //-----------------------------
