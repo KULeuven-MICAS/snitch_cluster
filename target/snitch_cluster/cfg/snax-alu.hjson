@@ -159,25 +159,25 @@
         }
 
         fifo_reader_params: {
-            fifo_width: [256, 256],
+            fifo_width: [64, 64],
             fifo_depth: [2, 2],
         }
 
         fifo_writer_params: {
-            fifo_width: [256],
+            fifo_width: [64],
             fifo_depth: [2],
         }
 
         data_reader_params:{
-            tcdm_ports_num: [4, 4],
-            spatial_bounds: [[4], [4]],
+            tcdm_ports_num: [1, 1],
+            spatial_bounds: [[1], [1]],
             spatial_dim: [1,1],
             element_width: [64,64],
         }
 
         data_writer_params:{
-            tcdm_ports_num: [4],
-            spatial_bounds: [[4]],
+            tcdm_ports_num: [1],
+            spatial_bounds: [[1]],
             spatial_dim: [1],
             element_width: [64],
         }
