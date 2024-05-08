@@ -48,7 +48,7 @@ object StreamerParametersGen extends CommonParams {
   def temporalAddrGenUnitParams: TemporalAddrGenUnitParams =
     TemporalAddrGenUnitParams(
       loopDim = ${cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]},
-      loopBoundWidth = ${cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_bound_width"]},
+      loopBoundWidth = 32,
       addrWidth = ${tcdm_addr_width}
     )
   def fifoReaderParams: Seq[FIFOParams] = Seq(

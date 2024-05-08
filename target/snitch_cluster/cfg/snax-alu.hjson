@@ -156,7 +156,6 @@
 
         temporal_addrgen_unit_params: {
             loop_dim: 1,
-            loop_bound_width: 8,
         }
 
         fifo_reader_params: {
