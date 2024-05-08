@@ -10,7 +10,7 @@
 
   # We make the assumption that all reader and writers
   # Have the same data widths
-  stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
+  stream_data_width = cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"][0]
 %>
 //-----------------------------
 // Streamer wrapper
@@ -114,13 +114,13 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     //-----------------------------
     // Accelerator ports
     //-----------------------------
-% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
+% for idx in range(len(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"])):
     .io_data_accelerator2streamer_data_${idx}_bits  (  acc2stream_data_i [${idx}] ),
     .io_data_accelerator2streamer_data_${idx}_valid ( acc2stream_valid_i [${idx}] ),
     .io_data_accelerator2streamer_data_${idx}_ready ( acc2stream_ready_o [${idx}] ),
 
 % endfor
-% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
+% for idx in range(len(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"])):
     .io_data_streamer2accelerator_data_${idx}_bits  (  stream2acc_data_o [${idx}] ),
     .io_data_streamer2accelerator_data_${idx}_valid ( stream2acc_valid_o [${idx}] ),
     .io_data_streamer2accelerator_data_${idx}_ready ( stream2acc_ready_i [${idx}] ),

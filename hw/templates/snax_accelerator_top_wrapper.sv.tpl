@@ -10,8 +10,9 @@
 
   # We make the hasty assumption the ports
   # will use the TCDM Data widths
-  stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
+  stream_data_width = cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"][0]
 %>
+
 //-------------------------------
 // Streamer-MUL wrapper
 // This is the entire accelerator
