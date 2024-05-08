@@ -16,6 +16,7 @@ from jsonref import JsonRef
 import hjson
 import argparse
 import os
+import math
 
 
 # Extract json file
@@ -106,7 +107,8 @@ def main():
     # Placing the TCDM components again into accelerator configurations
     # Because they are part of the cluster-level configurations
     for i in range(len(acc_cfgs)):
-        acc_cfgs[i]["tcdm_data_width"] = cfg["cluster"]["data_width"]
+        tcdm_data_width = cfg["cluster"]["data_width"]
+        acc_cfgs[i]["tcdm_data_width"] = tcdm_data_width
         acc_cfgs[i]["tcdm_dma_data_width"] = cfg["cluster"]["dma_data_width"]
         tcdm_depth = (
             cfg["cluster"]["tcdm"]["size"]
@@ -115,7 +117,12 @@ def main():
             // 8
         )
         acc_cfgs[i]["tcdm_depth"] = tcdm_depth
-        acc_cfgs[i]["num_banks"] = cfg["cluster"]["tcdm"]["banks"]
+        tcdm_num_banks = cfg["cluster"]["tcdm"]["banks"]
+        acc_cfgs[i]["tcdm_num_banks"] = tcdm_num_banks
+        tcdm_addr_width = tcdm_num_banks * tcdm_depth * \
+            (tcdm_data_width // 8)
+        tcdm_addr_width = math.log2(tcdm_addr_width)
+        acc_cfgs[i]["tcdm_addr_width"] = tcdm_addr_width
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
 
     # Generate template out of given configurations
