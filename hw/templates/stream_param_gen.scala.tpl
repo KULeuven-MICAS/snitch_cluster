@@ -7,7 +7,7 @@
 
   tcdm_data_width = cfg["tcdm_data_width"]
   tcdm_depth = cfg["tcdm_depth"]
-  num_banks = cfg["num_banks"]
+  num_banks = cfg["tcdm_num_banks"]
   tcdm_size = num_banks * tcdm_depth * (tcdm_data_width/8)
   tcdm_addr_width = math.ceil(math.log2(tcdm_size))
 %>
@@ -102,7 +102,7 @@ ${c}${', ' if not loop.last else ''}\
 
 object StreamerTopGen {
   def main(args: Array[String]) : Unit = {
-    val outPath = args.headOption.getOrElse("../../../../rtl/.")
+    val outPath = args.headOption.getOrElse("../../target/snitch_cluster/generated/.")
     emitVerilog(
       new StreamerTop(
         StreamerParams(
