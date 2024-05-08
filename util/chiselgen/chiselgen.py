@@ -24,7 +24,7 @@ def main():
     )
     parser.add_argument(
         "--chisel_path",
-        type=str,
+        type=pathlib.Path,
         required=True,
         help="Points to chisel source path",
     )
