@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 
 <%
-  num_input_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
-  num_output_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
+  num_stream2acc_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
+  num_acc2stream_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
   num_tcdm_ports = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
                    sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
 
@@ -22,14 +22,14 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   // these at your own risk!
 
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth     = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth     = ${cfg["tcdm_addr_width"]},
+  parameter int unsigned TCDMDataWidth      = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMReqPorts       = ${num_tcdm_ports},
+  parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
   
   // Parameters related to streamers
-  parameter int unsigned NumInputPorts     = ${num_input_ports},
-  parameter int unsigned NumOutputPorts    = ${num_output_ports},
-  parameter int unsigned StreamerDataWidth = ${stream_data_width}
+  parameter int unsigned NumStream2AccPorts = ${num_stream2acc_ports},
+  parameter int unsigned NumAcc2StreamPorts = ${num_acc2stream_ports},
+  parameter int unsigned StreamerDataWidth  = ${stream_data_width}
 )(
   //-----------------------------
   // Clocks and reset
@@ -40,15 +40,16 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   //-----------------------------
   // Accelerator ports
   //-----------------------------
-  // Input ports from accelerator to streamer
-  input  logic [ NumInputPorts-1:0][StreamerDataWidth-1:0] acc2stream_data_i,
-  input  logic [ NumInputPorts-1:0]                        acc2stream_valid_i,
-  output logic [ NumInputPorts-1:0]                        acc2stream_ready_o,
+ 
+  // Ports from accelerator to streamer
+  output logic [NumStream2AccPorts-1:0][StreamerDataWidth-1:0] stream2acc_data_o,
+  output logic [NumStream2AccPorts-1:0]                        stream2acc_valid_o,
+  input  logic [NumStream2AccPorts-1:0]                        stream2acc_ready_i,
 
-  // Ouput ports from accelerator to streamer
-  output logic [NumOutputPorts-1:0][StreamerDataWidth-1:0] stream2acc_data_o,
-  output logic [NumOutputPorts-1:0]                        stream2acc_valid_o,
-  input  logic [NumOutputPorts-1:0]                        stream2acc_ready_i,
+  // Ports from accelerator to streamer
+  input  logic [NumAcc2StreamPorts-1:0][StreamerDataWidth-1:0] acc2stream_data_i,
+  input  logic [NumAcc2StreamPorts-1:0]                        acc2stream_valid_i,
+  output logic [NumAcc2StreamPorts-1:0]                        acc2stream_ready_o,
 
   //-----------------------------
   // TCDM ports

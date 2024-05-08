@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: SHL-0.51
 
 <%
-  num_input_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
-  num_output_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
+  num_stream2acc_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
+  num_acc2stream_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
   num_tcdm_ports = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
                    sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
 
-  # We make the hasty assumption that all reader and writers
-  # Have the same data widths
+  # We make the hasty assumption the ports
+  # will use the TCDM Data widths
   stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
 %>
 //-------------------------------
@@ -19,18 +19,18 @@
 //-------------------------------
 module ${cfg["tag_name"]}_top_wrapper # (
   // Reconfigurable parameters
-  parameter int unsigned TCDMDataWidth     = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports},
+  parameter int unsigned TCDMDataWidth      = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMReqPorts       = ${num_tcdm_ports},
   // Addr width is pre-computed in the generator
   // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
-  parameter int unsigned TCDMAddrWidth     = ${cfg["tcdm_addr_width"]},
+  parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
   // Don't touch parameters (or modify at your own risk)
-  parameter int unsigned RegCount          = ${cfg["snax_acc_num_csr"]},
-  parameter int unsigned RegDataWidth      = 32,
-  parameter int unsigned RegAddrWidth      = 32,
-  parameter int unsigned StreamerDataWidth = ${stream_data_width},
-  parameter int unsigned NumInputPorts     = ${num_input_ports},
-  parameter int unsigned NumOutputPorts    = ${num_output_ports}
+  parameter int unsigned RegCount           = ${cfg["snax_acc_num_csr"]},
+  parameter int unsigned RegDataWidth       = 32,
+  parameter int unsigned RegAddrWidth       = 32,
+  parameter int unsigned StreamerDataWidth  = ${stream_data_width},
+  parameter int unsigned NumStream2AccPorts = ${num_stream2acc_ports},
+  parameter int unsigned NumAcc2StreamPorts = ${num_acc2stream_ports}
 )(
   //-----------------------------
   // Clocks and reset
@@ -82,25 +82,25 @@ module ${cfg["tag_name"]}_top_wrapper # (
   //-----------------------------
   // Accelerator ports
   //-----------------------------
-  // Input ports from accelerator to streamer
-  logic [ NumInputPorts-1:0][StreamerDataWidth-1:0] acc2stream_data;
-  logic [ NumInputPorts-1:0]                        acc2stream_valid;
-  logic [ NumInputPorts-1:0]                        acc2stream_ready,
+  // Ports from accelerator to streamer
+  logic [NumAcc2StreamPorts-1:0][StreamerDataWidth-1:0] acc2stream_data;
+  logic [NumAcc2StreamPorts-1:0]                        acc2stream_valid;
+  logic [NumAcc2StreamPorts-1:0]                        acc2stream_ready,
 
-  // Ouput ports from accelerator to streamer
-  logic [NumOutputPorts-1:0][StreamerDataWidth-1:0] stream2acc_data;
-  logic [NumOutputPorts-1:0]                        stream2acc_valid;
-  logic [NumOutputPorts-1:0]                        stream2acc_ready;
+  // Ports from accelerator to streamer
+  logic [NumStream2AccPorts-1:0][StreamerDataWidth-1:0] stream2acc_data;
+  logic [NumStream2AccPorts-1:0]                        stream2acc_valid;
+  logic [NumStream2AccPorts-1:0]                        stream2acc_ready;
 
   // CSR MUXing
   logic [1:0][RegAddrWidth-1:0] acc_csr_req_addr;
   logic [1:0][RegDataWidth-1:0] acc_csr_req_data;
-	logic [1:0]                   acc_csr_req_wen;
-	logic [1:0]                   acc_csr_req_valid;
-	logic [1:0]                   acc_csr_req_ready;
-	logic [1:0][RegDataWidth-1:0] acc_csr_rsp_data;
-	logic [1:0]                   acc_csr_rsp_valid;
-	logic [1:0]                   acc_csr_rsp_ready;
+  logic [1:0]                   acc_csr_req_wen;
+  logic [1:0]                   acc_csr_req_valid;
+  logic [1:0]                   acc_csr_req_ready;
+  logic [1:0][RegDataWidth-1:0] acc_csr_rsp_data;
+  logic [1:0]                   acc_csr_rsp_valid;
+  logic [1:0]                   acc_csr_rsp_ready;
 
   // Register set signals
   logic [NumCsr-1:0][31:0] acc_csr_reg_set;
@@ -187,8 +187,8 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // It needs to have the correct connections to the control and data ports!
 
   ${cfg["tag_name"]}_wrapper #(
-    .NumInputPorts        ( NumInputPorts         ),
-    .NumOutputPorts       ( NumOutputPorts        ),
+    .NumStream2AccPorts        ( NumStream2AccPorts         ),
+    .NumAcc2StreamPorts       ( NumAcc2StreamPorts        ),
     .DataWidth            ( TCDMDataWidth       )
   ) i_${cfg["tag_name"]}_wrapper (
     //-------------------------------
@@ -200,12 +200,12 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     // Accelerator ports
     //-----------------------------
-    // Input ports from streamer to accelerator
+    // Ports from streamer to accelerator
     .stream2acc_data_i    ( stream2acc_data       ),
     .stream2acc_valid_i   ( stream2acc_valid      ),
     .stream2acc_ready_o   ( stream2acc_ready      ),
 
-    // Output ports from accelerator to streamer
+    // Ports from accelerator to streamer
     .acc2stream_data_o    ( acc2stream_data       ),
     .acc2stream_valid_o   ( acc2stream_valid      ),
     .acc2stream_ready_i   ( acc2stream_ready      ),
@@ -225,7 +225,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
     .TCDMDataWidth            ( TCDMDataWidth           ),
     .TCDMReqPorts             ( TCDMReqPorts            ),
     .TCDMAddrWidth            ( TCDMAddrWidth           )
-  ) i_streamer_wrapper (
+  ) i_${cfg["tag_name"]}_streamer_wrapper (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
@@ -235,15 +235,16 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-------------------------------
     // Accelerator ports
     //-------------------------------
-    // Input ports from acceleartor to streamer
-    .acc2stream_data_i        ( acc2stream_data         ),
-    .acc2stream_valid_i       ( acc2stream_valid        ),
-    .acc2stream_ready_o       ( acc2stream_ready        ),
 
-    // Output ports from streamer to accelerator
+    // Ports from streamer to accelerator
     .stream2acc_data_o        ( stream2acc_data         ),
     .stream2acc_valid_o       ( stream2acc_valid        ),
     .stream2acc_ready_i       ( stream2acc_ready        ),
+
+    // Ports from acceleartor to streamer
+    .acc2stream_data_i        ( acc2stream_data         ),
+    .acc2stream_valid_i       ( acc2stream_valid        ),
+    .acc2stream_ready_o       ( acc2stream_ready        ),
 
     //-----------------------------
     // TCDM ports 
