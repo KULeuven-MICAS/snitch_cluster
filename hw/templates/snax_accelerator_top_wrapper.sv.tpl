@@ -5,9 +5,10 @@
 <%
   num_input_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
   num_output_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
-  num_tcdm_ports = num_input_ports + num_output_ports
+  num_tcdm_ports = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
+                   sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
 
-  # We make the assumption that all reader and writers
+  # We make the hasty assumption that all reader and writers
   # Have the same data widths
   stream_data_width = cfg["snax_streamer_cfg"]["data_reader_params"]["element_width"][0]
 %>
@@ -18,17 +19,17 @@
 //-------------------------------
 module ${cfg["tag_name"]}_top_wrapper # (
   // Reconfigurable parameters
-  parameter int unsigned NarrowDataWidth   = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMDepth         = ${cfg["tcdm_depth"]},
-  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports}
-  parameter int unsigned TCDMSize          = TCDMReqPorts * TCDMDepth * (NarrowDataWidth/8),
-  parameter int unsigned TCDMAddrWidth     = $clog2(TCDMSize),
+  parameter int unsigned TCDMDataWidth     = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMReqPorts      = ${num_tcdm_ports},
+  // Addr width is pre-computed in the generator
+  // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
+  parameter int unsigned TCDMAddrWidth     = ${cfg["tcdm_addr_width"]},
   // Don't touch parameters (or modify at your own risk)
-  parameter int unsigned RegCount          = 8,
+  parameter int unsigned RegCount          = ${cfg["snax_acc_num_csr"]},
   parameter int unsigned RegDataWidth      = 32,
   parameter int unsigned RegAddrWidth      = 32,
   parameter int unsigned StreamerDataWidth = ${stream_data_width},
-  parameter int unsigned NumInputPorts     = ${num_input_ports },
+  parameter int unsigned NumInputPorts     = ${num_input_ports},
   parameter int unsigned NumOutputPorts    = ${num_output_ports}
 )(
   //-----------------------------
@@ -41,19 +42,21 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // TCDM ports
   //-----------------------------
   // Request
-  output logic [TCDMReqPorts-1:0]                        tcdm_req_write_o,
-  output logic [TCDMReqPorts-1:0][TCDMAddrWidth-1:0]     tcdm_req_addr_o,
-  output logic [TCDMReqPorts-1:0][3:0]                   tcdm_req_amo_o, //Note that tcdm_req_amo_i is 4 bits based on reqrsp definition
-  output logic [TCDMReqPorts-1:0][NarrowDataWidth-1:0]   tcdm_req_data_o,
-  output logic [TCDMReqPorts-1:0][4:0]                   tcdm_req_user_core_id_o, //Note that tcdm_req_user_core_id_i is 5 bits based on Snitch definition
-  output logic [TCDMReqPorts-1:0]                        tcdm_req_user_is_core_o,
-  output logic [TCDMReqPorts-1:0][NarrowDataWidth/8-1:0] tcdm_req_strb_o,
-  output logic [TCDMReqPorts-1:0]                        tcdm_req_q_valid_o,
+  output logic [TCDMReqPorts-1:0]                      tcdm_req_write_o,
+  output logic [TCDMReqPorts-1:0][  TCDMAddrWidth-1:0] tcdm_req_addr_o,
+  //Note that tcdm_req_amo_i is 4 bits based on reqrsp definition
+  output logic [TCDMReqPorts-1:0][                3:0] tcdm_req_amo_o,
+  output logic [TCDMReqPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data_o,
+  //Note that tcdm_req_user_core_id_i is 5 bits based on Snitch definition
+  output logic [TCDMReqPorts-1:0][                4:0] tcdm_req_user_core_id_o,
+  output logic [TCDMReqPorts-1:0]                      tcdm_req_user_is_core_o,
+  output logic [TCDMReqPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb_o,
+  output logic [TCDMReqPorts-1:0]                      tcdm_req_q_valid_o,
 
   // Response
-  input  logic [TCDMReqPorts-1:0]                        tcdm_rsp_q_ready_i,
-  input  logic [TCDMReqPorts-1:0]                        tcdm_rsp_p_valid_i,
-  input  logic [TCDMReqPorts-1:0][NarrowDataWidth-1:0]   tcdm_rsp_data_i,
+  input  logic [TCDMReqPorts-1:0]                      tcdm_rsp_q_ready_i,
+  input  logic [TCDMReqPorts-1:0]                      tcdm_rsp_p_valid_i,
+  input  logic [TCDMReqPorts-1:0][  TCDMDataWidth-1:0] tcdm_rsp_data_i,
 
   //-----------------------------
   // CSR control ports
@@ -106,13 +109,17 @@ module ${cfg["tag_name"]}_top_wrapper # (
 
   //-------------------------------
   // MUX and DEMUX for control signals
-  // That separate between streamer CSR
-  // and accelerator CRS
+  // That separate between streamer CSRs
+  // and accelerator CSRs
   //-------------------------------
   csr_mux_demux #(
-    .AddrSelOffSet        ( 8                     ),
-    .TotalRegCount        ( RegCount              ),
+    // The AddrSelOffset indicates when the MUX switches
+    // To streamer or the accelerator CSRs
+    // If snax_req_addr_i <  AddrSelOffset, it points
+    // to the accelerator CSR manager
+    .AddrSelOffSet        ( RegCount              ),
     .RegDataWidth         ( RegDataWidth          ),
+    .RegAddrWidth         ( RegAddrWidth          )
   ) i_csr_mux_demux (
     //-------------------------------
     // Input Core
@@ -182,7 +189,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
   ${cfg["tag_name"]}_wrapper #(
     .NumInputPorts        ( NumInputPorts         ),
     .NumOutputPorts       ( NumOutputPorts        ),
-    .DataWidth            ( NarrowDataWidth       )
+    .DataWidth            ( TCDMDataWidth       )
   ) i_${cfg["tag_name"]}_wrapper (
     //-------------------------------
     // Clocks and reset
@@ -215,10 +222,8 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Streamer Wrapper
   //-----------------------------
   ${cfg["tag_name"]}_streamer_wrapper #(
-    .NarrowDataWidth          ( NarrowDataWidth         ),
-    .TCDMDepth                ( TCDMDepth               ),
+    .TCDMDataWidth            ( TCDMDataWidth           ),
     .TCDMReqPorts             ( TCDMReqPorts            ),
-    .TCDMSize                 ( TCDMSize                ),
     .TCDMAddrWidth            ( TCDMAddrWidth           )
   ) i_streamer_wrapper (
     //-----------------------------
