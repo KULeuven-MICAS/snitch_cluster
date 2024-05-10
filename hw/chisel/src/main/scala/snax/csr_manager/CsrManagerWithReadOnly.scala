@@ -59,5 +59,5 @@ class CsrManagerWithReadOnly(
     io.csr_config_in.rsp.valid := 0.B
     io.csr_config_in.rsp.bits.data := 0.U
   }
-  
+
 }
