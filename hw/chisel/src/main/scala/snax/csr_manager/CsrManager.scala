@@ -50,7 +50,8 @@ class CsrManager(
     with RequireAsyncReset {
   override val desiredName = csrModuleTagName + "CsrManager"
 
-  val io = IO(new CsrManagerIO(csrNum, csrAddrWidth))
+  lazy val io = IO(new CsrManagerIO(csrNum, csrAddrWidth))
+  io.suggestName("io")
 
   // generate a vector of registers to store the csr state
   val csr = RegInit(VecInit(Seq.fill(csrNum)(0.U(32.W))))
@@ -58,13 +59,23 @@ class CsrManager(
   // read write and start csr command
   val read_csr = io.csr_config_in.req.fire && !io.csr_config_in.req.bits.write
   val write_csr = io.csr_config_in.req.fire && io.csr_config_in.req.bits.write
-  val start_csr = io.csr_config_in.req.bits.write &&
+  val start_csr = io.csr_config_in.req.valid && io.csr_config_in.req.bits.write &&
     (io.csr_config_in.req.bits.addr === (csrNum - 1).U) && io.csr_config_in.req.bits.data === 1.U
+  val check_acc_status =
+    io.csr_config_in.req.valid && io.csr_config_in.req.bits.write &&
+      (io.csr_config_in.req.bits.addr === (csrNum - 1).U) && io.csr_config_in.req.bits.data === 0.U
 
-  // assert the csr address is valid
-  when(io.csr_config_in.req.fire) {
-    assert(io.csr_config_in.req.bits.addr < csrNum.U, "csr address overflow!")
+  def address_range_assert() = {
+    // assert the csr address is valid
+    when(io.csr_config_in.req.valid) {
+      assert(
+        io.csr_config_in.req.bits.addr < csrNum.U,
+        "csr read or write address overflow!"
+      )
+    }
   }
+
+  address_range_assert()
 
   // handle write req
   when(write_csr) {
@@ -106,6 +117,8 @@ class CsrManager(
   when(read_csr_busy) {
     io.csr_config_in.req.ready := 0.B
   }.elsewhen(start_csr) {
+    io.csr_config_in.req.ready := io.csr_config_out.ready
+  }.elsewhen(check_acc_status) {
     io.csr_config_in.req.ready := io.csr_config_out.ready
   }.otherwise {
     io.csr_config_in.req.ready := 1.B
