@@ -3,14 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 
 <%
-  num_stream2acc_ports = len(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
-  num_acc2stream_ports = len(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
   num_tcdm_ports = sum(cfg["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
                    sum(cfg["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
-
-  # We make the hasty assumption the ports
-  # will use the TCDM Data widths
-  stream_data_width = cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"][0]
 %>
 
 //-------------------------------
@@ -28,10 +22,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Don't touch parameters (or modify at your own risk)
   parameter int unsigned RegCount           = ${cfg["snax_acc_num_csr"]},
   parameter int unsigned RegDataWidth       = 32,
-  parameter int unsigned RegAddrWidth       = 32,
-  parameter int unsigned StreamerDataWidth  = ${stream_data_width},
-  parameter int unsigned NumStream2AccPorts = ${num_stream2acc_ports},
-  parameter int unsigned NumAcc2StreamPorts = ${num_acc2stream_ports}
+  parameter int unsigned RegAddrWidth       = 32
 )(
   //-----------------------------
   // Clocks and reset
@@ -83,15 +74,23 @@ module ${cfg["tag_name"]}_top_wrapper # (
   //-----------------------------
   // Accelerator ports
   //-----------------------------
-  // Ports from accelerator to streamer
-  logic [NumAcc2StreamPorts-1:0][StreamerDataWidth-1:0] acc2stream_data;
-  logic [NumAcc2StreamPorts-1:0]                        acc2stream_valid;
-  logic [NumAcc2StreamPorts-1:0]                        acc2stream_ready,
+  // Note that these have very specific data widths
+  // found from the configuration file
 
   // Ports from accelerator to streamer
-  logic [NumStream2AccPorts-1:0][StreamerDataWidth-1:0] stream2acc_data;
-  logic [NumStream2AccPorts-1:0]                        stream2acc_valid;
-  logic [NumStream2AccPorts-1:0]                        stream2acc_ready;
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
+  logic [${dw-1}:0] acc2stream_${idx}_data;
+  logic acc2stream_${idx}_valid;
+  logic acc2stream_${idx}_ready;
+
+% endfor
+  // Ports from streamer to accelerator
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
+  logic [${dw-1}:0] stream2acc_${idx}_data;
+  logic stream2acc_${idx}_valid;
+  logic stream2acc_${idx}_ready;
+
+% endfor
 
   // CSR MUXing
   logic [1:0][RegAddrWidth-1:0] acc_csr_req_addr;
@@ -188,8 +187,6 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // It needs to have the correct connections to the control and data ports!
 
   ${cfg["tag_name"]}_wrapper #(
-    .NumStream2AccPorts        ( NumStream2AccPorts         ),
-    .NumAcc2StreamPorts       ( NumAcc2StreamPorts        ),
     .DataWidth            ( TCDMDataWidth       )
   ) i_${cfg["tag_name"]}_wrapper (
     //-------------------------------
@@ -201,16 +198,23 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     // Accelerator ports
     //-----------------------------
-    // Ports from streamer to accelerator
-    .stream2acc_data_i    ( stream2acc_data       ),
-    .stream2acc_valid_i   ( stream2acc_valid      ),
-    .stream2acc_ready_o   ( stream2acc_ready      ),
+    // Note that these have very specific data widths
+    // found from the configuration file
 
     // Ports from accelerator to streamer
-    .acc2stream_data_o    ( acc2stream_data       ),
-    .acc2stream_valid_o   ( acc2stream_valid      ),
-    .acc2stream_ready_i   ( acc2stream_ready      ),
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
+    .acc2stream_${idx}_data_o  ( acc2stream_${idx}_data  ),
+    .acc2stream_${idx}_valid_o ( acc2stream_${idx}_valid ),
+    .acc2stream_${idx}_ready_i ( acc2stream_${idx}_ready ),
 
+% endfor
+    // Ports from streamer to accelerator
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
+    .stream2acc_${idx}_data_i  ( stream2acc_${idx}_data  ),
+    .stream2acc_${idx}_valid_i ( stream2acc_${idx}_valid ),
+    .stream2acc_${idx}_ready_o ( stream2acc_${idx}_ready ),
+
+% endfor
     //-----------------------------
     // Packed CSR register signals
     //-----------------------------
@@ -232,20 +236,27 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     .clk_i                    ( clk_i                   ),
     .rst_ni                   ( rst_ni                  ),
-
-    //-------------------------------
+  
+    //-----------------------------
     // Accelerator ports
-    //-------------------------------
+    //-----------------------------
+    // Note that these have very specific data widths
+    // found from the configuration file
 
+    // Ports from accelerator to streamer
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
+    .acc2stream_${idx}_data_i  ( acc2stream_${idx}_data  ),
+    .acc2stream_${idx}_valid_i ( acc2stream_${idx}_valid ),
+    .acc2stream_${idx}_ready_o ( acc2stream_${idx}_ready ),
+
+% endfor
     // Ports from streamer to accelerator
-    .stream2acc_data_o        ( stream2acc_data         ),
-    .stream2acc_valid_o       ( stream2acc_valid        ),
-    .stream2acc_ready_i       ( stream2acc_ready        ),
+% for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
+    .stream2acc_${idx}_data_o  ( stream2acc_${idx}_data  ),
+    .stream2acc_${idx}_valid_o ( stream2acc_${idx}_valid ),
+    .stream2acc_${idx}_ready_i ( stream2acc_${idx}_ready ),
 
-    // Ports from acceleartor to streamer
-    .acc2stream_data_i        ( acc2stream_data         ),
-    .acc2stream_valid_i       ( acc2stream_valid        ),
-    .acc2stream_ready_o       ( acc2stream_ready        ),
+% endfor
 
     //-----------------------------
     // TCDM ports 
