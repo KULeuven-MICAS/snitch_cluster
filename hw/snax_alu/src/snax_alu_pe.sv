@@ -1,6 +1,11 @@
+// Copyright 2020 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
 //-------------------------------
-// Simple multiplier that follows
-// the valid-ready responses per port
+// Simple ALU processing element
 //-------------------------------
 module snax_alu_pe #(
   parameter int unsigned DataWidth = 64
