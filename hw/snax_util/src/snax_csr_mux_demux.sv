@@ -1,3 +1,9 @@
+// Copyright 2020 KU Leuven.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Ryan Antonio <ryan.antonio@esat.kuleuven.be>
+
 //-------------------------------
 // CSR MUX and DEMUX control
 // Fully combinational connections
