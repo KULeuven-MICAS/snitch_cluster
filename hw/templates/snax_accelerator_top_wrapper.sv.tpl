@@ -23,7 +23,9 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
   parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
   // Don't touch parameters (or modify at your own risk)
-  parameter int unsigned RegCount           = ${cfg["snax_acc_num_csr"]},
+  parameter int unsigned RegRwCount         = ${cfg["snax_num_rw_csr"]},
+  parameter int unsigned RegRoCount         = ${cfg["snax_num_ro_csr"]},
+  parameter int unsigned TotalRegCount      = RegRwCount + RegRoCount,
   parameter int unsigned RegDataWidth       = 32,
   parameter int unsigned RegAddrWidth       = 32
 )(
@@ -58,7 +60,8 @@ module ${cfg["tag_name"]}_top_wrapper # (
   //-----------------------------
   // Internal local parameters
   //-----------------------------
-  localparam int unsigned NumCsr = ${cfg["snax_acc_num_csr"]};
+  localparam int unsigned NumRwCsr = ${cfg["snax_num_rw_csr"]};
+  localparam int unsigned NumRoCsr = ${cfg["snax_num_ro_csr"]};
 
   //-----------------------------
   // Accelerator ports
@@ -92,9 +95,10 @@ module ${cfg["tag_name"]}_top_wrapper # (
   logic [1:0]                   acc_csr_rsp_ready;
 
   // Register set signals
-  logic [NumCsr-1:0][31:0]      acc_csr_reg_set;
+  logic [NumRwCsr-1:0][31:0]    acc_csr_reg_rw_set;
   logic                         acc_csr_reg_set_valid;
   logic                         acc_csr_reg_set_ready;
+  logic [NumRoCsr-1:0][31:0]    acc_csr_reg_ro_set;
 
   //-------------------------------
   // MUX and DEMUX for control signals
@@ -106,40 +110,41 @@ module ${cfg["tag_name"]}_top_wrapper # (
     // To streamer or the accelerator CSRs
     // If snax_req_addr_i <  AddrSelOffset, it points
     // to the accelerator CSR manager
-    .AddrSelOffSet        ( RegCount              ),
-    .RegDataWidth         ( RegDataWidth          ),
-    .RegAddrWidth         ( RegAddrWidth          )
+    .AddrSelOffSet        ( TotalRegCount     ),
+    .RegDataWidth         ( RegDataWidth      ),
+    .RegAddrWidth         ( RegAddrWidth      )
   ) i_csr_mux_demux (
     //-------------------------------
     // Input Core
     //-------------------------------
-    .csr_req_addr_i       ( snax_req_addr_i       ),
-    .csr_req_data_i       ( snax_req_data_i       ),
-    .csr_req_wen_i        ( snax_req_write_i      ),
-    .csr_req_valid_i      ( snax_req_valid_i      ),
-    .csr_req_ready_o      ( snax_req_ready_o      ),
-    .csr_rsp_data_o       ( snax_rsp_data_o       ),
-    .csr_rsp_valid_o      ( snax_rsp_valid_o      ),
-    .csr_rsp_ready_i      ( snax_rsp_ready_i      ),
+    .csr_req_addr_i       ( snax_req_addr_i   ),
+    .csr_req_data_i       ( snax_req_data_i   ),
+    .csr_req_wen_i        ( snax_req_write_i  ),
+    .csr_req_valid_i      ( snax_req_valid_i  ),
+    .csr_req_ready_o      ( snax_req_ready_o  ),
+    .csr_rsp_data_o       ( snax_rsp_data_o   ),
+    .csr_rsp_valid_o      ( snax_rsp_valid_o  ),
+    .csr_rsp_ready_i      ( snax_rsp_ready_i  ),
 
     //-------------------------------
     // Output Port
     //-------------------------------
-    .acc_csr_req_addr_o   ( acc_csr_req_addr      ),
-    .acc_csr_req_data_o   ( acc_csr_req_data      ),
-    .acc_csr_req_wen_o    ( acc_csr_req_wen       ),
-    .acc_csr_req_valid_o  ( acc_csr_req_valid     ),
-    .acc_csr_req_ready_i  ( acc_csr_req_ready     ),
-    .acc_csr_rsp_data_i   ( acc_csr_rsp_data      ),
-    .acc_csr_rsp_valid_i  ( acc_csr_rsp_valid     ),
-    .acc_csr_rsp_ready_o  ( acc_csr_rsp_ready     )
+    .acc_csr_req_addr_o   ( acc_csr_req_addr  ),
+    .acc_csr_req_data_o   ( acc_csr_req_data  ),
+    .acc_csr_req_wen_o    ( acc_csr_req_wen   ),
+    .acc_csr_req_valid_o  ( acc_csr_req_valid ),
+    .acc_csr_req_ready_i  ( acc_csr_req_ready ),
+    .acc_csr_rsp_data_i   ( acc_csr_rsp_data  ),
+    .acc_csr_rsp_valid_i  ( acc_csr_rsp_valid ),
+    .acc_csr_rsp_ready_o  ( acc_csr_rsp_ready )
   );
 
   //-----------------------------
   // CSR Manager to control the accelerator
   //-----------------------------
   ${cfg["tag_name"]}_csrman_wrapper #(
-    .NumCsr               ( NumCsr                )
+    .NumRwCsr             ( NumRwCsr              ),
+    .NumRoCsr             ( NumRoCsr              )
   ) i_${cfg["tag_name"]}_csrman_wrapper (
     //-------------------------------
     // Clocks and reset
@@ -164,9 +169,12 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     // Packed CSR register signals
     //-----------------------------
-    .csr_reg_set_o        ( acc_csr_reg_set       ),
+    // Read-write CSRs
+    .csr_reg_rw_set_o     ( acc_csr_reg_rw_set    ),
     .csr_reg_set_valid_o  ( acc_csr_reg_set_valid ),
-    .csr_reg_set_ready_i  ( acc_csr_reg_set_ready )
+    .csr_reg_set_ready_i  ( acc_csr_reg_set_ready ),
+    // Read-only CSRs
+    .csr_reg_ro_set_i     ( acc_csr_reg_ro_set    )  
   );
 
   //-----------------------------
@@ -207,7 +215,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     // Packed CSR register signals
     //-----------------------------
-    .csr_reg_set_i        ( acc_csr_reg_set       ),
+    .csr_reg_set_i        ( acc_csr_reg_rw_set    ),
     .csr_reg_set_valid_i  ( acc_csr_reg_set_valid ),
     .csr_reg_set_ready_o  ( acc_csr_reg_set_ready )
   );

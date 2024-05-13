@@ -427,11 +427,17 @@
                                             "description": "Specify in this tag the accelerator's top module name. E.g., snax_mac_wrapper.",
                                             "default": "none"
                                         },
-                                        "snax_num_csr": {
+                                        "snax_num_rw_csr": {
                                             "type": "number",
-                                            "title": "Number of CSR Registers",
-                                            "description": "Number of CSR registers required for one instance of this accelerator.",
+                                            "title": "Number of CSR Read-Write Registers",
+                                            "description": "Number of CSR RW registers required for one instance of this accelerator.",
                                             "default": 1
+                                        },
+                                        "snax_num_ro_csr": {
+                                            "type": "number",
+                                            "title": "Number of CSR Read-Only Registers",
+                                            "description": "Number of CSR RO registers required for one instance of this accelerator.",
+                                            "default": 0
                                         },
                                         "snax_num_acc": {
                                             "type": "number",

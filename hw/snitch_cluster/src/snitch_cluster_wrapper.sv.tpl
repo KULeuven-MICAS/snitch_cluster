@@ -338,7 +338,7 @@ for i in range(len(cfg['cores'])):
   snax_acc_multi_flag = False
   snax_use_custom_ports = False
   snax_num_acc = None
-  snax_num_csr = None
+  snax_total_num_csr = None
   prefix_snax_nonacc_count = 0
   prefix_snax_count = 0
 
@@ -350,7 +350,9 @@ for i in range(len(cfg['cores'])):
 
     if(cfg['cores'][i]['snax_acc_cfg']['snax_num_acc'] > 1):
       snax_acc_multi_flag = True
-      snax_num_csr = cfg['cores'][i]['snax_acc_cfg']['snax_num_csr']
+      snax_num_rw_csr = cfg['cores'][i]['snax_acc_cfg']['snax_num_rw_csr']
+      snax_num_ro_csr = cfg['cores'][i]['snax_acc_cfg']['snax_num_ro_csr']
+      snax_total_num_csr = snax_num_rw_csr + snax_num_ro_csr
       snax_num_acc = cfg['cores'][i]['snax_acc_cfg']['snax_num_acc']
 
     snax_use_custom_ports = cfg['cores'][i]['snax_use_custom_ports']
@@ -387,7 +389,7 @@ for i in range(len(cfg['cores'])):
     'snax_acc_flag': snax_acc_flag,
     'snax_acc_multi_flag':snax_acc_multi_flag,
     'snax_use_custom_ports': snax_use_custom_ports,
-    'snax_num_csr': snax_num_csr,
+    'snax_total_num_csr': snax_total_num_csr,
     'snax_num_acc': snax_num_acc,
     'snax_acc_dict':snax_acc_dict
   }
@@ -630,7 +632,7 @@ for i in range(len(cfg['cores'])):
   // MUX-DEMUX declaration
   // TODO: make a version for the csr ports next time...
   snax_acc_mux_demux #(
-    .NumCsrs              (${snax_core_acc[idx_key]['snax_num_csr']}),
+    .NumCsrs              (${snax_core_acc[idx_key]['snax_total_num_csr']}),
     .NumAcc               (${snax_core_acc[idx_key]['snax_num_acc']}),
     .acc_req_t            (${cfg['pkg_name']}::acc_req_t),
     .acc_rsp_t            (${cfg['pkg_name']}::acc_resp_t)
