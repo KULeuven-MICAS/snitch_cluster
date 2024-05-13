@@ -18,6 +18,7 @@ import argparse
 import os
 import math
 
+
 # Extract json file
 def get_config(cfg_path: str):
     with open(cfg_path, "r") as jsonf:
@@ -50,7 +51,8 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
         f.write(str(tpl.render_unicode(cfg=cfg)))
     return
 
-def gen_chisel_file (chisel_path, chisel_param, gen_path):
+
+def gen_chisel_file(chisel_path, chisel_param, gen_path):
 
     # Call chisel environment and generate the system verilog file
     cmd = f' cd {chisel_path} && sbt \
@@ -150,7 +152,8 @@ def main():
         )
 
         # CSR manager scala parameter generation
-        chisel_target_path = args.chisel_path + "src/main/scala/snax/csr_manager/"
+        chisel_target_path = args.chisel_path + \
+            "src/main/scala/snax/csr_manager/"
         file_name = "CsrManParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "csrman_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
@@ -162,7 +165,6 @@ def main():
         )
 
         # This is for RTL wrapper and chisel generation
-
         # This first one generates the CSR manager wrapper
         rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
         file_name = acc_cfgs[i]["snax_acc_name"] + "_csrman_wrapper.sv"
