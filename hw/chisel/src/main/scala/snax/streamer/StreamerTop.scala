@@ -90,7 +90,7 @@ class StreamerTop(
   csr_manager.io.read_only_csr(0) := performance_counter
 
   // splitting csrManager data ports to the streamer components
-  //  Total number of csr is temporalDim + dataMoverNum * temporalDim + spatialDim.sum + dataMoverNum 
+  //  Total number of csr is temporalDim + dataMoverNum * temporalDim + spatialDim.sum + dataMoverNum
   // + 1 (launch address) + 1 (performance counter).
 
   // lowest temporalDim address (0 to temporalDim - 1) is for temporal loop bound.
