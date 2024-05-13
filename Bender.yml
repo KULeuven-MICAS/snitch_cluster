@@ -194,6 +194,19 @@ sources:
       - hw/snax_hwpe_mac/src/snax_hwpe_to_reqrsp.sv
       - hw/snax_hwpe_mac/src/snax_mac_wrapper.sv
 
+  # snax alu
+  - target: snax_alu
+    files:
+      # Level 0
+      - hw/snax_alu/src/snax_alu_csr.sv
+      - hw/snax_alu/src/snax_alu_pe.sv
+      - hw/snax_alu/src/snax_mac_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_aluCsrManager.sv
+      - target/snitch_cluster/generated/snax_alu/snax_aluStreamerTop.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_csrman_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_streamer_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_top_wrapper.sv
+
   # snitch_vm
   - files:
       - hw/snitch_vm/src/snitch_ptw.sv
