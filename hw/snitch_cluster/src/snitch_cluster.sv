@@ -977,7 +977,7 @@ module snitch_cluster
 
   // Re-mapping of custom instruction ports
   for (genvar i = 0; i < NrCores; i++) begin: gen_snax_control_connection
-    
+
     // or CSR ports
     if ( SnaxUseCustomPorts[i] ) begin: gen_snax_use_custom_ports
 
@@ -1018,7 +1018,7 @@ module snitch_cluster
         // snax_resp     = unconnected
         // snax_pvalid   = unconnected
         snax_pready_o[i] = '0;
-      
+
         // SNAX CSR ports
         // Request
         snax_csr_req_bits_data_o [i] = snax_csr_req_bits_data  [i];
@@ -1038,7 +1038,7 @@ module snitch_cluster
         .acc_rsp_t     ( acc_resp_t ),
         // Careful! Sensitive parameter that depends
         // On the offset of where the CSRs are placed
-        .CsrAddrOffset ( 32'h3c0   ) 
+        .CsrAddrOffset ( 32'h3c0   )
       ) i_snax_intf_translator (
         //-------------------------------
         // Clocks and reset
@@ -1073,8 +1073,8 @@ module snitch_cluster
         .snax_csr_rsp_ready_o      ( snax_csr_rsp_ready     [i] )
       );
     end
-  end  
-  
+  end
+
 
   for (genvar i = 0; i < NrCores; i++) begin : gen_core
     localparam int unsigned TcdmPorts = get_tcdm_ports(i);
