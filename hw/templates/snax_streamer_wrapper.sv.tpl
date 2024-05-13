@@ -11,43 +11,40 @@
 //-----------------------------
 module ${cfg["tag_name"]}_streamer_wrapper #(
   // TCDM typedefs
-  parameter type         tcdm_req_t         = logic,
-  parameter type         tcdm_rsp_t         = logic,
+  parameter type         tcdm_req_t    = logic,
+  parameter type         tcdm_rsp_t    = logic,
   // Parameters related to TCDM
-  parameter int unsigned TCDMDataWidth      = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMNumPorts       = ${num_tcdm_ports},
-  parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
+  parameter int unsigned TCDMDataWidth = ${cfg["tcdm_data_width"]},
+  parameter int unsigned TCDMNumPorts  = ${num_tcdm_ports},
+  parameter int unsigned TCDMAddrWidth = ${cfg["tcdm_addr_width"]}
 )(
   //-----------------------------
   // Clocks and reset
   //-----------------------------
   input  logic clk_i,
   input  logic rst_ni,
-
   //-----------------------------
   // Accelerator ports
   //-----------------------------
   // Ports from accelerator to streamer
 % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"]):
-  input  logic [${dw-1}:0] acc2stream_data_${idx}_i,
+  input  logic [${dw-1}:0] acc2stream_${idx}_data_i,
   input  logic acc2stream_${idx}_valid_i,
   output logic acc2stream_${idx}_ready_o,
 
 % endfor
   // Ports from streamer to accelerator
 % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"]):
-  output logic [${dw-1}:0] stream2acc_data_${idx}_o,
+  output logic [${dw-1}:0] stream2acc_${idx}_data_o,
   output logic stream2acc_${idx}_valid_o,
   input  logic stream2acc_${idx}_ready_i,
 
 % endfor
-
   //-----------------------------
   // TCDM ports
   //-----------------------------
   output tcdm_req_t [TCDMNumPorts-1:0] tcdm_req_o,
   input  tcdm_rsp_t [TCDMNumPorts-1:0] tcdm_rsp_i,
-
   //-----------------------------
   // CSR control ports
   //-----------------------------
@@ -57,13 +54,10 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   input  logic        csr_req_bits_write_i,
   input  logic        csr_req_valid_i,
   output logic        csr_req_ready_o,
-
   // Response
   output logic [31:0] csr_rsp_bits_data_o,
   output logic        csr_rsp_valid_o,
   input  logic        csr_rsp_ready_i
-
-
 );
 
   //-----------------------------
@@ -102,25 +96,25 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
   // Re-mapping wires for TCDM IO ports
   always_comb begin
     for ( int i = 0; i < TCDMNumPorts; i++) begin
-      tcdm_req_o[i].q.addr         = tcdm_req_addr;
-      tcdm_req_o[i].q.write        = tcdm_req_write;
-      tcdm_req_o[i].q.amo          = '0';
-      tcdm_req_o[i].q.data         = tcdm_req_data;
+      tcdm_req_o[i].q.addr         = tcdm_req_addr   [i];
+      tcdm_req_o[i].q.write        = tcdm_req_write  [i];
+      tcdm_req_o[i].q.amo          = '0;
+      tcdm_req_o[i].q.data         = tcdm_req_data   [i];
       tcdm_req_o[i].q.strb         = '1;
       tcdm_req_o[i].q.user.core_id = '0;
       tcdm_req_o[i].q.user.is_core = '0;
-      tcdm_req_o[i].q_valid        = tcdm_req_q_valid;
+      tcdm_req_o[i].q_valid        = tcdm_req_q_valid[i];
 
-      tcdm_rsp_q_ready = tcdm_rsp_i.q_ready;
-      tcdm_rsp_p_valid = tcdm_rsp_i.p_valid;
-      tcdm_rsp_data    = tcdm_rsp_i.p.data;
+      tcdm_rsp_q_ready[i] = tcdm_rsp_i[i].q_ready;
+      tcdm_rsp_p_valid[i] = tcdm_rsp_i[i].p_valid;
+      tcdm_rsp_data   [i] = tcdm_rsp_i[i].p.data ;
     end
   end
   
 
   // Streamer module that is generated
   // with template mechanics
-  StreamerTop i_streamer_top (	
+  ${cfg["tag_name"]}_streamer_StreamerTop i_${cfg["tag_name"]}_streamer_top (	
     //-----------------------------
     // Clocks and reset
     //-----------------------------
@@ -131,13 +125,13 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     // Accelerator ports
     //-----------------------------
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"])):
-    .io_data_accelerator2streamer_data_${idx}_bits  (  acc2stream_data_${idx}_i ),
+    .io_data_accelerator2streamer_data_${idx}_bits  (  acc2stream_${idx}_data_i ),
     .io_data_accelerator2streamer_data_${idx}_valid ( acc2stream_${idx}_valid_i ),
     .io_data_accelerator2streamer_data_${idx}_ready ( acc2stream_${idx}_ready_o ),
 
 % endfor
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"])):
-    .io_data_streamer2accelerator_data_${idx}_bits  (  stream2acc_data_${idx}_o ),
+    .io_data_streamer2accelerator_data_${idx}_bits  (  stream2acc_${idx}_data_o ),
     .io_data_streamer2accelerator_data_${idx}_valid ( stream2acc_${idx}_valid_o ),
     .io_data_streamer2accelerator_data_${idx}_ready ( stream2acc_${idx}_ready_i ),
 

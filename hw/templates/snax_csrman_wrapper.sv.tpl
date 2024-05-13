@@ -7,14 +7,13 @@
 %>
 module ${cfg["tag_name"]}_csrman_wrapper #(
   parameter int unsigned NumRwCsr = ${cfg["snax_num_rw_csr"]},
-  parameter int unsigned NumRoCsr = ${cfg["snax_num_rw_csr"]},
+  parameter int unsigned NumRoCsr = ${cfg["snax_num_rw_csr"]}
 )(
   //-----------------------------
   // Clocks and reset
   //-----------------------------
   input  logic clk_i,
   input  logic rst_ni,
-
   //-----------------------------
   // CSR control ports
   //-----------------------------
@@ -24,26 +23,24 @@ module ${cfg["tag_name"]}_csrman_wrapper #(
   input  logic        csr_req_write_i,
   input  logic        csr_req_valid_i,
   output logic        csr_req_ready_o,
-
   // Response
   output logic [31:0] csr_rsp_data_o,
   input  logic        csr_rsp_ready_i,
   output logic        csr_rsp_valid_o,
-
   //-----------------------------
   // Packed CSR register signals
   //-----------------------------
   output logic [NumRwCsr-1:0][31:0] csr_reg_rw_set_o,
   output logic                      csr_reg_set_valid_o,
   input  logic                      csr_reg_set_ready_i,
-  input  logic [NumRoCsr-1:0][31:0] csr_reg_ro_set_i,
+  input  logic [NumRoCsr-1:0][31:0] csr_reg_ro_set_i
 );
 
 
   //-----------------------------
   // Chisel generated CSR manager
   //-----------------------------
-  ${cfg["tag_name"]}CsrManager i_${cfg["tag_name"]}CsrManager (
+  ${cfg["tag_name"]}_csrman_CsrManager i_${cfg["tag_name"]}_csrman_CsrManager (
     //-----------------------------
     // Clocks and reset
     //-----------------------------

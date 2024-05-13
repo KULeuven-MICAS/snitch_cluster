@@ -12,20 +12,20 @@
 // This is the entire accelerator
 // That connecst to the TCDM subsystem
 //-------------------------------
-module ${cfg["tag_name"]}_top_wrapper # (
+module ${cfg["tag_name"]}_wrapper # (
   // TCDM typedefs
   parameter type         tcdm_req_t         = logic,
   parameter type         tcdm_rsp_t         = logic,
   // Reconfigurable parameters
-  parameter int unsigned TCDMDataWidth      = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMNumPorts       = ${num_tcdm_ports},
+  parameter int unsigned DataWidth          = ${cfg["tcdm_data_width"]},
+  parameter int unsigned SnaxTcdmPorts      = ${num_tcdm_ports},
   // Addr width is pre-computed in the generator
   // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
   parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
   // Don't touch parameters (or modify at your own risk)
-  parameter int unsigned RegRwCount         = ${cfg["snax_num_rw_csr"]},
-  parameter int unsigned RegRoCount         = ${cfg["snax_num_ro_csr"]},
-  parameter int unsigned TotalRegCount      = RegRwCount + RegRoCount,
+  parameter int unsigned RegRWCount         = ${cfg["snax_num_rw_csr"]},
+  parameter int unsigned RegROCount         = ${cfg["snax_num_ro_csr"]},
+  parameter int unsigned TotalRegCount      = RegRWCount + RegROCount,
   parameter int unsigned RegDataWidth       = 32,
   parameter int unsigned RegAddrWidth       = 32
 )(
@@ -34,7 +34,6 @@ module ${cfg["tag_name"]}_top_wrapper # (
   //-----------------------------
   input  logic clk_i,
   input  logic rst_ni,
-
   //-----------------------------
   // CSR control ports
   //-----------------------------
@@ -44,17 +43,19 @@ module ${cfg["tag_name"]}_top_wrapper # (
   input  logic        snax_req_write_i,
   input  logic        snax_req_valid_i,
   output logic        snax_req_ready_o,
-
   // Response
   input  logic        snax_rsp_ready_i,
   output logic        snax_rsp_valid_o,
   output logic [31:0] snax_rsp_data_o,
-
+  //-----------------------------
+  // Barrier
+  //-----------------------------
+  output logic        snax_barrier_o,
   //-----------------------------
   // TCDM ports
   //-----------------------------
-  output tcdm_req_t [TCDMNumPorts-1:0] snax_tcdm_req_o,
-  input  tcdm_rsp_t [TCDMNumPorts-1:0] snax_tcdm_rsp_i
+  output tcdm_req_t [SnaxTcdmPorts-1:0] snax_tcdm_req_o,
+  input  tcdm_rsp_t [SnaxTcdmPorts-1:0] snax_tcdm_rsp_i
 );
 
   //-----------------------------
@@ -105,7 +106,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // That separate between streamer CSRs
   // and accelerator CSRs
   //-------------------------------
-  csr_mux_demux #(
+  snax_csr_mux_demux #(
     // The AddrSelOffset indicates when the MUX switches
     // To streamer or the accelerator CSRs
     // If snax_req_addr_i <  AddrSelOffset, it points
@@ -113,7 +114,7 @@ module ${cfg["tag_name"]}_top_wrapper # (
     .AddrSelOffSet        ( TotalRegCount     ),
     .RegDataWidth         ( RegDataWidth      ),
     .RegAddrWidth         ( RegAddrWidth      )
-  ) i_csr_mux_demux (
+  ) i_snax_csr_mux_demux (
     //-------------------------------
     // Input Core
     //-------------------------------
@@ -183,9 +184,11 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Note: This is the part that needs to be consistent
   // It needs to have the correct connections to the control and data ports!
 
-  ${cfg["tag_name"]}_wrapper #(
-    .DataWidth            ( TCDMDataWidth       )
-  ) i_${cfg["tag_name"]}_wrapper (
+  ${cfg["tag_name"]}_shell_wrapper #(
+    .RegRWCount           ( RegRWCount          ),
+    .RegROCount           ( RegROCount          ),
+    .DataWidth            ( DataWidth           )
+  ) i_${cfg["tag_name"]}_shell_wrapper (
     //-------------------------------
     // Clocks and reset
     //-------------------------------
@@ -217,7 +220,8 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     .csr_reg_set_i        ( acc_csr_reg_rw_set    ),
     .csr_reg_set_valid_i  ( acc_csr_reg_set_valid ),
-    .csr_reg_set_ready_o  ( acc_csr_reg_set_ready )
+    .csr_reg_set_ready_o  ( acc_csr_reg_set_ready ),
+    .csr_reg_ro_set_o     ( acc_csr_reg_ro_set    )
   );
 
   //-----------------------------
@@ -226,8 +230,8 @@ module ${cfg["tag_name"]}_top_wrapper # (
   ${cfg["tag_name"]}_streamer_wrapper #(
     .tcdm_req_t               ( tcdm_req_t    ),
     .tcdm_rsp_t               ( tcdm_rsp_t    ),
-    .TCDMDataWidth            ( TCDMDataWidth ),
-    .TCDMNumPorts             ( TCDMNumPorts  ),
+    .TCDMDataWidth            ( DataWidth     ),
+    .TCDMNumPorts             ( SnaxTcdmPorts ),
     .TCDMAddrWidth            ( TCDMAddrWidth )
   ) i_${cfg["tag_name"]}_streamer_wrapper (
     //-----------------------------
@@ -235,7 +239,6 @@ module ${cfg["tag_name"]}_top_wrapper # (
     //-----------------------------
     .clk_i                    ( clk_i  ),
     .rst_ni                   ( rst_ni ),
-  
     //-----------------------------
     // Accelerator ports
     //-----------------------------
@@ -276,7 +279,12 @@ module ${cfg["tag_name"]}_top_wrapper # (
     .csr_rsp_bits_data_o   ( acc_csr_rsp_data [1] ),
     .csr_rsp_valid_o       ( acc_csr_rsp_valid[1] ),
     .csr_rsp_ready_i       ( acc_csr_rsp_ready[1] )
-
   );
+
+  //-----------------------------
+  // Barrier control
+  // TODO: Fix me later
+  //-----------------------------
+  assign snax_barrier_o = '0;
 
 endmodule
