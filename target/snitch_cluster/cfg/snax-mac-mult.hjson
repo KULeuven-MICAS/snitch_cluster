@@ -89,7 +89,7 @@
         snax_acc_cfg: {
             snax_acc_name: "snax_mac",
             snax_module: "snax_mac_wrapper",
-            snax_num_csr: 24,
+            snax_num_rw_csr: 24,
             snax_num_acc: 4,
             snax_tcdm_ports: 4,
         },
