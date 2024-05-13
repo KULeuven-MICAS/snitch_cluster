@@ -47,12 +47,19 @@ class StreamerTop(
   val io = IO(
     new StreamerTopIO(
       params,
-      csrAddrWidth
+      params.csrAddrWidth
     )
   )
 
   // csrManager instantiation
-  val csr_manager = Module(new CsrManager(csrNumReadWrite, params.readOnlyCsrNum, params.csrAddrWidth, params.tagName))
+  val csr_manager = Module(
+    new CsrManager(
+      csrNumReadWrite,
+      params.readOnlyCsrNum,
+      params.csrAddrWidth,
+      params.tagName
+    )
+  )
 
   // streamer instantiation
   val streamer = Module(new Streamer(params, params.tagName))
