@@ -40,7 +40,6 @@ class StreamerTop(
 
   override val desiredName = params.tagName + "StreamerTop"
 
-  // add extra performance counter
   val csrNumReadWrite: Int =
     params.temporalDim + params.dataMoverNum * params.temporalDim + params.spatialDim.sum + params.dataMoverNum + 1
 
@@ -91,7 +90,8 @@ class StreamerTop(
   csr_manager.io.read_only_csr(0) := performance_counter
 
   // splitting csrManager data ports to the streamer components
-  // Total number of csr is temporalDim + dataMoverNum * temporalDim + spatialDim.sum + dataMoverNum + 1.
+  //  Total number of csr is temporalDim + dataMoverNum * temporalDim + spatialDim.sum + dataMoverNum 
+  // + 1 (launch address) + 1 (performance counter).
 
   // lowest temporalDim address (0 to temporalDim - 1) is for temporal loop bound.
   //  0 is for innermost loop, temporalDim - 1 is for outermost loop

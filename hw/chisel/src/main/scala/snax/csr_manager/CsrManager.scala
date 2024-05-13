@@ -22,9 +22,10 @@ class SnaxCsrIO(csrAddrWidth: Int) extends Bundle {
   * The input is connected to the SNAX CSR port. The output is connected to the
   * streamer configuration port.
   * @param csrNumReadWrite
-  *   the number of read and write csr registers
+  *   the number of read/write csr registers. These control registers are 
+  *   buffered and can only be written to by the manager core.
   * @param csrNumReadOnly
-  *   the number of read only csr registers
+  *   the number of read only csr registers. These values are written to by the accelerator
   * @param addrWidth
   *   the width of the address
   */
