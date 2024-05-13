@@ -1033,13 +1033,13 @@ module snitch_cluster
         snax_csr_rsp_ready_o     [i] = snax_csr_rsp_ready      [i];
       end
 
-      snax_interface_translator #(
+      snax_intf_translator #(
         .acc_req_t     ( acc_req_t ),
         .acc_rsp_t     ( acc_resp_t ),
         // Careful! Sensitive parameter that depends
         // On the offset of where the CSRs are placed
         .CsrAddrOffset ( 32'h3c0   ) 
-      ) i_snax_interface_translator (
+      ) i_snax_intf_translator (
         //-------------------------------
         // Clocks and reset
         //-------------------------------
