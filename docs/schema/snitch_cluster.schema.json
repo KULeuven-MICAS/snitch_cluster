@@ -416,7 +416,7 @@
                                     "description": "Enable Smallfloat vector extension (SIMD).",
                                     "default": false
                                 },
-                                "snax_acc_set": {
+                                "snax_acc_cfg": {
                                     "type": "object",
                                     "title": "SNAX Accelerator Set",
                                     "description": "Set of properties for one core controlling multiple accelerators",
@@ -451,6 +451,12 @@
                                     "type": "boolean",
                                     "title": "Connect SNAX TCDM to Wide TCDM MUX",
                                     "description": "Connects a SNAX accelerator's TCDM ports to the wide TCDM MUX",
+                                    "default": false
+                                },
+                                "snax_use_custom_ports": {
+                                    "type": "boolean",
+                                    "title": "Use the custom instruction format for connecting accelerators.",
+                                    "description": "Uses the SNAX custom instruction ports format to control accelerators. By default it uses CSR ports format.",
                                     "default": false
                                 },
                                 "num_int_outstanding_loads": {
