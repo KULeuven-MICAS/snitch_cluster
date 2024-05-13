@@ -4,7 +4,8 @@ import chisel3._
 import chisel3.util._
 
 object CsrManagerTestParameters {
-  def csrNum = 10
+  def csrNumReadWrite = 10
+  def csrNumReadOnly = 2
   def csrAddrWidth = 32
   def csrModuleTagName = "Test"
 }

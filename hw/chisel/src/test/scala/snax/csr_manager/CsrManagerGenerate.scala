@@ -8,7 +8,8 @@ class CsrManagerTopGenerate extends AnyFlatSpec {
 
   emitVerilog(
     new CsrManager(
-      CsrManagerTestParameters.csrNum,
+      CsrManagerTestParameters.csrNumReadWrite,
+      CsrManagerTestParameters.csrNumReadOnly,
       CsrManagerTestParameters.csrAddrWidth
     ),
     Array("--target-dir", "generated/csr_manager")

@@ -164,7 +164,7 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     dut.io.csr_config_in.req.valid.poke(1.B)
     dut.io.csr_config_in.req.bits.data.poke(0.U)
     dut.io.csr_config_in.req.bits.addr
-      .poke((CsrManagerTestParameters.csrNum - 1).U)
+      .poke((CsrManagerTestParameters.csrNumReadWrite - 1).U)
     dut.io.csr_config_in.req.bits.write.poke(1.B)
     dut.clock.step(1)
 
@@ -183,6 +183,46 @@ trait HasCsrManagerTest extends HasCsrManagerTestUtils {
     // CsrManager is not stalled any more
     dut.io.csr_config_in.req.ready.expect(1.B)
 
+    // ***********************************************************************
+    // test read only csr
+    // ***********************************************************************
+
+    // drive the read only csr
+    dut.io.read_only_csr(0).poke(1.U)
+    dut.io.read_only_csr(1).poke(2.U)
+
+    // check the read value
+    assert(
+      1 == read_csr(
+        dut,
+        0 + CsrManagerTestParameters.csrNumReadWrite
+      ).litValue
+    )
+    assert(
+      2 == read_csr(
+        dut,
+        1 + CsrManagerTestParameters.csrNumReadWrite
+      ).litValue
+    )
+
+    // drive the read only csr
+    dut.io.read_only_csr(0).poke(3.U)
+    dut.io.read_only_csr(1).poke(4.U)
+
+    // check the read value
+    assert(
+      3 == read_csr(
+        dut,
+        0 + CsrManagerTestParameters.csrNumReadWrite
+      ).litValue
+    )
+    assert(
+      4 == read_csr(
+        dut,
+        1 + CsrManagerTestParameters.csrNumReadWrite
+      ).litValue
+    )
+
   }
 }
 
@@ -195,7 +235,8 @@ class CsrManagerTest
   "DUT" should "pass" in {
     test(
       new CsrManager(
-        CsrManagerTestParameters.csrNum,
+        CsrManagerTestParameters.csrNumReadWrite,
+        CsrManagerTestParameters.csrNumReadOnly,
         CsrManagerTestParameters.csrAddrWidth
       )
     ).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
