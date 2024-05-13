@@ -409,16 +409,16 @@ for i in range(len(cfg['cores'])):
   // SNAX CSR Ports
   //-----------------------------
   // Request for CSR format
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_bits_data;
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_bits_addr;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_bits_write;
+  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_data;
+  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_req_addr;
+  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_write;
   logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_valid;
   logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_req_ready;
   ///Response for CSR format
-  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_rsp_bits_data;
-  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_ready;
+  logic [${cfg['pkg_name']}::NrCores-1:0][31:0] snax_csr_rsp_data;
   logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_valid;
-
+  logic [${cfg['pkg_name']}::NrCores-1:0]       snax_csr_rsp_ready;
+    
   //-----------------------------
   // SNAX TCDM wires
   //-----------------------------
@@ -568,15 +568,16 @@ for i in range(len(cfg['cores'])):
     // SNAX CSR Ports
     //-----------------------------
     // Request for CSR format ports
-    .snax_csr_req_bits_data_o   ( snax_csr_req_bits_data ),
-    .snax_csr_req_bits_addr_o   ( snax_csr_req_bits_addr ),
-    .snax_csr_req_bits_write_o  ( snax_csr_req_bits_write),
-    .snax_csr_req_valid_o       ( snax_csr_req_valid     ),
-    .snax_csr_req_ready_i       ( snax_csr_req_ready     ),
+    .snax_csr_req_bits_data_o   ( snax_csr_req_data  ),
+    .snax_csr_req_bits_addr_o   ( snax_csr_req_addr  ),
+    .snax_csr_req_bits_write_o  ( snax_csr_req_write ),
+    .snax_csr_req_valid_o       ( snax_csr_req_valid ),
+    .snax_csr_req_ready_i       ( snax_csr_req_ready ),
     // Response for CSR format ports
-    .snax_csr_rsp_bits_data_i   ( snax_csr_rsp_bits_data ),
-    .snax_csr_rsp_valid_i       ( snax_csr_rsp_valid     ),
-    .snax_csr_rsp_ready_o       ( snax_csr_rsp_ready     ),
+    .snax_csr_rsp_bits_data_i   ( snax_csr_rsp_data  ),
+    .snax_csr_rsp_valid_i       ( snax_csr_rsp_valid ),
+    .snax_csr_rsp_ready_o       ( snax_csr_rsp_ready ),
+
     //-----------------------------
     // SNAX TCDM wires
     //-----------------------------
@@ -696,15 +697,15 @@ for i in range(len(cfg['cores'])):
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_req_data [${idx}] ),
-    .snax_req_addr_i  ( snax_req_addr [${idx}] ),
-    .snax_req_write_i ( snax_req_write[${idx}] ),
-    .snax_req_valid_i ( snax_req_valid[${idx}] ),
-    .snax_req_ready_o ( snax_req_ready[${idx}] ),
+    .snax_req_data_i  ( snax_csr_req_data [${idx}] ),
+    .snax_req_addr_i  ( snax_csr_req_addr [${idx}] ),
+    .snax_req_write_i ( snax_csr_req_write[${idx}] ),
+    .snax_req_valid_i ( snax_csr_req_valid[${idx}] ),
+    .snax_req_ready_o ( snax_csr_req_ready[${idx}] ),
     // Response
-    .snax_rsp_ready_i ( snax_rsp_ready[${idx}] ),
-    .snax_rsp_valid_o ( snax_rsp_valid[${idx}] ),
-    .snax_rsp_data_o  ( snax_rsp_data [${idx}] ),
+    .snax_rsp_data_o  ( snax_csr_rsp_data [${idx}] ),
+    .snax_rsp_valid_o ( snax_csr_rsp_valid[${idx}] ),
+    .snax_rsp_ready_i ( snax_csr_rsp_ready[${idx}] ),
       %endif
     .snax_barrier_o  ( snax_core_${idx}_split_barrier[${jdx}] ),
     .snax_tcdm_req_o ( snax_tcdm_req[${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_stop']}:${snax_core_acc[idx_key]['snax_acc_dict'][jdx_key]['snax_tcdm_offset_start']}] ),
@@ -743,9 +744,11 @@ for i in range(len(cfg['cores'])):
     //-----------------------------
     // Custom instruction format control ports
     //-----------------------------
+    // Request
     .snax_req_i       ( snax_req   [${idx}] ),
     .snax_qvalid_i    ( snax_qvalid[${idx}] ),
     .snax_qready_o    ( snax_qready[${idx}] ),
+    // Response
     .snax_resp_o      ( snax_resp  [${idx}] ),
     .snax_pvalid_o    ( snax_pvalid[${idx}] ),
     .snax_pready_i    ( snax_pready[${idx}] ),
@@ -754,15 +757,15 @@ for i in range(len(cfg['cores'])):
     // CSR  format control ports
     //-----------------------------
     // Request
-    .snax_req_data_i  ( snax_req_data [${idx}] ),
-    .snax_req_addr_i  ( snax_req_addr [${idx}] ),
-    .snax_req_write_i ( snax_req_write[${idx}] ),
-    .snax_req_valid_i ( snax_req_valid[${idx}] ),
-    .snax_req_ready_o ( snax_req_ready[${idx}] ),
+    .snax_req_data_i  ( snax_csr_req_data [${idx}] ),
+    .snax_req_addr_i  ( snax_csr_req_addr [${idx}] ),
+    .snax_req_write_i ( snax_csr_req_write[${idx}] ),
+    .snax_req_valid_i ( snax_csr_req_valid[${idx}] ),
+    .snax_req_ready_o ( snax_csr_req_ready[${idx}] ),
     // Response
-    .snax_rsp_ready_i ( snax_rsp_ready[${idx}] ),
-    .snax_rsp_valid_o ( snax_rsp_valid[${idx}] ),
-    .snax_rsp_data_o  ( snax_rsp_data [${idx}] ),
+    .snax_rsp_data_o  ( snax_csr_rsp_data [${idx}] ),
+    .snax_rsp_ready_i ( snax_csr_rsp_ready[${idx}] ),
+    .snax_rsp_valid_o ( snax_csr_rsp_valid[${idx}] ),
         %endif
     //-----------------------------
     // Hardware barrier
@@ -797,9 +800,9 @@ for i in range(len(cfg['cores'])):
   assign snax_resp    [${idx}] = '0;
   assign snax_pvalid  [${idx}] = '0;
   // Tie CSR ports to 0
-  assign snax_csr_req_ready     [${idx}] = '0;
   assign snax_csr_rsp_bits_data [${idx}] = '0;
   assign snax_csr_rsp_valid     [${idx}] = '0;
+  assign snax_csr_req_ready     [${idx}] = '0;
   // Tie barrier to 0
   assign snax_barrier [${idx}] = '0;
 
