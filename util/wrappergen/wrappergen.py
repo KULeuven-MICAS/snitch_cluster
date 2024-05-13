@@ -18,7 +18,6 @@ import argparse
 import os
 import math
 
-
 # Extract json file
 def get_config(cfg_path: str):
     with open(cfg_path, "r") as jsonf:
@@ -49,6 +48,15 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
     file_path = target_path + file_name
     with open(file_path, "w") as f:
         f.write(str(tpl.render_unicode(cfg=cfg)))
+    return
+
+def gen_chisel_file (chisel_path, chisel_param, gen_path):
+
+    # Call chisel environment and generate the system verilog file
+    cmd = f' cd {chisel_path} && sbt \
+        "runMain {chisel_param} {gen_path}"'
+    os.system(cmd)
+
     return
 
 
@@ -130,7 +138,7 @@ def main():
     for i in range(len(acc_cfgs)):
         # First part is for chisel generation
         # Generate the parameter files for chisel streamer generation
-        chisel_target_path = args.chisel_path + "streamer/"
+        chisel_target_path = args.chisel_path + "src/main/scala/snax/streamer/"
         file_name = "StreamParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "stream_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
@@ -142,7 +150,7 @@ def main():
         )
 
         # CSR manager scala parameter generation
-        chisel_target_path = args.chisel_path + "csr_manager/"
+        chisel_target_path = args.chisel_path + "src/main/scala/snax/csr_manager/"
         file_name = "CsrManParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "csrman_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
@@ -153,7 +161,7 @@ def main():
             file_name=file_name,
         )
 
-        # This is for RTl wrapper generation
+        # This is for RTL wrapper and chisel generation
 
         # This first one generates the CSR manager wrapper
         rtl_target_path = args.gen_path + acc_cfgs[i]["snax_acc_name"] + "/"
@@ -190,6 +198,20 @@ def main():
             tpl=tpl_rtl_wrapper,
             target_path=rtl_target_path,
             file_name=file_name,
+        )
+
+        # Generate chisel component using chisel generation script
+        gen_chisel_file(
+            chisel_path=args.chisel_path,
+            chisel_param='snax.csr_manager.CsrManagerGen',
+            gen_path=rtl_target_path
+        )
+
+        # Generate chisel component using chisel generation script
+        gen_chisel_file(
+            chisel_path=args.chisel_path,
+            chisel_param='snax.streamer.StreamerTopGen',
+            gen_path=rtl_target_path
         )
 
     print("Generation done!")
