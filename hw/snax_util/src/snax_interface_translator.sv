@@ -6,7 +6,7 @@
 
 //-------------------------------
 // SNAX interface translator for converting
-// Snitch accelerator ports to 
+// Snitch accelerator ports to
 // CSR ports
 //-------------------------------
 module snax_interface_translator #(
