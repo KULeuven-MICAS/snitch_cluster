@@ -195,17 +195,17 @@ sources:
       - hw/snax_hwpe_mac/src/snax_mac_wrapper.sv
 
   # snax alu
-  - target: snax_alu
+  - target: snax-alu
     files:
       # Level 0
       - hw/snax_alu/src/snax_alu_csr.sv
       - hw/snax_alu/src/snax_alu_pe.sv
-      - hw/snax_alu/src/snax_mac_wrapper.sv
-      - target/snitch_cluster/generated/snax_alu/snax_aluCsrManager.sv
-      - target/snitch_cluster/generated/snax_alu/snax_aluStreamerTop.sv
+      - hw/snax_alu/src/snax_alu_shell_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_csrman_CsrManager.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_streamer_StreamerTop.sv
       - target/snitch_cluster/generated/snax_alu/snax_alu_csrman_wrapper.sv
       - target/snitch_cluster/generated/snax_alu/snax_alu_streamer_wrapper.sv
-      - target/snitch_cluster/generated/snax_alu/snax_alu_top_wrapper.sv
+      - target/snitch_cluster/generated/snax_alu/snax_alu_wrapper.sv
 
   # snitch_vm
   - files:
