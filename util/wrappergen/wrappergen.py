@@ -131,7 +131,7 @@ def main():
         acc_cfgs[i]["tcdm_num_banks"] = tcdm_num_banks
         tcdm_addr_width = tcdm_num_banks * tcdm_depth * \
             (tcdm_data_width // 8)
-        tcdm_addr_width = math.log2(tcdm_addr_width)
+        tcdm_addr_width = int(math.log2(tcdm_addr_width))
         acc_cfgs[i]["tcdm_addr_width"] = tcdm_addr_width
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
 
@@ -191,9 +191,9 @@ def main():
         )
 
         # This generates the top wrapper
-        file_name = acc_cfgs[i]["snax_acc_name"] + "_top_wrapper.sv"
+        file_name = acc_cfgs[i]["snax_acc_name"] + "_wrapper.sv"
         tpl_rtl_wrapper_file = args.tpl_path + \
-            "snax_accelerator_top_wrapper.sv.tpl"
+            "snax_acc_wrapper.sv.tpl"
         tpl_rtl_wrapper = get_template(tpl_rtl_wrapper_file)
         gen_file(
             cfg=acc_cfgs[i],
