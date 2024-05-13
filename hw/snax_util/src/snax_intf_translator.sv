@@ -9,7 +9,7 @@
 // Snitch accelerator ports to
 // CSR ports
 //-------------------------------
-module snax_interface_translator #(
+module snax_intf_translator #(
   parameter type                        acc_req_t = logic,
   parameter type                        acc_rsp_t = logic,
   // Careful! Sensitive parameter that depends
