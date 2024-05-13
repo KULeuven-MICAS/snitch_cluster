@@ -85,7 +85,7 @@ module snax_alu_csr #(
 
   // This one is for the total length
   // to indicate how long it takes for the process to finish
-  assign csr_reg_rw_len   = csr_reg_rw[1];
+  assign csr_reg_rw_len   = csr_reg_rw_set[1];
 
   //-------------------------------
   // Internal registers that become

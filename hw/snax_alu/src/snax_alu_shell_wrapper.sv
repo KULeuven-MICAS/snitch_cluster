@@ -7,9 +7,11 @@
 //-------------------------------
 // Accelerator wrapper
 //-------------------------------
-module snax_alu_wrapper #(
+module snax_alu_shell_wrapper #(
   // Custom parameters. As much as possible,
   // these parameters should not be taken from outside
+  parameter int unsigned RegRWCount   = 3,
+  parameter int unsigned RegROCount   = 2,
   parameter int unsigned NumPE        = 4,
   parameter int unsigned DataWidth    = 64,
   parameter int unsigned RegDataWidth = 32,
@@ -83,7 +85,7 @@ module snax_alu_wrapper #(
       b_split[i] = stream2acc_1_data_i[i*DataWidth+:DataWidth];
 
       // Concatenating the output signals
-      acc2stream_0_data_o[i*DataWidth+:DataWidth] = result_split[i];
+      acc2stream_0_data_o[i*DataWidth+:DataWidth] = c_split[i];
     end
 
     // Inputs are read when all ready signals are ready
@@ -141,7 +143,7 @@ module snax_alu_wrapper #(
       .b_i            ( b_split[i]           ),
       .b_valid_i      ( stream2acc_1_valid_i ),
       .b_ready_o      ( b_ready[i]           ),
-      .c_o            ( result_split[i]      ),
+      .c_o            ( c_split[i]           ),
       .c_valid_o      ( result_valid[i]      ),
       .c_ready_i      ( acc2stream_0_ready_i ),
       .alu_config_i   ( csr_alu_config       )
