@@ -13,9 +13,12 @@
 // That connecst to the TCDM subsystem
 //-------------------------------
 module ${cfg["tag_name"]}_top_wrapper # (
+  // TCDM typedefs
+  parameter type         tcdm_req_t         = logic,
+  parameter type         tcdm_rsp_t         = logic,
   // Reconfigurable parameters
   parameter int unsigned TCDMDataWidth      = ${cfg["tcdm_data_width"]},
-  parameter int unsigned TCDMReqPorts       = ${num_tcdm_ports},
+  parameter int unsigned TCDMNumPorts       = ${num_tcdm_ports},
   // Addr width is pre-computed in the generator
   // TCDMAddrWidth = log2(TCDMBankNum * TCDMDepth * (TCDMDataWidth/8))
   parameter int unsigned TCDMAddrWidth      = ${cfg["tcdm_addr_width"]},
@@ -31,26 +34,6 @@ module ${cfg["tag_name"]}_top_wrapper # (
   input  logic rst_ni,
 
   //-----------------------------
-  // TCDM ports
-  //-----------------------------
-  // Request
-  output logic [TCDMReqPorts-1:0]                      tcdm_req_write_o,
-  output logic [TCDMReqPorts-1:0][  TCDMAddrWidth-1:0] tcdm_req_addr_o,
-  //Note that tcdm_req_amo_i is 4 bits based on reqrsp definition
-  output logic [TCDMReqPorts-1:0][                3:0] tcdm_req_amo_o,
-  output logic [TCDMReqPorts-1:0][  TCDMDataWidth-1:0] tcdm_req_data_o,
-  //Note that tcdm_req_user_core_id_i is 5 bits based on Snitch definition
-  output logic [TCDMReqPorts-1:0][                4:0] tcdm_req_user_core_id_o,
-  output logic [TCDMReqPorts-1:0]                      tcdm_req_user_is_core_o,
-  output logic [TCDMReqPorts-1:0][TCDMDataWidth/8-1:0] tcdm_req_strb_o,
-  output logic [TCDMReqPorts-1:0]                      tcdm_req_q_valid_o,
-
-  // Response
-  input  logic [TCDMReqPorts-1:0]                      tcdm_rsp_q_ready_i,
-  input  logic [TCDMReqPorts-1:0]                      tcdm_rsp_p_valid_i,
-  input  logic [TCDMReqPorts-1:0][  TCDMDataWidth-1:0] tcdm_rsp_data_i,
-
-  //-----------------------------
   // CSR control ports
   //-----------------------------
   // Request
@@ -63,7 +46,13 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Response
   input  logic        snax_rsp_ready_i,
   output logic        snax_rsp_valid_o,
-  output logic [31:0] snax_rsp_data_o
+  output logic [31:0] snax_rsp_data_o,
+
+  //-----------------------------
+  // TCDM ports
+  //-----------------------------
+  output tcdm_req_t [TCDMNumPorts-1:0] snax_tcdm_req_o,
+  input  tcdm_rsp_t [TCDMNumPorts-1:0] snax_tcdm_rsp_i
 );
 
   //-----------------------------
@@ -103,9 +92,9 @@ module ${cfg["tag_name"]}_top_wrapper # (
   logic [1:0]                   acc_csr_rsp_ready;
 
   // Register set signals
-  logic [NumCsr-1:0][31:0] acc_csr_reg_set;
-  logic                    acc_csr_reg_set_valid;
-  logic                    acc_csr_reg_set_ready;
+  logic [NumCsr-1:0][31:0]      acc_csr_reg_set;
+  logic                         acc_csr_reg_set_valid;
+  logic                         acc_csr_reg_set_ready;
 
   //-------------------------------
   // MUX and DEMUX for control signals
@@ -227,15 +216,17 @@ module ${cfg["tag_name"]}_top_wrapper # (
   // Streamer Wrapper
   //-----------------------------
   ${cfg["tag_name"]}_streamer_wrapper #(
-    .TCDMDataWidth            ( TCDMDataWidth           ),
-    .TCDMReqPorts             ( TCDMReqPorts            ),
-    .TCDMAddrWidth            ( TCDMAddrWidth           )
+    .tcdm_req_t               ( tcdm_req_t    ),
+    .tcdm_rsp_t               ( tcdm_rsp_t    ),
+    .TCDMDataWidth            ( TCDMDataWidth ),
+    .TCDMNumPorts             ( TCDMNumPorts  ),
+    .TCDMAddrWidth            ( TCDMAddrWidth )
   ) i_${cfg["tag_name"]}_streamer_wrapper (
     //-----------------------------
     // Clocks and reset
     //-----------------------------
-    .clk_i                    ( clk_i                   ),
-    .rst_ni                   ( rst_ni                  ),
+    .clk_i                    ( clk_i  ),
+    .rst_ni                   ( rst_ni ),
   
     //-----------------------------
     // Accelerator ports
@@ -259,35 +250,25 @@ module ${cfg["tag_name"]}_top_wrapper # (
 % endfor
 
     //-----------------------------
-    // TCDM ports 
+    // TCDM ports
     //-----------------------------
-    // Request
-    .tcdm_req_write_o         ( tcdm_req_write_o        ),
-    .tcdm_req_addr_o          ( tcdm_req_addr_o         ),
-    .tcdm_req_amo_o           ( tcdm_req_amo_o          ), 
-    .tcdm_req_data_o          ( tcdm_req_data_o         ),
-    .tcdm_req_user_core_id_o  ( tcdm_req_user_core_id_o ), 
-    .tcdm_req_user_is_core_o  ( tcdm_req_user_is_core_o ),
-    .tcdm_req_strb_o          ( tcdm_req_strb_o         ),
-    .tcdm_req_q_valid_o       ( tcdm_req_q_valid_o      ),
-    // Response
-    .tcdm_rsp_q_ready_i       ( tcdm_rsp_q_ready_i      ),
-    .tcdm_rsp_p_valid_i       ( tcdm_rsp_p_valid_i      ),
-    .tcdm_rsp_data_i          ( tcdm_rsp_data_i         ),
+    .tcdm_req_o ( snax_tcdm_req_o ),
+    .tcdm_rsp_i ( snax_tcdm_rsp_i ),
 
     //-----------------------------
     // CSR control ports
     //-----------------------------
     // Request
-    .io_csr_req_bits_data_i   ( acc_csr_req_data [1]    ),
-    .io_csr_req_bits_addr_i   ( acc_csr_req_addr [1]    ),
-    .io_csr_req_bits_write_i  ( acc_csr_req_wen  [1]    ),
-    .io_csr_req_valid_i       ( acc_csr_req_valid[1]    ),
-    .io_csr_req_ready_o       ( acc_csr_req_ready[1]    ),
+    .csr_req_bits_data_i   ( acc_csr_req_data [1] ),
+    .csr_req_bits_addr_i   ( acc_csr_req_addr [1] ),
+    .csr_req_bits_write_i  ( acc_csr_req_wen  [1] ),
+    .csr_req_valid_i       ( acc_csr_req_valid[1] ),
+    .csr_req_ready_o       ( acc_csr_req_ready[1] ),
     // Response
-    .io_csr_rsp_ready_i       ( acc_csr_rsp_ready[1]    ),
-    .io_csr_rsp_valid_o       ( acc_csr_rsp_valid[1]    ),
-    .io_csr_rsp_bits_data_o   ( acc_csr_rsp_data [1]    )
+    .csr_rsp_bits_data_o   ( acc_csr_rsp_data [1] ),
+    .csr_rsp_valid_o       ( acc_csr_rsp_valid[1] ),
+    .csr_rsp_ready_i       ( acc_csr_rsp_ready[1] )
+
   );
 
 endmodule
