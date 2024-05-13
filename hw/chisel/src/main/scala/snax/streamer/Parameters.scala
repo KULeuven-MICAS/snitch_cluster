@@ -109,6 +109,7 @@ trait HasStreamerCoreParams {
   val fifoWriterParams: Seq[FIFOParams]
 
   val readOnlyCsrNum: Int
+  val csrAddrWidth: Int
 }
 
 /** trait for Streamer inferred parameters
@@ -181,6 +182,7 @@ case class StreamerParams(
     fifoReaderParams: Seq[FIFOParams],
     fifoWriterParams: Seq[FIFOParams],
     readOnlyCsrNum: Int = 1,
+    csrAddrWidth: Int = 32,
     tagName: String = ""
 ) extends HasStreamerCoreParams
     with HasStreamerInferredParams

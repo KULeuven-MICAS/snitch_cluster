@@ -43,7 +43,6 @@ class StreamerTop(
   // add extra performance counter
   val csrNumReadWrite: Int =
     params.temporalDim + params.dataMoverNum * params.temporalDim + params.spatialDim.sum + params.dataMoverNum + 1
-  val csrAddrWidth: Int = log2Up(csrNumReadWrite)
 
   val io = IO(
     new StreamerTopIO(
@@ -53,7 +52,7 @@ class StreamerTop(
   )
 
   // csrManager instantiation
-  val csr_manager = Module(new CsrManager(csrNumReadWrite, params.readOnlyCsrNum, csrAddrWidth, params.tagName))
+  val csr_manager = Module(new CsrManager(csrNumReadWrite, params.readOnlyCsrNum, params.csrAddrWidth, params.tagName))
 
   // streamer instantiation
   val streamer = Module(new Streamer(params, params.tagName))
