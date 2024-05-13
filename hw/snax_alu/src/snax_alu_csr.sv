@@ -67,7 +67,7 @@ module snax_alu_csr #(
         csr_reg_rw_set[i] <= {RegDataWidth{1'b0}};
       end
     end else begin
-      
+
       if(csr_reg_set_req_success) begin
         csr_reg_rw_set <= csr_reg_set_i;
       end else begin
@@ -107,7 +107,7 @@ module snax_alu_csr #(
   // And it needs to be from a valid or successful send from
   // the CSR manager
   assign start_signal = csr_reg_set_i[2][0] && csr_reg_set_req_success;
-  
+
   // First one is when the accelerator will be busy
   // It's set when the start arrives
   // Then it's cleared when the len of elements is complete
@@ -117,7 +117,7 @@ module snax_alu_csr #(
       reg_ro_busy         <= 1'b0;
       reg_ro_perf_counter <= {RegDataWidth{1'b0}};
     end else begin
-      
+
       // First logic for reg_ro_busy
       // End takes priority over start
       // Otherwise maintain the state

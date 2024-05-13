@@ -5,7 +5,7 @@
 // Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
 //-------------------------------
-// Accelerator wrapper 
+// Accelerator wrapper
 //-------------------------------
 module snax_alu_wrapper #(
   // Custom parameters. As much as possible,
