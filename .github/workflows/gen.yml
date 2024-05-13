@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Check wrapper, parameter, and chisel generation
         run: |
-        ./util/wrappergen/wrappergen.py \
-        --cfg_path="/repo/target/snitch_cluster/cfg/snax-alu.hjson" \
-        --tpl_path="/repo/hw/templates/" \
-        --chisel_path="/repo/hw/chisel" \
-        --gen_path="/repo/target/snitch_cluster/generated/"
+          ./util/wrappergen/wrappergen.py \
+          --cfg_path="/repo/target/snitch_cluster/cfg/snax-alu.hjson" \
+          --tpl_path="/repo/hw/templates/" \
+          --chisel_path="/repo/hw/chisel" \
+          --gen_path="/repo/target/snitch_cluster/generated/"
 
