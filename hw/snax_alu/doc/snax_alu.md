@@ -2,6 +2,8 @@
 
 This block is a simple ALU accelerator that consists of processing elements that can do +, -, x, and XOR functions. The figure below shows the SNAX ALU architecture:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/3ec09177-e7ac-4be9-a7b4-60386bc91c62)
+
 
 # Main Modules
 
