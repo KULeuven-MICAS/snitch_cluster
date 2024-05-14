@@ -29,10 +29,17 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../..
 SNITCH_ROOT := $(ROOT)
+SNAX_CFG_PATH := $(ROOT)/target/snitch_cluster/cfg/
+SNAX_TPL_PATH := $(ROOT)/hw/templates/
+CHISEL_PATH := $(ROOT)/hw/chisel/
 
 TARGET = snitch_cluster
 
 include $(ROOT)/target/common/common.mk
+
+####################
+# SNAX Generations #
+####################
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
@@ -43,7 +50,6 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
 	VCS_BENDER  += -t snax-gemm
 endif
 
-# specify target
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 	SNAX_DEV_ROOT ?= $(shell $(BENDER) path snax-streamer-gemm-dev)
 	include $(SNAX_DEV_ROOT)/Makefile
@@ -53,7 +59,15 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 	VCS_BENDER  += -t snax-streamer-gemm-dev
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
+	SNAX_GEN += ${GENERATED_DIR}/snax-alu
+
+	VSIM_BENDER += -t snax-alu
+	VLT_BENDER  += -t snax-alu
+	VCS_BENDER  += -t snax-alu
+
+endif
 
 ############
 # Programs #
@@ -62,6 +76,7 @@ endif
 REGGEN          ?= $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
 CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
+WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
 
 #########################
 # Files and directories #
@@ -174,6 +189,13 @@ test/bootrom.elf test/bootrom.dump test/bootrom.bin: test/bootrom.S test/bootrom
 	riscv64-unknown-elf-objdump -d test/bootrom.elf > test/bootrom.dump
 	riscv64-unknown-elf-objcopy -j .text -O binary test/bootrom.elf test/bootrom.bin
 
+
+$(SNAX_GEN):
+	${WRAPPER_GEN} --cfg_path="${SNAX_CFG_PATH}/snax-alu.hjson" \
+	--tpl_path="${SNAX_TPL_PATH}" \
+	--chisel_path="${CHISEL_PATH}" \
+	--gen_path="${GENERATED_DIR}/"
+
 ############
 # Software #
 ############
@@ -226,7 +248,7 @@ $(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesv
 
 # Build compilation script and compile all sources for Verilator simulation
 # Link verilated archive with $(VLT_COBJ)
-$(BIN_DIR)/$(TARGET).vlt: $(VLT_AR) $(VLT_COBJ) ${VLT_BUILDDIR}/lib/libfesvr.a
+$(BIN_DIR)/$(TARGET).vlt: $(SNAX_GEN) $(VLT_AR) $(VLT_COBJ) ${VLT_BUILDDIR}/lib/libfesvr.a
 	mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) -std=c++14 -L ${VLT_BUILDDIR}/lib -o $@ $(VLT_COBJ) $(VLT_AR) -lfesvr -lpthread
 
