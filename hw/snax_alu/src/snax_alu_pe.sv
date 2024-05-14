@@ -23,6 +23,7 @@ module snax_alu_pe #(
   input  logic                 c_ready_i,
   // Fix this to 2 bits only
   // Let's do 4 ALU operations for simplicity
+  input  logic                 acc_ready_i,
   input  logic [          1:0] alu_config_i
 );
 
@@ -45,7 +46,7 @@ module snax_alu_pe #(
   logic result_success;
   logic result_valid;
 
-  assign input_success  = a_valid_i && b_valid_i;
+  assign input_success  = a_valid_i && b_valid_i && acc_ready_i;
   assign output_success = c_valid_o && c_ready_i;
 
   //-------------------------------

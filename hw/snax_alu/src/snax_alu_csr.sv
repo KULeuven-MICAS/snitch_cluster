@@ -34,6 +34,9 @@ module snax_alu_csr #(
   //-------------------------------
   // Signal to indicate an output was placed to memory
   input  logic                                    acc_output_success_i,
+  // Signal to set ready signal for PE side
+  // Accelerator is only ready when it's busy!
+  output logic                                    acc_ready_o,
   // 4 ALU operations that go directly to the PE
   output logic               [1:0]                csr_alu_config_o
 );
@@ -85,7 +88,11 @@ module snax_alu_csr #(
 
   // This one is for the total length
   // to indicate how long it takes for the process to finish
-  assign csr_reg_rw_len   = csr_reg_rw_set[1];
+  assign csr_reg_rw_len = csr_reg_rw_set[1];
+
+  // Indicate if accelerator is busy or not
+  // Use this signal for the ready side of the PEs
+  assign acc_ready_o = reg_ro_busy;
 
   //-------------------------------
   // Internal registers that become

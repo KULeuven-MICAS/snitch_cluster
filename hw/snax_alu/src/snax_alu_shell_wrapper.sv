@@ -67,6 +67,7 @@ module snax_alu_shell_wrapper #(
 
   // Control signals
   logic       acc_output_success;
+  logic       acc_ready;
   logic [1:0] csr_alu_config;
 
   // Read only signals towards CSR manager
@@ -125,6 +126,7 @@ module snax_alu_shell_wrapper #(
     // Direct register control signals
     //-------------------------------
     .acc_output_success_i ( acc_output_success  ),
+    .acc_ready_o          ( acc_ready           ),
     .csr_alu_config_o     ( csr_alu_config      )
   );
 
@@ -146,6 +148,7 @@ module snax_alu_shell_wrapper #(
       .c_o            ( c_split[i]           ),
       .c_valid_o      ( result_valid[i]      ),
       .c_ready_i      ( acc2stream_0_ready_i ),
+      .acc_ready_i    ( acc_ready            ),
       .alu_config_i   ( csr_alu_config       )
     );
   end
