@@ -2,6 +2,7 @@
 
 **SNAX** is an open-source platform with a hybrid-coupled heterogeneous accelerator-centric architecture. The essence of this system is to allow users to explore various architectural combinations of accelerators packed in a single shared memory. We provide useful setups, scripts, and supporting modules to make it easy to integrate new accelerators. The figure below shows an overview of the SNAX architecture:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/a00b8e87-48db-422d-b673-cfdd43dc6782)
 
 
 SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration we provide data streamers and reshufflers to aid accelerators in handling memory-layout and data access pattern management. 
