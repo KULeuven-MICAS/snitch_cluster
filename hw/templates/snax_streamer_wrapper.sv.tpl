@@ -98,7 +98,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     for ( int i = 0; i < TCDMNumPorts; i++) begin
       tcdm_req_o[i].q.addr         = tcdm_req_addr   [i];
       tcdm_req_o[i].q.write        = tcdm_req_write  [i];
-      tcdm_req_o[i].q.amo          = '0;
+      tcdm_req_o[i].q.amo          = reqrsp_pkg::AMONone;
       tcdm_req_o[i].q.data         = tcdm_req_data   [i];
       tcdm_req_o[i].q.strb         = '1;
       tcdm_req_o[i].q.user.core_id = '0;
