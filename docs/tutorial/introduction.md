@@ -5,11 +5,11 @@
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/a00b8e87-48db-422d-b673-cfdd43dc6782)
 
 
-SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration we provide data streamers and reshufflers to aid accelerators in handling memory-layout and data access pattern management. 
+SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling memory-layout and data access pattern management. 
 
 # Outline
 
-In this tutorial we will explore how to attach your own custom accelerator into the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
+In this tutorial, we will explore how to attach your own custom accelerator to the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
 
 1 - [Architectural Overview](./architectural_overview.md)
 - In this section, we will describe the design goals for the example.
@@ -17,7 +17,7 @@ In this tutorial we will explore how to attach your own custom accelerator into 
 - We also describe the overview of the directory structure.
 
 2 - [Accelerator Design](./accelerator_design.md)
-- This section describes a simple ALU processing element which will serve as the accelerator of interest - We focus only on the data path design and control status registers (CSR) that go along with it.
+- This section describes a simple ALU processing element that will serve as the accelerator of interest - We focus only on the data path design and control status registers (CSR) that go along with it.
 
 3 - [CSR Manager Design](./csrman_design.md)
 - This section describes the features of our pre-built CSR manager feature - It helps in hiding set-up delays in between accelerator runs.
