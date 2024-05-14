@@ -11,9 +11,9 @@ SNAX supports several design-time and run-time configurations to support differe
 In this tutorial we will explore how to attach your own custom accelerator into the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
 
 1 - [Architectural Overview](./architectural_overview.md)
-  - In this section, we will describe the design goals for the example.
-  - There is also a guide on the configurations to change.
-  - We also describe the overview of the directory structure.
+- In this section, we will describe the design goals for the example.
+- There is also a guide on the configurations to change.
+- We also describe the overview of the directory structure.
 
 2 - [Accelerator Design](./accelerator_design.md)
 - This section describes a simple ALU processing element which will serve as the accelerator of interest - We focus only on the data path design and control status registers (CSR) that go along with it.
