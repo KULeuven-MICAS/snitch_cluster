@@ -29,20 +29,11 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR  := $(dir $(MKFILE_PATH))
 ROOT        := ${MKFILE_DIR}../..
 SNITCH_ROOT := $(ROOT)
-CFG_PATH    := $(ROOT)/target/snitch_cluster/cfg/
-TPL_PATH    := $(ROOT)/hw/templates/
+SNAX_CFG_PATH := $(ROOT)/target/snitch_cluster/cfg/
+SNAX_TPL_PATH := $(ROOT)/hw/templates/
 CHISEL_PATH := $(ROOT)/hw/chisel/
 
 include $(ROOT)/target/common/common.mk
-
-############
-# Programs #
-############
-
-REGGEN          ?= $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
-CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
-CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
-WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
 
 ####################
 # SNAX Generations #
@@ -75,6 +66,15 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 	VCS_BENDER  += -t snax-alu
 
 endif
+
+############
+# Programs #
+############
+
+REGGEN          ?= $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
+CLUSTER_GEN     ?= $(ROOT)/util/clustergen.py
+CLUSTER_GEN_SRC ?= $(wildcard $(ROOT)/util/clustergen/*.py)
+WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
 
 #########################
 # Files and directories #
@@ -194,8 +194,8 @@ test/bootrom.elf test/bootrom.dump test/bootrom.bin: test/bootrom.S test/bootrom
 
 
 $(SNAX_GEN):
-	${WRAPPER_GEN} --cfg_path="${CFG_PATH}/snax-alu.hjson" \
-	--tpl_path="${TPL_PATH}" \
+	${WRAPPER_GEN} --cfg_path="${SNAX_CFG_PATH}/snax-alu.hjson" \
+	--tpl_path="${SNAX_TPL_PATH}" \
 	--chisel_path="${CHISEL_PATH}" \
 	--gen_path="${GENERATED_DIR}/"
 
