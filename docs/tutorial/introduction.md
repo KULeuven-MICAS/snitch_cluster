@@ -1,0 +1,32 @@
+# Introduction
+
+**SNAX** is an open-source platform with a hybrid-coupled heterogeneous accelerator-centric architecture. The essence of this system is to allow users to explore various architectural combinations of accelerators packed in a single shared memory. 
+
+
+# Outline
+
+In this tutorial we will explore how to attach your own custom accelerator into the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
+
+1 - [Architectural Overview](./architectural_overview.md)
+  - In this section, we will describe the design goals for the example.
+  - There is also a guide on the configurations to change.
+  - We also describe the overview of the directory structure.
+2 - [Accelerator Design](./accelerator_design.md)
+- This section describes a simple ALU processing element which will serve as the accelerator of interest - We focus only on the data path design and control status registers (CSR) that go along with it.
+3 - [CSR Manager Design](./csrman_design.md)
+- This section describes the features of our pre-built CSR manager feature - It helps in hiding set-up delays in between accelerator runs.
+4 - [Streamer Design](./streamer_design.md)
+- This section guides you on how to generate the streamer which accesses data from the memory for your accelerator.
+- It also contains an overview of the configuration file on how to modify the target streamer.
+5 - [Connecting the Shell](./connect_shell.md)
+- There exists wrappers in the system that allow users to connect their accelerators directly to the SNAX shell.
+6 - [Building the Architecture](./build_system.md)
+- This guide shows how to build the architecture.
+7 - [Programming your Core](./programming.md)
+- We demonstrate here how to program the accelerator of interest.
+- We also show how to build the program and run simulations.
+8 - [Other Tools](./other_tools.md)
+- There exists tools that can help profile and analyze your design.
+9 - [Other Designs](./more_designs.md)
+- We've used our SNAX platform for various accelerators already - In this section, we demonstrate these accelerators and how we profiled them.
+- We also show synthesized results of our work to see how the designs turn out.
