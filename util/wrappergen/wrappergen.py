@@ -137,15 +137,20 @@ def main():
         # Chisel parameter tag names
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
         # Pre-calculate streamer CSRs
-        num_loop_dim = acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]
-        num_data_mover = len(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
-            len(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
+        num_loop_dim = acc_cfgs[i]["snax_streamer_cfg"]["temporal_\
+        addrgen_unit_params"]["loop_dim"]
+        num_data_mover = len(acc_cfgs[i]["snax_streamer_\
+        cfg"]["data_reader_params"]["tcdm_ports_num"]) + \
+            len(acc_cfgs[i]["snax_streamer_\
+            cfg"]["data_writer_params"]["tcdm_ports_num"])
         num_dmove_x_loop_dim = num_data_mover * num_loop_dim
-        num_spatial_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]) + \
-            sum(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"])
-        streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + num_data_mover + num_spatial_dim + 1 + 1
+        num_spatial_dim = sum(acc_cfgs[i]["snax_streamer_\
+        cfg"]["data_reader_params"]["spatial_dim"]) + \
+            sum(acc_cfgs[i]["snax_streamer_\
+            cfg"]["data_writer_params"]["spatial_dim"])
+        streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + \
+            num_data_mover + num_spatial_dim + 1 + 1
         acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num
-
 
     # Generate template out of given configurations
     # TODO: Make me a generation for the necessary files!
