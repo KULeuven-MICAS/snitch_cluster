@@ -2,6 +2,8 @@
 
 In this tutorial, we will build a simple SNAX system supporting one simple ALU accelerator. The figure below shows the target architecture we will build in this tutorial:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/458fa1b4-0b56-4913-9798-353c7dad803a)
+
 Notable characteristics are numbered:
 
 1 - It has a memory that is 128kB large, with 32 banks where each bank has 64 bits of data width. We call this memory the tighly coupled data memory (TCDM).
