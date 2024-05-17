@@ -58,14 +58,14 @@ nav:
       #     - Modules: runtime/Modules/index.md
       #     - Namespaces: runtime/Namespaces/index.md
   - SNAX Tutorial:
-    - Introduction: tutorial/introduction.md
-    - Architectural Overview: tutorial/architectural_overview.md
-    - Accelerator Design: tutorial/accelerator_design.md
-    - CSR Manager Design: tutorial/csrman_design.md
-    - Streamer Design: tutorial/streamer_design.md
-    - Connecting the Shell: tutorial/connect_shell.md
-    - Building the System: tutorial/build_system.md
-    - Programming the System: tutorial/programming.md
-    - Other Tools: tutorial/other_tools.md
-    - More Designs: tutorial/more_designs.md
+      - Introduction: tutorial/introduction.md
+      - Architectural Overview: tutorial/architectural_overview.md
+      - Accelerator Design: tutorial/accelerator_design.md
+      - CSR Manager Design: tutorial/csrman_design.md
+      - Streamer Design: tutorial/streamer_design.md
+      - Connecting the Shell: tutorial/connect_shell.md
+      - Building the System: tutorial/build_system.md
+      - Programming the System: tutorial/programming.md
+      - Other Tools: tutorial/other_tools.md
+      - More Designs: tutorial/more_designs.md
   - Publications: publications.md
