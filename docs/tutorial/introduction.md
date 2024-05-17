@@ -1,6 +1,6 @@
 # Introduction
 
-**SNAX** is an open-source platform with a hybrid-coupled heterogeneous accelerator-centric architecture. The essence of this system is to allow users to explore various architectural combinations of accelerators packed in a single shared memory. We provide useful setups, scripts, and supporting modules to make it easy to integrate new accelerators. The figure below shows an overview of the SNAX architecture:
+**SNAX** is an open-source platform with a hybrid-coupled heterogeneous accelerator-centric architecture. This system allows users to explore various architectural combinations of accelerators packed in a single shared memory. We provide useful setups, scripts, and supporting modules to make it easy to integrate new accelerators. The figure below shows an overview of the SNAX architecture:
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/a00b8e87-48db-422d-b673-cfdd43dc6782)
 
@@ -42,3 +42,35 @@ In this tutorial, we will explore how to attach your own custom accelerator to t
 9 - [Other Designs](./more_designs.md)
 - We've used our SNAX platform for various accelerators already - In this section, we demonstrate these accelerators and how we profiled them.
 - We also show synthesized results of our work to see how the designs turn out.
+
+# Getting Started
+
+## Cloning the Repository
+
+First let's clone the main repository. Do not forget to include the `--recurse-submodules`.
+
+```bash
+git clone https://github.com/KULeuven-MICAS/snitch_cluster.git --recurse-submodules
+```
+
+If you had already cloned the repository without the `--recurse-submodules` flag, clone its submodules with:
+
+```bash
+git submodule init --recursive
+```
+
+## Docker Container
+
+For this tutorial, we recommend that you use our pre-built docker container.
+
+```bash
+docker pull ghcr.io/kuleuven-micas/snax:latest
+```
+
+Go to the root of the `snax_cluster` repository and mount the directory unto the container:
+
+```bash
+docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:latest
+```
+
+This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed sotfware.
