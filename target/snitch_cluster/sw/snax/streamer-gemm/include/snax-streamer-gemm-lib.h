@@ -12,8 +12,8 @@
 
 // Set STREAMER configuration CSR
 void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
-                      int tempStride0A, int tempStride2A, int tempStride0B,
-                      int tempStride1B, int tempStride1C, int tempStride2C,
+                      int tempStride0A, int tempStride2A, int sptialStride1A, int tempStride0B,
+                      int tempStride1B,int sptialStride1B, int tempStride1C, int tempStride2C, int sptialStride1C, 
                       int delta_local_a, int delta_local_b, int delta_local_c);
 
 // Set CSR to start STREAMER
@@ -28,3 +28,9 @@ void set_block_gemm_start();
 
 // Poll until Streamer and GEMM accelerator finish
 void wait_streamer_gemm();
+
+void start_gemm_then_wait_streamer_gemm();
+
+uint32_t read_gemm_streamer_perf_counter();
+
+uint32_t read_gemm_perf_counter();
