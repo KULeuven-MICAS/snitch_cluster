@@ -19,7 +19,7 @@ int main() {
     //---------------------------
     local_a = (uint64_t *)snrt_l1_next();
     local_b = local_a + VEC_LEN;
-    local_o = local_b + 1;
+    local_o = local_b + VEC_LEN;
 
     //---------------------------
     // Start of pre-loading data from L2 memory
@@ -56,43 +56,43 @@ int main() {
         //------------------------------
         // 1st set the streamer CSRs
         // The list of CSRs are:
-        // 0x3d0 - loop bound for all components (RW)
-        // 0x3d1 - temporal stride for input A (RW)
-        // 0x3d2 - temporal stride for input B (RW)
-        // 0x3d3 - temporal stride for output O (RW)
-        // 0x3d4 - spatial stride for input A (RW)
-        // 0x3d5 - spatial stride for input B (RW)
-        // 0x3d6 - spatial stride for input O (RW)
-        // 0x3d7 - base pointer for input A (RW)
-        // 0x3d8 - base pointer for input B (RW)
-        // 0x3d9 - base pointer for input O (RW)
-        // 0x3da - send configurations to streamer (RW)
-        // 0x3db - performance counter of streamer (RO)
+        // 0x3c0 - loop bound for all components (RW)
+        // 0x3c1 - temporal stride for input A (RW)
+        // 0x3c2 - temporal stride for input B (RW)
+        // 0x3c3 - temporal stride for output O (RW)
+        // 0x3c4 - spatial stride for input A (RW)
+        // 0x3c5 - spatial stride for input B (RW)
+        // 0x3c6 - spatial stride for input O (RW)
+        // 0x3c7 - base pointer for input A (RW)
+        // 0x3c8 - base pointer for input B (RW)
+        // 0x3c9 - base pointer for input O (RW)
+        // 0x3ca - send configurations to streamer (RW)
+        // 0x3cb - performance counter of streamer (RO)
         //------------------------------
-        write_csr(0x3d0, VEC_LEN);
-        write_csr(0x3d1, 1);
-        write_csr(0x3d2, 1);
-        write_csr(0x3d3, 1);
-        write_csr(0x3d4, 1);
-        write_csr(0x3d5, 1);
-        write_csr(0x3d6, 1);
-        write_csr(0x3d7, (uint64_t)local_a);
-        write_csr(0x3d8, (uint64_t)local_b);
-        write_csr(0x3d9, (uint64_t)local_o);
-        write_csr(0x3da, 1);
+        write_csr(0x3c0, VEC_LEN);
+        write_csr(0x3c1, 32);
+        write_csr(0x3c2, 32);
+        write_csr(0x3c3, 32);
+        write_csr(0x3c4, 8);
+        write_csr(0x3c5, 8);
+        write_csr(0x3c6, 8);
+        write_csr(0x3c7, (uint64_t)local_a);
+        write_csr(0x3c8, (uint64_t)local_b);
+        write_csr(0x3c9, (uint64_t)local_o);
+        write_csr(0x3ca, 1);
 
         //------------------------------
         // 2nd set the CSRs of the accelerator
-        // 0x3dc - mode of the ALU (RW)
+        // 0x3cc - mode of the ALU (RW)
         //       - 0 for add, 1 for sub, 2 for mul, 3 for XOR
-        // 0x3dd - length of data (RW)
-        // 0x3de - send configurations to accelerator (RW)
-        // 0x3df - busy status (RO)
-        // 0x3e0 - performance counter (RO)
+        // 0x3cd - length of data (RW)
+        // 0x3ce - send configurations to accelerator (RW)
+        // 0x3cf - busy status (RO)
+        // 0x3d0 - performance counter (RO)
         //------------------------------
-        write_csr(0x3dc, 2);
-        write_csr(0x3dd, VEC_LEN);
-        write_csr(0x3de, 1);
+        write_csr(0x3cc, 2);
+        write_csr(0x3cd, VEC_LEN);
+        write_csr(0x3ce, 1);
 
         uint32_t end_csr_setup = snrt_mcycle();
     };
