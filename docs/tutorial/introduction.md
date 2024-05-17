@@ -45,7 +45,17 @@ In this tutorial, we will explore how to attach your own custom accelerator to t
 
 # Getting Started
 
-## Cloning the Repository
+To follow along with the tutorial, we recommend to create a GitHub Codespace. Alternatively, you can clone the repository locally and use our prebuilt docker container or install the requirements locally yourself.
+
+## Github Codespace
+
+Opening a Github Codespace is the most convenient way to get started quickly. To create a new codespace, go to the main repository, and follow code -> codespace -> create codespace.
+
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/47864363/27f3c084-ba26-4653-ad68-d9e898ca0597)
+
+This will launch a new window where the container image for the codespace will be built. This can take a couple of minutes, but is only required to run once. After this, a Visual Studio Code client will be launched in your browser. This system has all the requirements for developing, building and simulating a SNAX Cluster preinstalled. If you prefer this, you can also launch this codespace in the Visual Studio Code desktop client.
+
+## Cloning the Repository Locally
 
 First let's clone the main repository. Do not forget to include the `--recurse-submodules`.
 
@@ -64,13 +74,13 @@ git submodule init --recursive
 For this tutorial, we recommend that you use our pre-built docker container.
 
 ```bash
-docker pull ghcr.io/kuleuven-micas/snax:latest
+docker pull ghcr.io/kuleuven-micas/snax:main
 ```
 
 Go to the root of the `snax_cluster` repository and mount the directory unto the container:
 
 ```bash
-docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:latest
+docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:main
 ```
 
 This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed sotfware.
