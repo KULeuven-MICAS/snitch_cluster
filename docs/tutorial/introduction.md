@@ -49,7 +49,7 @@ To follow along with the tutorial, we recommend to create a GitHub Codespace. Al
 
 ## Github Codespace
 
-Opening a Github Codespace is the most convenient way to get started quickly. To create a new codespace, go to the main repository, and follow code -> codespace -> create codespace.
+Opening a Github Codespace is the most convenient way to get started quickly. To create a new codespace, go to the main repository, and follow code -> codespace -> create codespace. Or access this at [SNAX cluster codespace](https://codespaces.new/KULeuven-MICAS/snitch_cluster).
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/47864363/27f3c084-ba26-4653-ad68-d9e898ca0597)
 
