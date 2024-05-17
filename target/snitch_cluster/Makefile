@@ -52,10 +52,6 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
 	include $(SNAX_GEMM_ROOT)/Makefile
 
-	VSIM_BENDER += -t snax-gemm
-	VLT_BENDER  += -t snax-gemm
-	VCS_BENDER  += -t snax-gemm
-
 	VSIM_BENDER += -t snax-streamer-gemm
 	VLT_BENDER  += -t snax-streamer-gemm
 	VCS_BENDER  += -t snax-streamer-gemm
