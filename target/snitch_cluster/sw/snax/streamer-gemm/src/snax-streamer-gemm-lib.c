@@ -8,8 +8,9 @@
 
 // Set STREAMER configuration CSR
 void set_streamer_csr(int tempLoop0, int tempLoop1, int tempLoop2,
-                      int tempStride0A, int tempStride2A, int sptialStride1A, int tempStride0B,
-                      int tempStride1B,int sptialStride1B, int tempStride1C, int tempStride2C, int sptialStride1C, 
+                      int tempStride0A, int tempStride2A, int sptialStride1A,
+                      int tempStride0B, int tempStride1B, int sptialStride1B,
+                      int tempStride1C, int tempStride2C, int sptialStride1C,
                       int delta_local_a, int delta_local_b, int delta_local_c) {
     // loop bounds, from innermost to outermost, from K to N to M
     write_csr(960, tempLoop0);
@@ -78,24 +79,14 @@ void wait_streamer_gemm() {
     write_csr(981, 0);
 }
 
-void start_gemm_then_wait_streamer_gemm(){
-    snrt_mcycle();
-    write_csr(987, 1);
-    write_csr(987, 0);
-    write_csr(987, 0);
-    write_csr(981, 0);
-    snrt_mcycle();
-
-    // write_csr(981, 0);
-
-}
-
-uint32_t read_gemm_streamer_perf_counter(){
+// Read perforamcne counter of the Streamer, a read-only CSR
+uint32_t read_gemm_streamer_perf_counter() {
     uint32_t perf_counter = read_csr(982);
     return perf_counter;
 }
 
-uint32_t read_gemm_perf_counter(){
+// Read perforamcne counter of GEMM, a read-only CSR
+uint32_t read_gemm_perf_counter() {
     uint32_t perf_counter = read_csr(989);
     return perf_counter;
 }

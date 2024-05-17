@@ -38,9 +38,9 @@ int main() {
         // uint32_t gemm_start = snrt_mcycle();
 
         // Set Streamer configuration CSR
-        set_streamer_csr(K, N, M, strideInnermostA, ldA, spatialA, strideInnermostB, ldB, spatialB,
-                         strideInnermostC, ldC, spatialC, delta_local_a, delta_local_b,
-                         delta_local_c);
+        set_streamer_csr(K, N, M, strideInnermostA, ldA, spatialA,
+                         strideInnermostB, ldB, spatialB, strideInnermostC, ldC,
+                         spatialC, delta_local_a, delta_local_b, delta_local_c);
         // Set CSR to start Streamer
         set_streamer_start();
 
@@ -50,21 +50,11 @@ int main() {
 
         set_block_gemm_csr(K, N, M, subtraction_setting);
 
-        // // Set CSR to start GEMM
-        // set_block_gemm_start();
+        // Set CSR to start GEMM
+        set_block_gemm_start();
 
-        // // Poll until Streamer and GEMM accelerator finish
-        // wait_streamer_gemm();
-
-        // uint32_t gemm_end = snrt_mcycle();
-
-        start_gemm_then_wait_streamer_gemm();
-
-        uint32_t gemm_streamer_perf_counter = read_gemm_streamer_perf_counter();
-        printf("streamer perf counter: %d \n", gemm_streamer_perf_counter);
-
-        // uint32_t gemm_perf_counter = read_gemm_perf_counter();
-        // printf("gemm perf counter: %d \n", gemm_perf_counter);
+        // Poll until Streamer and GEMM accelerator finish
+        wait_streamer_gemm();
 
         // Compare SNAX GEMM result with golden model
         err += check_result(local_c, C_golden, Batch, M, N, strideInnermostC,
