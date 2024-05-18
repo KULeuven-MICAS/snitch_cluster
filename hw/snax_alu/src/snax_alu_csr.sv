@@ -102,7 +102,7 @@ module snax_alu_csr #(
   logic [RegDataWidth-1:0] reg_ro_perf_counter;
 
   logic [RegDataWidth-1:0] len_counter;
-  logic [RegDataWidth-1:0] len_counter_finish;
+  logic                    len_counter_finish;
 
   // Some simple logic to indicate the last counter
   assign len_counter_finish = (len_counter == (csr_reg_rw_len - 1));
@@ -128,14 +128,16 @@ module snax_alu_csr #(
         reg_ro_busy <= reg_ro_busy;
       end
 
-      // This counter is countinuous until the
-      // busy signal goes down
-      if(reg_ro_busy == 1'b0) begin
-        reg_ro_perf_counter <= {RegDataWidth{1'b0}};
-      end else if (csr_reg_set_req_success) begin
+      // This counter is continuous then
+      // holds the value when the busy is 0
+      if (csr_reg_set_req_success) begin
         reg_ro_perf_counter <= 1;
-      end else begin
+      end else if (reg_ro_busy && !len_counter_finish) begin
+        // The !leng_counter_finish is to avoid adding 1
+        // after the last signal that it finished
         reg_ro_perf_counter <= reg_ro_perf_counter + 1;
+      end else begin
+        reg_ro_perf_counter <= reg_ro_perf_counter;
       end
 
       // This one is just for tracking and setting busy
