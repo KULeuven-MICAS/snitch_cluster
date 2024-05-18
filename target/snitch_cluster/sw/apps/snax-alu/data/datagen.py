@@ -6,7 +6,6 @@
 #
 # Ryan Antonio <ryan.antonio@esat.kuleuven.be>
 
-from calendar import c
 import sys
 import argparse
 import numpy as np
@@ -68,13 +67,13 @@ def main():
 
     # Format header file
     mode_str = format_scalar_definition('uint64_t', 'MODE', mode)
-    delta_len_str = format_scalar_definition('uint64_t', 'DATA_LEN', length)
-    loop_iter_str = format_scalar_definition('uint64_t', 'LOOP_ITER', loop_iter)
+    dl_str = format_scalar_definition('uint64_t', 'DATA_LEN', length)
+    li_str = format_scalar_definition('uint64_t', 'LOOP_ITER', loop_iter)
     a_str = format_vector_definition('uint64_t', 'A', a)
     b_str = format_vector_definition('uint64_t', 'B', b)
 
     out_str = format_vector_definition('uint64_t', 'OUT', out)
-    f_str = '\n\n'.join([mode_str, delta_len_str, loop_iter_str, a_str, b_str, out_str])
+    f_str = '\n\n'.join([mode_str, dl_str, li_str, a_str, b_str, out_str])
 
     f_str += '\n'
 
