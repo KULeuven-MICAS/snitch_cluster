@@ -95,6 +95,14 @@ int main() {
         write_csr(0x3ce, 1);
 
         uint32_t end_csr_setup = snrt_mcycle();
+
+        // Do this to poll the accelerator
+        while(read_csr(0x3cf));
+
+        uint32_t perf_count = read_csr(0x3d0);
+        printf("Accelerator Done! \n");
+        printf("Accelerator Cycles: %d \n", perf_count);
+        
     };
 
     return err;
