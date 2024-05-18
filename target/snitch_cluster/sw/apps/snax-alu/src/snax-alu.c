@@ -10,22 +10,15 @@ int main() {
     // Set err value for checking
     int err = 0;
 
-    uint64_t final_output;
-
+    // Allocates space in TCDM
     uint64_t *local_a, *local_b, *local_o;
 
-    //---------------------------
-    // Allocates space in TCDM
-    //---------------------------
     local_a = (uint64_t *)snrt_l1_next();
-    local_b = local_a + VEC_LEN;
-    local_o = local_b + VEC_LEN;
+    local_b = local_a + DATA_LEN;
+    local_o = local_b + DATA_LEN;
 
-    //---------------------------
     // Start of pre-loading data from L2 memory
     // towards the L1 TCDM memory
-    //---------------------------
-
     // Use the Snitch core with a DMA
     // to move the data from L2 to L1
     if (snrt_is_dm_core()) {
@@ -33,8 +26,8 @@ int main() {
         // for preloading the data to the L1 memory
         uint32_t start_dma_load = snrt_mcycle();
 
-        // The VEC_LEN is found in data.h
-        size_t vector_size = VEC_LEN * sizeof(uint64_t);
+        // The LOOP_ITER is found in data.h
+        size_t vector_size = DATA_LEN * sizeof(uint64_t);
         snrt_dma_start_1d(local_a, A, vector_size);
         snrt_dma_start_1d(local_b, B, vector_size);
 
@@ -46,8 +39,8 @@ int main() {
     // fence barrier for the DMA and accelerator core
     snrt_cluster_hw_barrier();
 
-    // This is assigns the functions inside to
-    // run the core with the accelerator
+    // This assigns the tasks inside the condition
+    // to the core controlling the accelerator
     if (snrt_is_compute_core()) {
         // This marks the start of the
         // setting of CSRs for the accelerator
@@ -69,10 +62,10 @@ int main() {
         // 0x3ca - send configurations to streamer (RW)
         // 0x3cb - performance counter of streamer (RO)
         //------------------------------
-        write_csr(0x3c0, VEC_LEN);
+        write_csr(0x3c0, LOOP_ITER);
         write_csr(0x3c1, 32);
         write_csr(0x3c2, 32);
-        write_csr(0x3c3, 32);
+        write_csr(0x3c3, 64);
         write_csr(0x3c4, 8);
         write_csr(0x3c5, 8);
         write_csr(0x3c6, 8);
@@ -90,19 +83,37 @@ int main() {
         // 0x3cf - busy status (RO)
         // 0x3d0 - performance counter (RO)
         //------------------------------
-        write_csr(0x3cc, 2);
-        write_csr(0x3cd, VEC_LEN);
+        write_csr(0x3cc, MODE);
+        write_csr(0x3cd, LOOP_ITER);
         write_csr(0x3ce, 1);
 
+        // Mark the end of the CSR setup cycles
         uint32_t end_csr_setup = snrt_mcycle();
 
         // Do this to poll the accelerator
-        while(read_csr(0x3cf));
+        while (read_csr(0x3cf)) {
+        };
 
+        // Compare results and check if the
+        // accelerator returns correct answers
+        // For every incorrect anwer, increment err
+        uint64_t check_val;
+
+        for (uint32_t i = 0; i < DATA_LEN; i++) {
+            // Need to combine upper 64bit bank
+            // with the lower 64 bit bank
+            check_val = *(local_o + i * 2) + *(local_o + i * 2 + 1);
+            if (check_val != OUT[i]) {
+                err++;
+            }
+        }
+
+        // Read performance counter
         uint32_t perf_count = read_csr(0x3d0);
+
         printf("Accelerator Done! \n");
         printf("Accelerator Cycles: %d \n", perf_count);
-        
+        printf("Number of errors: %d \n", err);
     };
 
     return err;
