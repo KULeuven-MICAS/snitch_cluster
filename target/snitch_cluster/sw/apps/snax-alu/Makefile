@@ -9,3 +9,6 @@ SRCS    = src/snax-alu.c
 INCDIRS = data
 
 include ../common.mk
+include ./data/Makefile
+
+$(DEP): $(DATA_H)
