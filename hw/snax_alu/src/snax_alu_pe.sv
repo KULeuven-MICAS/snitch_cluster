@@ -52,7 +52,7 @@ module snax_alu_pe #(
   //-------------------------------
   always_comb begin
     case(alu_config_i)
-      CsrAddrAdd: result_wide = a_i + b_i;
+      default: result_wide = a_i + b_i;
       CsrAddrSub: result_wide = a_i - b_i;
       CsrAddrMul: result_wide = a_i * b_i;
       CsrAddrXor: result_wide = a_i ^ b_i;
@@ -61,8 +61,8 @@ module snax_alu_pe #(
   //-------------------------------
   // Assignments
   //-------------------------------
-  // Input ports are ready when the output
-  // Is actually ready to get data
+  // Input ports are ready when the output ready
+  // is also ready and when busy state is high
   assign a_ready_o = acc_ready_i && c_ready_i;
   assign b_ready_o = acc_ready_i && c_ready_i;
   assign c_valid_o = input_success;
