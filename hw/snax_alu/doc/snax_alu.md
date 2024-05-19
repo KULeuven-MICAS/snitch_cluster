@@ -2,8 +2,7 @@
 
 The figure below shows the SNAX ALU datapath in more detail:
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/3ec09177-e7ac-4be9-a7b4-60386bc91c62)
-
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/53d9f0e7-656a-4754-80ac-674d7af9b2f3)
 
 You can find all accelerator files under `./hw/snax_alu/src/.` directory. The main files are:
 
