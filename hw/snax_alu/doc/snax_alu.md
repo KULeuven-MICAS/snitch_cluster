@@ -16,7 +16,7 @@ Again, we label points of interest with numbers. We facilitate the discussion in
 
 The `snax_alu_pe` is the computing unit of the accelerator. The PE can do addition (+), subtraction (-), multiplication (X), and a bit-wise XOR (^). Each processing element takes in two data inputs, `a` and `b`. Each input with a parameter data width size `DataWidth`. By default `DataWidth=64`. The output is `c` of data width size `2*DataWidth` to accommodate the multiplication. The other operations leave the upper bits to 0.
 
-(2) The inputs and outputs of the PE has a simple decoupled interface (valid-ready protocol). The ports only consists of a single `data` channel. The valid signal of the inputs come from the streamers when data is valid. The ready signal depends on the busy status register. When the valid signals of inputs `a` and `b` are high, then it combinationally sets the valid signal of output `c`. The ready signal of `c` comes from the streamer when it's ready to load data unto the TCDM memory. The entire PE is fully combinational.
+(2) The inputs and outputs of the PE have a simple decoupled interface (valid-ready protocol). The ports only consist of a single `data` channel. The valid signal of the inputs comes from the streamers when the data is valid. The ready signal depends on the busy status register. When the valid signals of inputs `a` and `b` are high, then it combinationally sets the valid signal of output `c`. The ready signal of `c` comes from the streamer when it's ready to load data into the TCDM memory. The entire PE is fully combinational.
 
 ## (3) SNAX ALU CSR Register Set
 
@@ -30,9 +30,9 @@ The `snax_alu_csr` is a control and status register set with signals to modify t
 |    busy         |       3         |   RO    | Busy status. 1 - busy, 0 - idle                     |
 |  perf. counter  |       4         |   RO    | Performance counter indicating number of cycles     |
 
-RW registers can be modified or read from by the CSR manager. These are mostly the configurations and start signals that get to the main data path. The RO registers are read-only register that the CSR manager can read from. These are mostly used for monitoring purposes like status or performance counters.
+RW registers can be modified or read from by the CSR manager. These are mostly the configurations and start signals that get to the main data path. The RO registers are read-only registers that the CSR manager can read from. These are mostly used for monitoring purposes like status or performance counters.
 
-The mode signal is broadcasted to all PEs to configure the kernel that each PE processes. The busy signal acts like an active state also broadcasted to all PEs. If it's high then the PEs set their input ready signals high to allow data to stream continuously. 
+The mode signal is broadcast to all PEs to configure the kernel that each PE processes. The busy signal acts like an active state also broadcasted to all PEs. If it's high then the PEs set their input ready signals high to allow data to stream continuously. 
 
 From the outside, a CSR manager (in this case our SNAX CSR manager) handles the read-and-write transactions from and to the accelerator's CSR register set. The `snax_alu_csr` also uses a decoupled interface but with all RW channels linked to the accelerator. The RO channels are wired directly without any decoupled interface. It is up to the accelerator designer to handle these operations.
 
