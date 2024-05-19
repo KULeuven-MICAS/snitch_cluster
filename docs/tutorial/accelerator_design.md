@@ -13,33 +13,11 @@ We labeled a few important details about the shell:
 
 4 - The accelerator data path is the focus of this section. In our example, we will use a very simple ALU datapath with basic operations only. The SNAX ALU is already built for you. You can find it under the `./hw/snax_alu/` directory. Take time to check the simple design.
 
-# SNAX ALU Accelerator Datapath
 
-The figure below shows the SNAX ALU datapath:
+# SNAX ALU Datapath
 
-Again, we label points of interest:
-
-1 - 
-
-## Accelerator Architecture
-
-## Modes and Features
-
-## Interfaces
-
-## Timing Diagrams
-
-
-
-## TODOs:
-- Describe the accelerator of interest
-- Show a detailed block diagram of the signals
-- Mention and describe what the CSR Manager does
-- Describe the CSRs to be used
-    - Mode: +, -, x, XOR
-    - Data length
-    - Start
-    - Busy
-    - Counter
-- Have a timing diagram interface to describe what happens for the signals
-- Indicate which repository to see this structure
+{%
+   include-markdown '../../hw/snax_alu/doc/snax_alu.md'
+   start="# SNAX ALU Accelerator Datapath"
+   comments=false
+%}
