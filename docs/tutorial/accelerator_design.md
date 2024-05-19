@@ -21,3 +21,51 @@ We labeled a few important details about the shell:
    start="# SNAX ALU Accelerator Datapath"
    comments=false
 %}
+
+# Adding Your Accelerator to the Configuration File
+
+You can add your accelerator configurations in a configuration file. The SNAX ALU configuration `snax-alu.hjson` has core templates which configure the Snitch core and how it connects to an accelerator. The `snax-alu` core template is:
+
+```json
+// SNAX Accelerator Core Templates
+snax_alu_core_template: {
+    isa: "rv32imafd",
+    xssr: true,
+    xfrep: true,
+    xdma: false,
+    xf16: true,
+    xf16alt: true,
+    xf8: true,
+    xf8alt: true,
+    xfdotp: true,
+    xfvec: true,
+    snax_acc_cfg: {
+        snax_acc_name: "snax_alu"
+        snax_tcdm_ports: 16,
+        snax_num_rw_csr: 3,
+        snax_num_ro_csr: 2,
+        snax_streamer_cfg: {$ref: "#/snax_alu_csr_streamer_template" }
+    },
+    num_int_outstanding_loads: 1,
+    num_int_outstanding_mem: 4,
+    num_fp_outstanding_loads: 4,
+    num_fp_outstanding_mem: 4,
+    num_sequencer_instructions: 16,
+    num_dtlb_entries: 1,
+    num_itlb_entries: 1,
+    // Enable division/square root unit
+    // Xdiv_sqrt: true,
+},
+```
+The first operations before the `snax_acc_cfg` pertain to the Snitch core configurations. Particularly what ISA to use and which additional features it includes. You would usually keep this by default.
+
+The `snax_acc_cfg`  contains the configurations for the accelerator. The configuration definitions are:
+
+- `snax_acc_name`: Is the name appended to the different wrappers discussed in [Connecting the Shell](./connect_shell.md) section.
+- `snax_tcdm_ports`: Is the number of TCDM that your accelerator needs.
+- `snax_num_rw_csr`: Is the number of RW registers your accelerators has. This affects the connection ports of the CSR manager. More details in [SNAX CSR Manager](./csrman_design.md).
+- `snax_num_ro_csr`: Is the number of RO registers your accelerator has. This affects the connection ports CSR manager. More details in [SNAX CSR Manager](./csrman_design.md).
+- `snax_streamer_cfg`: Contains the settings for your streamer. More details are in [SNAX Streamer](./streamer_design.md)
+
+You can find more details in the [Harware Schema](schema-doc/snitch_cluster.md) section. 
+
