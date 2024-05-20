@@ -41,7 +41,7 @@ The CSR manager has a set of read-write (RW) registers and read-only (RO) regist
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/b9c4758a-ad20-4e3b-86f8-5dc7b649df09)
 
-In our [SNAX ALU accelerator](./accelerator_design.md), we have 2 main configuration RW registers: the mode and the data length to process. The 3rd RW register is the start that sends the configured settings to the accelerator data path. It is only when you assert the LSB of the last RW register (or the start register) that the CSR manager transacts all configurations to the accelerator.
+In our [SNAX ALU accelerator](./accelerator_design.md), we have 2 main configuration RW registers: the mode and the data length to process. The 3rd RW register is the start that sends the configured settings to the accelerator data path. It is only when you assert the LSB of the last RW register (which we named as the start register) that the CSR manager transacts all configurations to the accelerator.
 
 When the accelerator is not available to accept configuration transactions, the CSR holds the last transaction until it is successful. The timing diagram below shows this:
 
