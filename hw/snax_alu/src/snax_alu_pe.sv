@@ -36,7 +36,7 @@ module snax_alu_pe #(
   localparam int unsigned CsrAddrXor = 3;
 
   //-------------------------------
-  // Wires and combinationa logic
+  // Wires and combinational logic
   //-------------------------------
   logic [2*DataWidth-1:0] result_wide;
 

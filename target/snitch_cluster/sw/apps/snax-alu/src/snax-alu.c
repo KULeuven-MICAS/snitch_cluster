@@ -96,7 +96,7 @@ int main() {
 
         // Compare results and check if the
         // accelerator returns correct answers
-        // For every incorrect anwer, increment err
+        // For every incorrect answer, increment err
         uint64_t check_val;
 
         for (uint32_t i = 0; i < DATA_LEN; i++) {
