@@ -29,7 +29,7 @@ As we go through the tutorial, you will see that several of these components are
 
 # What Do You Need to Build This System?
 
-These are the three major steps that you will see in going through this tutorial. We emphasize that these make it easy for someone new to integrate there accelerator into the system. To give the users a perspective on what they need to work on, we only need the following:
+These are major steps that you will see in going through this tutorial. We emphasize that these make it easy for someone new to integrate there accelerator into the system. To give the users a perspective on what they need to work on, we only need the following:
 
 ## Building Your Accelerator Shell
 
@@ -65,12 +65,18 @@ Parameters like the `tcdm` configurations indicate the `size` in kB and the numb
 %}
 
 ## Configuring the SNAX CSR Manager
+
 A CSR manager is available to handle the control from the Snitch cores and dispatching the configuration registers to the accelerator. The accelerator needs to get the set registers through a decoupled interface. More details are in [CSR Manager Design](./csrman_design.md)
 
 ## Configuring the SNAX Streamer
+
 A streamer is available for providing reconfigurable and flexible data access from the L1 TCDM to the accelerator. The accelerator needs to comply with the decoupled data interfaces. More details are in [Streamer Design](./streamer_design.md).
 
-## Programming Your Accelerator
+## Building Your System
+
+Building your system is fully-automated by the scripts and makefiles in this platform. As long as you configure your system accordingly, then the entire build process can be excuted with a single `make` command. More details are in the [Building the Architecture](./build_system.md) section.
+
+## Programming Your System
 
 After building the system, we can immediatley test and profile your work through a C-code program. We write CSR functions to configure the accelerator. We provide a detail tutorial in [Programming Your Design](./programming.md).
 
