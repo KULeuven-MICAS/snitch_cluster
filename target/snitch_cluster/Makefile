@@ -39,32 +39,25 @@ include $(ROOT)/target/common/common.mk
 # SNAX Generations #
 ####################
 
+# CFG_OVERRIDE_NAME is the name of the given configuration
+# for example cfg/snax-example.hjson -> snax-example
+CFG_OVERRIDE_NAME = $(patsubst cfg/%.hjson,%, $(CFG_OVERRIDE))
+
+# TODO: remove this section once monorepo conversion is complete
 ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-	include $(SNAX_GEMM_ROOT)/Makefile	
-
-	VSIM_BENDER += -t snax-gemm
-	VLT_BENDER  += -t snax-gemm
-	VCS_BENDER  += -t snax-gemm
+	include $(shell $(BENDER) path $(CFG_OVERRIDE_NAME))/Makefile
+else ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
+	# Override faulty name
+	CFG_OVERRIDE_NAME = snax-streamer-gemm-dev
+	include $(shell $(BENDER) path $(CFG_OVERRIDE_NAME))/Makefile
+else
+	SNAX_GEN += ${GENERATED_DIR}/${CFG_OVERRIDE_NAME}
 endif
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
-	SNAX_DEV_ROOT ?= $(shell $(BENDER) path snax-streamer-gemm-dev)
-	include $(SNAX_DEV_ROOT)/Makefile
-
-	VSIM_BENDER += -t snax-streamer-gemm-dev
-	VLT_BENDER  += -t snax-streamer-gemm-dev
-	VCS_BENDER  += -t snax-streamer-gemm-dev
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
-
-	SNAX_GEN += ${GENERATED_DIR}/snax-alu
-
-	VSIM_BENDER += -t snax-alu
-	VLT_BENDER  += -t snax-alu
-	VCS_BENDER  += -t snax-alu
-
+ifdef CFG_OVERRIDE
+	VSIM_BENDER += -t $(CFG_OVERRIDE_NAME)
+	VLT_BENDER  += -t $(CFG_OVERRIDE_NAME)
+	VCS_BENDER  += -t $(CFG_OVERRIDE_NAME)
 endif
 
 ############
