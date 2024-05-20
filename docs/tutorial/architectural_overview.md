@@ -56,7 +56,7 @@ cluster: {
    // Other things below
 ```
 
-Parameters like the `tcdm` configurations indicate the `size` in kB and the number of memory banks. These settings automatically adjust the system. You can find more details in the [Harware Schema](schema-doc/snitch_cluster.md) section. 
+Parameters like the `tcdm` configurations indicate the `size` in kB and the number of memory banks. These settings automatically adjust the system. You can find more details in the [Hardware Schema](schema-doc/snitch_cluster.md) section. 
 
 {%
    include-markdown './accelerator_design.md'
