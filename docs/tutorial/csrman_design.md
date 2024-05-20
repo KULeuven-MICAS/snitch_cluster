@@ -107,3 +107,8 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
  - Can you see where the SNAX CSR manager is instanced?
  - Can you tell what the SNAX CSR wrapper is trying to fix?
+
+# Try Modifying CSR Manager Yourself!
+
+1 - Modify the number of RW and RO registers with the `snax_num_rw_csr` and `snax_num_ro_csr` parameters in the `snax-alu.hjson` file.
+2 - Then re-generate again and see what changes in both the Chisel-generated file and the wrapper file.
