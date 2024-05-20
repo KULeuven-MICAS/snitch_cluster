@@ -41,7 +41,7 @@ In the directory `./target/snitch_cluster/cfg/` you will find several configurat
 
 For example, you would find the cluster or system configuration at the first part:
 
-```json
+```hjson
 cluster: {
    boot_addr: 4096, // 0x1000
    cluster_base_addr: 268435456, // 0x1000_0000
