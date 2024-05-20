@@ -66,7 +66,7 @@ The RO registers are read-only registers that the CSR manager can read from. The
 
 You only need to specify the number of RW and RO registers of the CSR manager in the `snax-alu.hjson` configuration file. The snippet below shows the `snax_acc_cfg` dictionary:
 
-```json
+```hjson
 snax_acc_cfg: {
     snax_acc_name: "snax_alu"
     snax_tcdm_ports: 16,
