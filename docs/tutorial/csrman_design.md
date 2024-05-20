@@ -16,7 +16,7 @@ There are two sets of channels, the request channel and the response channel. Th
 | :------------------: | :------------: | :------------------------------------------: |
 | csr_req_addr_i[31:0] | req            |  Register address                            |
 | csr_req_data_i[31:0] | req            |  Data to write unto the specified address    |
-| csr_req_write_i      | req            |  Write/read signal: 1 - write, 0 read        |
+| csr_req_write_i      | req            |  Write/read signal: 1 = write, 0 = read      |
 | csr_req_valid_i      | req            |  Transaction is valid                        |
 | csr_req_ready_o      | req            |  CSR manager is ready to accept transactions |
 | csr_rsp_data_o[31:0] | rsp            |  Data in response to reads                   |
