@@ -35,7 +35,7 @@ The second side is the **(4) accelerator datapath interface**. The CSR manager s
 
 The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, respectively.
 
-# CSR Manager Features
+# CSR Manager Features for SNAX ALU
 
 The CSR manager has a set of read-write (RW) registers and read-only (RO) registers. Our CSR manager has a mechanism that bulk transfers a set of configurations to the main accelerator. The last RW register is always the start or send signal to transact all configurations into the accelerator. The figure below demonstrates this:
 
