@@ -33,7 +33,7 @@ The second side is the **(4) accelerator datapath interface**. The CSR manager s
 | csr_reg_set_ready_i               |  Accelerator side is ready to accept configurations |
 | csr_reg_ro_set_i [NumRoCsr][31:0] |  Packed RO register data                            |
 
-The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, respectively.
+The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, respectively. These are design-time parameters which we configure for the CSR manager. See section [Configuring the Generated CSR Manager](#configuring-the-generated-csr-manager)
 
 # CSR Manager Features for SNAX ALU
 
