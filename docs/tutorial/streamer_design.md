@@ -9,6 +9,7 @@ Accelerators attain peak performance when data continuously streams into them; o
 
 It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different memory layouts and how an accelerator would get the data. The top memory address is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/4428f8d7-2d35-4605-8bec-92929d195643)
 
 The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate stride memory address stride pointing to the memory addresses.
 
@@ -22,6 +23,8 @@ for(i = 0; i < 4; i++):
 Another data layout in memory is shown on the right of the figure. The data can be arranged in a contiguous fashion. This time for input A it needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
+
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/2ecaf54a-ae62-42ab-be55-b1cd3c02c377)
 
 Consider the memory layout 1. Each port of the accelerator needs to compute the target address as:
 
@@ -89,6 +92,9 @@ The affine address generation is the working principle of the SNAX streamer. Wit
 # Streamer Microarchitecture
 
 The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in [Connect The Shell](./connect_shell.md) section.
+
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/37900d11-504d-4659-ba9a-aa7efe589975)
+
 ## Streamer Interfaces
 
 ### **(3) TCDM interface** 
@@ -148,6 +154,7 @@ There are two things to consider when we configure the streamers: first is the m
 ## SNAX ALU Streamer Microarchitecture
 For our SNAX ALU accelerator, we want the streamer to have the microarchitecture shown in the figure below:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/156e30c3-c682-4f01-b801-fee5ba7bb139)
 
 Some notable characteristics:
 - We need two reader ports each with a data width that is 256 bits wide. We also want to use 8 FIFO buffers for each reader port. The SNAX ALU will have 4 PEs in parallel each taking in 64 bits data in each PE. Hence, the need for 256 bits wide reader port.
@@ -332,8 +339,9 @@ snax_test_template :{
   stationarity: [0,0,0]
 }
 ```
-
 Microarchitecturally, the streamer would look like the figure below:
+
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/0776d3b8-79d7-4a37-ba30-f60f8ca026f4)
 
 Some details include:
 - Since there are 8 parallel ports for the input and output then the accelerator interfaces would have 512-bit channels.
