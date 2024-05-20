@@ -7,20 +7,20 @@ The SNAX streamer is a Chisel-genearted module to help streamline the delivery o
 
 Accelerators attain peak performance when data continuously streams into them; otherwise, they spend cycles waiting for data availability. Delays often occur due to mismatched data arrangements in shared memory or congestion among accelerators accessing the same banks concurrently.
 
-It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different memory layouts and how an accelerator would get the data. The top memory address is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
+It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different memory layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/4428f8d7-2d35-4605-8bec-92929d195643)
 
 The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate stride memory address stride pointing to the memory addresses.
 
-For example, input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
+For example, if the data is arranged in memory layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
 
 ```
 for(i = 0; i < 4; i++):
   target_address_a = base_address_a + temporal_stride_a*i;
 ```
 
-Another data layout in memory is shown on the right of the figure. The data can be arranged in a contiguous fashion. This time for input A it needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
+Another arrangement in memory layout 2 shows that the data can be arranged in a contiguous fashion. This time, input A needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
@@ -58,6 +58,24 @@ This spatial stride is useful for parallel accesses. For example, accessing data
 target_address_a[0] = [0,12,24,36]
 target_address_a[1] = [2,14,26,38]
 target_address_a[2] = [4,16,28,40]
+```
+
+Another example in memory layout 3 shows that data is placed semi-contigiously in memory. To get the data in this manner, we need a second temporal loop bound. Such that:
+
+```
+for(i = 0; i < 2; i++):
+  for(j = 0; j <2; j++):
+    # Parfor equivalent
+    parfor(k = 0; k < 3; k++):
+      target_address_a[k] = base_address_a + temporal_stride_a_i*i + temporal_stride_a_j*j + spatial_stride_i*k;
+```
+
+Where `temporal_stride_a_i` is the stride for the outer temporal loop bound and `temporal_stride_a_j` is the stride for the inner temporal loop bound. We can set `temporal_stride_a_i=12` and `temporal_stride_a_j=3` to access data of memory layout 3. This results in a sequence:
+
+```
+target_address_a[0] = [0,12,12,15]
+target_address_a[1] = [1,13,13,16]
+target_address_a[2] = [2,14,14,17]
 ```
 
 Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide design- and run-time configurable streamer. 
