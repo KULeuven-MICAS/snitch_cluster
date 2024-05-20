@@ -27,7 +27,7 @@ We labeled a few important details about the shell:
 
 You can add your accelerator configurations in a configuration file. The SNAX ALU configuration `snax-alu.hjson` has core templates which configure the Snitch core and how it connects to an accelerator. The `snax-alu` core template is:
 
-```json
+```hjson
 // SNAX Accelerator Core Templates
 snax_alu_core_template: {
     isa: "rv32imafd",
