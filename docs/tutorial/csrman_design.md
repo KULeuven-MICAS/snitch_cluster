@@ -2,7 +2,10 @@
 
 The **(1) Control-Status Register (CSR) manager** is a chisel-generated module to handle CSR transactions from the Snitch core to the accelerator. The accelerator only needs to comply with the CSR interface. The detailed diagram is shown below:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/97af01e6-fcb0-48f7-880c-8bfdb1166308)
+
 There is a **(2) `snax_csr_wrapper`** which is a wrapper to combine signals from the Chisel generated module. As you will see later in [Example CSR Generation](#example-csr-generation), the Chisel generated SNAX CSR Manager will have several unpacked signals. The purpose of the wrapper is to pack these signals and make it easier for connecting to other modules. More details about the wrappers are discussed in [Connecting the Shell](./connect_shell.md) section.
+
 # CSR Manager Interfaces
 
 There are two sides of the CSR interfaces. First is the **(3) Snitch core interface** that handles transactions between the CPU core and the CSR manager. You control this interfaces using RISCV CSR instructions. This will be discussed in the [Programming Your Accelerator](./programming.md) section.
@@ -36,14 +39,15 @@ The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, resp
 
 The CSR manager has a set of read-write (RW) registers and read-only (RO) registers. Our CSR manager has a mechanism that bulk transfers a set of configurations to the main accelerator. The last RW register is always the start or send signal to transact all configurations into the accelerator. The figure below demonstrates this:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/b9c4758a-ad20-4e3b-86f8-5dc7b649df09)
+
 In our [SNAX ALU accelerator](./accelerator_design.md), we have 2 main configuration RW registers: the mode and the data length to process. The 3rd RW register is the start that sends the configured settings to the accelerator data path. It is only when you assert the LSB of the last RW register (or the start register) when the CSR manager transacts all configurations to the accelerator.
 
 When the accelerator is not available to accept configuration transactions, the CSR holds the last transaction until it is successful. The timing diagram below shows this:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/bb31e9e5-4f80-4acc-b9ee-72f6866bec13)
 
 The CSR manager is useful for double buffering. For example, when an accelerator is already processing an old configuration, the Snitch core can already configure new settings. This does not overwrite the old configuration. This is particularly useful in hiding CSR setup cycles because we can setup configurations while the accelerator is running.
-
-
 
 The RO registers are read-only registers that the CSR manager can read from. These are mostly used for monitoring purposes like status or performance counters. The addresses of the RO registers are immediatley after the RW registers. For example, the register table in [Accelerator Design](./accelerator_design.md) is copied below. Observe that all RO registers are after te RW registers.
 
