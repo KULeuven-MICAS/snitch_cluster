@@ -134,7 +134,7 @@ jobs:
           sw/runtime.yaml sw/standard-fp.yaml sw/snax-streamer-gemm-run.yaml -j
 
   sw-snax-data-reshuffler-cluster-vlt-generic:
-    name: Simulate SW on SNAX Streamer GEMM Cluster w/ Verilator (Generic LLVM)
+    name: Simulate SW on SNAX Data Reshuffler Cluster w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/kuleuven-micas/snax:main
@@ -156,7 +156,8 @@ jobs:
         working-directory: target/snitch_cluster
         run: |-
           ./run.py --simulator verilator \
-          sw/runtime.yaml sw/standard-fp.yaml sw/snax-data-reshuffler-run.yaml -j
+          sw/runtime.yaml sw/standard-fp.yaml \
+          sw/snax-data-reshuffler-run.yaml -j
 
   sw-snax-mac-mult-cluster-vlt-generic:
     name: Simulate SW on SNAX Multiple MAC Cluster w/ Verilator (Generic LLVM)
