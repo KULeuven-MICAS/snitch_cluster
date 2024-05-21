@@ -1,6 +1,6 @@
 # Review of Architecture
 
-Previously we discussed the [Accelerator Design](./accelerator_design.md), the[CSR Manager Design](./csrman_design.md) and the [Streamer Design](./streamer_design.md). These are the main components that are tightly coupled together in a shell before connecting to the system. The figure below shows the system of interest again but with more labels:
+Previously we discussed the [Accelerator Design](./accelerator_design.md), the [CSR Manager Design](./csrman_design.md) and the [Streamer Design](./streamer_design.md). These are the main components that are tightly coupled together in a shell before connecting to the system. The figure below shows the system of interest again but with more labels:
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/0090e1a4-15c5-4852-a351-7c3ee0368e1f)
 
@@ -77,7 +77,7 @@ This is prefixed at the beginning of each generated file. Moreover, it also sets
       - target/snitch_cluster/generated/${snax_acc_name}/${snax_acc_name}_wrapper.sv
 ```
 
-Where each `${snax_acc_name}` is substituted with the parameter name you specified.
+Where you should substitute `${snax_acc_name}`  with the parameter name you specified.
 
 ## Updating the Makefiles!
 
