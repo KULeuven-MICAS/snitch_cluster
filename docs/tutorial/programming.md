@@ -86,6 +86,8 @@ snrt_cluster_hw_barrier();
 
 Since we are doing parallel programming, hardware barriers are program fences to synchronize the timing of the cores. When we run the program from the start of the main, both the Snitch core with the SNAX ALU accelerator and DMA core are running in parallel. But since the assignment of the DMA tasks is for the DMA core only, the Snitch core attached to the SNAX ALU skips the task assignment and runs the `snrt_cluster_hw_barrier();` immediatley. You can find the function definition in `./sw/snRuntime/src/sync.h`. When the function is called, the Snitch core enters a stall state waiting for all Snitch cores to run the same function. When all Snitch cores reach the function, then the cores proceed do the next tasks. The figure below visualizes this sequence:
 
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/9b797246-3040-465c-85bb-fe107c621861)
+
 When the DMA core finishes the transfer, the next task assignment is for the compute core where the SNAX ALU is connected to. We use the `snrt_is_compute_core()` function to indicate if the core is a compute core or a DMA core. You can find the function definition in `./sw/snRuntime/src/team.h`. Since we only have 1 compute core then this condition is enough. 
 
 !!! note
