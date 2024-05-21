@@ -51,6 +51,7 @@ def postprocessing_simd_golden_model(
         c[i] = var
     return c
 
+
 # Add stdint.h header
 def emit_header_file(**kwargs):
     emit_str = "#include <stdint.h>\n\n"
@@ -66,8 +67,10 @@ def emit_gemm_data(**kwargs):
     data_str = []
 
     # Generating matrix size settings
-    data_str += [format_scalar_definition("int8_t", "tempLoop0", kwargs["tempLoop0"])]
-    data_str += [format_scalar_definition("int8_t", "tempLoop1", kwargs["tempLoop1"])]
+    data_str += [format_scalar_definition("int8_t", "tempLoop0",
+                 kwargs["tempLoop0"])]
+    data_str += [format_scalar_definition("int8_t", "tempLoop1",
+                 kwargs["tempLoop1"])]
 
     # Generating temporal strides settings
 
@@ -93,13 +96,15 @@ def emit_gemm_data(**kwargs):
     ]
 
     # Generating base address pointers
-    data_str += [format_scalar_definition("int32_t", "delta_local_in", kwargs["delta_local_in"])]
-    data_str += [format_scalar_definition("int32_t", "delta_local_out", kwargs["delta_local_out"])]
+    data_str += [format_scalar_definition("int32_t", "delta_local_in",
+                 kwargs["delta_local_in"])]
+    data_str += [format_scalar_definition("int32_t", "delta_local_out",
+                 kwargs["delta_local_out"])]
 
     # Generating random constant values
     input_zp_i = np.random.randint(MIN, MAX)
     output_zp_i = np.random.randint(MIN, MAX)
-    shift_i = np.random.randint(0, 63) # values between 0-63
+    shift_i = np.random.randint(0, 63)  # values between 0-63
     max_int_i = MAX
     min_int_i = MIN
     double_round_i = np.random.randint(0, 1)
@@ -127,7 +132,7 @@ def emit_gemm_data(**kwargs):
         )
     ]
     data_str += [
-    format_scalar_definition(
+        format_scalar_definition(
             "int8_t", "min_int_i", min_int_i
         )
     ]
@@ -144,9 +149,6 @@ def emit_gemm_data(**kwargs):
 
     # Generating random input data vector
     length_in = (
-        kwargs["tempLoop0"] * kwargs["tempLoop1"] * kwargs["vec_len"]
-    )
-    length_out = (
         kwargs["tempLoop0"] * kwargs["tempLoop1"] * kwargs["vec_len"]
     )
     data_in = np.random.randint(-2**31, 2**31 - 1, length_in)
@@ -169,7 +171,8 @@ def emit_gemm_data(**kwargs):
     # Writing testing data and golden data into data.h
     data_str += [format_vector_definition("int32_t", "DataIn", data_in)]
     data_str += [format_vector_definition("int8_t", "C_golden", c_golden)]
-    data_str += [format_vector_definition("int8_t", "C_golden_c_spec", c_golden)]
+    data_str += [format_vector_definition("int8_t", "C_golden_c_spec",
+                 c_golden)]
     data_str += [format_vector_definition("int8_t", "C", c_init)]
     data_str += [format_vector_definition("int8_t", "C_cpu", c_cpu)]
 
