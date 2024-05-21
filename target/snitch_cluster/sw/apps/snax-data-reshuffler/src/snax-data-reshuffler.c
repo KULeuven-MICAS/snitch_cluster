@@ -54,9 +54,6 @@ int main() {
         wait_data_reshuffler();
         wait_streamer();
 
-        data_reshuffler_cycle = read_data_reshuffler_perf_counter();
-        printf("data_reshuffler_cycle: %d\n", data_reshuffler_cycle);
-
         // Compare SNAX data-reshuffler result with golden python model
         err += check_data_reshuffler_result(
             tempLoop0, tempLoop1, tempStride0_out, tempStride1_out,
