@@ -73,6 +73,7 @@ parfor (int i = 0; i < 16; i++):
     O += A[i]*B[i]
 O += bias
 ```
+
 - Taking note that the `parfor` indicates that the MAC process needs to be process spatially in 16 parallel ports.
 
 - The accelerator is an oversimplified MAC with a bias addition that takes in 32 inputs, 16 parallel ports for input A and 16 parallel ports for input B.
