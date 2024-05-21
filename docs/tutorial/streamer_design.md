@@ -7,11 +7,11 @@ The SNAX streamer is a Chisel-genearted module to help streamline the delivery o
 
 Accelerators attain peak performance when data continuously streams into them; otherwise, they spend cycles waiting for data availability. Delays often occur due to mismatched data arrangements in shared memory or congestion among accelerators accessing the same banks concurrently.
 
-It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different memory layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
+It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/4428f8d7-2d35-4605-8bec-92929d195643)
 
-The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left-bottom of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously in different cycles with appropriate stride memory address stride pointing to the memory addresses.
+The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate memory address strides pointing to the memory addresses.
 
 For example, if the data is arranged in memory layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
 
@@ -121,7 +121,7 @@ The figure below shows a more detailed architecture of the streamer. The **(1) s
 
 ### **(3) TCDM interface** 
 
-The **TCDM interface** has request and response channels and also use a decoupled interface. The table below describe the details of the request and response channels:
+The **TCDM interface** has request and response channels and also uses a decoupled interface. The table below describe the details of the request and response channels:
 
 | signal name        | description                                |
 | :-----------------:| :----------------------------------------: |
@@ -130,7 +130,7 @@ The **TCDM interface** has request and response channels and also use a decouple
 | tcdm_req_write_o   | Write enable signal. 1 = write, 0 = read.  |
 | tcdm_req_strb_o    | Byte strobe.                               |
 | tcdm_req_core_id_o | Core ID. Currently unused.                 |
-| tcdm_req_is_core_o | Request from core. core. Currently unused. |
+| tcdm_req_is_core_o | Request from core.       Currently unused. |
 | tcdm_req_valid_o   | Request channel is valid.                  |
 | tcdm_req_ready_i   | Request channel is ready.                  |
 | tcdm_rsp_data_i    | Response data coming from memory.          |
@@ -138,7 +138,7 @@ The **TCDM interface** has request and response channels and also use a decouple
 
 !!! note
 
-  Some of the signals are currently unused by the streamer. However, we needed to comply with the TCDM IP of the Snitch platform.
+    Some of the signals are currently unused by the streamer. However, we needed to comply with the TCDM IP of the Snitch platform.
 
 The response channel only has a `valid` signal but no `ready` signal. The TCDM assumes that the receiving end will always be ready. The streamer automatically handles these response data through FIFO buffers and make sure no more new request is sent unless there are idle space to store new response.
 
@@ -209,6 +209,7 @@ If you scroll down to the bottom of the configuration file, you should see the `
 
 
 The `temporal_addrgen_unit_params` component with `loop_dim` generates the number of temporal loop bounds. Since it's just 1, then we only have 1 temporal loop bound.
+
 ```hjson
 temporal_addrgen_unit_params: {
   loop_dim: 1,
@@ -217,7 +218,7 @@ temporal_addrgen_unit_params: {
 
 The `fifo_reader_params` and `fifo_writer_params` configure the FIFOs. Take note that the FIFOs are directly connected to the accelerator interface. It consists of the `fifo_width` which configures the datawidth of the accelerator interface ports. It also has the FIFO depths `fifo_depth` which configures the depth of the FIFOs.
 
-```
+```hjson
 fifo_reader_params: {
   fifo_width: [256, 256],
   fifo_depth: [8, 8],
@@ -231,7 +232,7 @@ fifo_writer_params: {
 
 The `data_reader_params` and `data_writer_params` effectively configures the TCDM interface ports. It consists of `tcdm_ports_num` which control how many TCDM ports are needed. The `spatial_bounds` pertain to the spatial unrolling factors (your parfor) for each data mover. The `spatial_dim` is the dimension of spatial unrolling factors (your parfor) for each data mover. The `element_width` is the single data element width for each data mover, useful for generating spatial addresses.
 
-```
+```hjson
 data_reader_params:{
   tcdm_ports_num: [4, 4],
   spatial_bounds: [[4], [4]],
@@ -262,20 +263,20 @@ Based on the configuration file we expect the CSR registers to have:
 
 Below is a tabulated version of the CSRs of the streamers with the register address, type, and description:
 
-|  register name      |  register addr  |   type  |                   description                        |
-| :-----------------: | :-------------: | :-----: |:---------------------------------------------------- |
-| temporal loop bound |       0         |   RW    | Temporal loop bound for address generation           |
-| temporal stride 0   |       1         |   RW    | Temporal stride for input A                          |
-| temporal stride 1   |       2         |   RW    | Temporal stride for input B                          |
-| temporal stride 2   |       3         |   RW    | Temporal stride for output OUT                       |
-| spatial stride 0    |       4         |   RW    | Spatial stride for input A                           |
-| spatial stride 1    |       5         |   RW    | Spatial stride for input B                           |     
-| spatial stride 2    |       6         |   RW    | Spatial stride for output OUT                        |     
-| base addr 0         |       7         |   RW    | Base address for input A                             |
-| base addr 1         |       8         |   RW    | Base address for input B                             |
-| base addr 2         |       9         |   RW    | Base address for output OUT                          |
-| start               |       10        |   RW    | Start register to send configurations                |
-| perf. counter       |       11        |   RO    | Performance counter indicating number of cycles ran  | 
+|  register name      |  register offset  |   type  |                   description                             |
+| :-----------------: | :-------------:   | :-----: |:--------------------------------------------------------- |
+| temporal loop bound |       0           |   RW    | Temporal loop bound for address generation                |
+| temporal stride 0   |       1           |   RW    | Temporal stride for input A                               |
+| temporal stride 1   |       2           |   RW    | Temporal stride for input B                               |
+| temporal stride 2   |       3           |   RW    | Temporal stride for output OUT                            |
+| spatial stride 0    |       4           |   RW    | Spatial stride for input A                                |
+| spatial stride 1    |       5           |   RW    | Spatial stride for input B                                |     
+| spatial stride 2    |       6           |   RW    | Spatial stride for output OUT                             |     
+| base addr 0         |       7           |   RW    | Base address for input A                                  |
+| base addr 1         |       8           |   RW    | Base address for input B                                  |
+| base addr 2         |       9           |   RW    | Base address for output OUT                               |
+| start               |       10          |   RW    | Start register to send configurations and start streaming |
+| perf. counter       |       11          |   RO    | Performance counter indicating number of cycles ran       | 
 
 
 # Example Streamer Generation
@@ -302,22 +303,59 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 6 - Find the top module `snax_alu_streamer_StreamerTop` within the `snax_alu_streamer_StreamerTop.sv` file. Can you identify the signals discussed in this section?
 
-- Which are the interfaces for the accelerator side?
-- Can you identify which are for the write and read ports?
-- How many are for write ports and how many are for read ports?
-- Which are the interfaces for the TCDM side? How many TCDM ports are there?
+<details>
+  <summary> Which are the interfaces for the accelerator side? </summary>
+  All signals with `*_streamer2accelerator_*` and `*_accelerator2streamer_*` in their signal names.
+</details>
+
+<details>
+  <summary> Can you identify which are for the write and read ports? </summary>
+  Signals with `*_streamer2accelerator_*` are for read ports and signals with `*_accelerator2streamer_*` are for write ports.
+</details>
+
+<details>
+  <summary> How many are for write ports and how many are for read ports? </summary>
+  There are 2 read ports (`*_streamer2accelerator_*`) and 1 write port (`*_accelerator2streamer_*`).
+</details>
+
+<details>
+  <summary> Which are the interfaces for the TCDM side? </summary>
+  All signals with `*_tcdm_*` in their signal names.
+</details>
+
+<details>
+  <summary> How many TCDM ports are there? </summary>
+  16 TCDM ports for both request and response channels.
+</details>
 
 7 - In the same `snax_alu_streamer_StreamerTop.sv` file find the `snax_alu_streamer_CsrManager` module. This is the CSR manager of the streamer.
 
-- Can you verify and count how many RW and RO ports there are?
-- Why do you think the start register is missing in the listed ports?
-- Which CSR number do you think pertains to the spatial stride for input A?
-- What about the CSR configuration interface?
+<details>
+  <summary> Can you verify and count how many RW and RO ports there are? </summary>
+  Referring to the table above, there should be 11 RW ports and 1 RO port. In the streamer's CSR manager it shows only 10 but the 11 is just not outputted. There is only 1 RO port.
+</details>
+
+<details>
+  <summary> Why do you think the start register is missing in the listed ports? </summary>
+  Because it only sends the register set configuration to the accelerator data path.
+</details>
+
+<details>
+  <summary> Which register offset do you think pertains to the spatial stride for input A? </summary>
+  Referring to the table above, it should be number 4.
+</details>
 
 8 - Find the generated wrapper `snax_alu_streamer_wrapper.sv`. 
 
- - Can you see where the Chisel-generated streamer is instanced?
- - Can you tell what the SNAX streamer wrapper is trying to fix?
+<details>
+  <summary> Can you see where the Chisel-generated streamer is instanced? </summary>
+  Yes! It should be with the instance name `i_snax_alu_streamer_top`.
+</details>
+
+<details>
+  <summary> Can you tell what the SNAX streamer wrapper is trying to fix? </summary>
+  It's basically repacking the unpacked signals of the Chisel-generated file into packed signals for easy integration in System Verilog.
+</details>
 
 # Try Modifying the Streamer!
 
@@ -328,7 +366,7 @@ Let's try a simple exercise but we will spoil the answer to you already. Suppose
 
 The configuration streamer template should look like:
 
-```
+```hjson
 snax_test_template :{
 
   temporal_addrgen_unit_params: {
@@ -390,7 +428,7 @@ In terms of CSR registers, the streamer would have the following:
 
 Because we now have two temporal loop bounds, the temporal stride registers are also doubled. We need two temporal strides, one for input and one for output, for each temporal loop bound. Therefore there are a total of 2 temporal strides for the first loop bound and another 2 temporal strides for the second loop bound.
 
-Finally, the affine address that this streamer can do is:
+Finally, the affine address generation that this streamer can do is:
 
 ```
 for(i = 0; i < N; i++):
