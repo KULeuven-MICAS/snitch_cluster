@@ -1,6 +1,6 @@
 # Streamer
 
-The SNAX streamer is a Chisel-genearted module to help streamline the delivery of data from memory to the accelerator. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section we will only cover the high-level aspects and how to configure the streamer.
+The SNAX streamer is a Chisel-genearted module to help streamline the delivery of data from memory to the accelerator and vice versa. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section we will only cover the high-level aspects and how to configure the streamer.
 
 
 # Why Do We Need a Streamer?
@@ -11,7 +11,7 @@ It's crucial to differentiate between the data layout in memory and the access p
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/4428f8d7-2d35-4605-8bec-92929d195643)
 
-The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate stride memory address stride pointing to the memory addresses.
+The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left-bottom of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously in different cycles with appropriate stride memory address stride pointing to the memory addresses.
 
 For example, if the data is arranged in memory layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
 
@@ -52,6 +52,8 @@ target_address_a[1] = [1,13,25,37]
 target_address_a[2] = [2,14,26,38]
 ```
 
+More epcifically, in cycle 1, the addresses 0, 1, 2 are generated. In cycle 2, the addresses 12, 13, 14 are generated, and so on.
+
 This spatial stride is useful for parallel accesses. For example, accessing data for memory layout 2 can be expressed using the same for loop but with `spatial_stride_a=2`. This results in the sequences below:
 
 ```
@@ -78,7 +80,7 @@ target_address_a[1] = [1,13,13,16]
 target_address_a[2] = [2,14,14,17]
 ```
 
-Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide design- and run-time configurable streamer. 
+Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
 
 # Flexible Affine Address Generation
 
@@ -105,11 +107,13 @@ for(tb_n_1 = 0; tb_n_1 < temporal_bound[n-1]; tb_n_1++)
 
 Where `temporal_bound[*]` pertains to the bounds of the temporal loops and `tb_*` pertains to the temporal indices. The `spatial_bound[*]` peratins to the bounds of the spatial loops and `sb_*` pertains to the spatial indices. Wroup them according to `temporal_address` and `spatial_address` and add them to the `base_address` which results in the `target_address`.
 
+The `temporal_bound[*]`, `tb_*`, and `sb_*` are run-time configurable. The number of the temporal loops and `sb_*` is design-time configurable.
+
 The affine address generation is the working principle of the SNAX streamer. With this, we can flexibily access data in various places of the memory. 
 
 # Streamer Microarchitecture
 
-The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in [Connect The Shell](./connect_shell.md) section.
+The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator as a flexible and efficient data movement unit. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in [Connect The Shell](./connect_shell.md) section.
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/37900d11-504d-4659-ba9a-aa7efe589975)
 
@@ -136,7 +140,7 @@ The **TCDM interface** has request and response channels and also use a decouple
 
   Some of the signals are currently unused by the streamer. However, we needed to comply with the TCDM IP of the Snitch platform.
 
-The response channel only has a `valid` signal but no `response` signal. The TCDM assumes that the receiving end will always be ready. The streamer automatically handles these response data through FIFO buffers.
+The response channel only has a `valid` signal but no `ready` signal. The TCDM assumes that the receiving end will always be ready. The streamer automatically handles these response data through FIFO buffers and make sure no more new request is sent unless there are idle space to store new response.
 
 ### (4) Accelerator Interface
 
@@ -148,19 +152,19 @@ The accelerator interface connects the streamer to the accelerator. It only has 
 
 The core of the streamers are the data movers which handle all write or read transactions. Each mover contains a *data mover* for handling transactions with the TCDM interconnect, FIFO buffers for handling transactions with the accelerator, and an *Address Generation Unit* (AGU) for providing the affine address generation to the data mover.
 
-We can also configure several settings for the streamers. This includes number of read and write data movers, the depth of the FIFOs, and even the data widths to use for the accelerator ports. These are design-time parameters. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) will demonstrate how to configure these.
+We can also configure several settings for the streamers. This includes number of read and write data movers, the depth of the FIFOs, and even the data widths to use for each accelerator port. These are design-time parameters. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) will demonstrate how to configure these.
 
 ### (6) Streamer CSR Manager
 
-The streamer has its own *(5) streamer CSR manager** which functions exactly the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
+The streamer has its own *(5) streamer CSR manager* which functions exactly the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
 
 The number of registers vary depending on the configured parameters in the configuration file. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) talks more about how the configuration file generates the registers. For now, it is important to understand the general set of registers that exists in the CSR manager. The table below shows the list of registers with their corresponding type and description.
 
 | register name           | type  | description                  |
 | :---------------------: | :---- | :--------------------------- |
-| temporal loop bounds    | RW    | Temporal loop bound for each temporal dimension. Can be more than RW    | 1 depending on number of loop bounds indicated. |
+| temporal loop bounds    | RW    | Temporal loop bound for each temporal dimension. | 1 depending on number of loop bounds indicated. |
 | temporal loop strides   | RW    | Temporal loop strides for each temporal dimension. Can be more than 1 depending on the number of data movers.
-| spatial loop strides    | RW    | Spatial loop strides for each data mover and for corresponding spatial dimension. The spatial dimension for each data mover can be different. It depends on the accelerator.
+| spatial loop strides    | RW    | Spatial loop strides for each data mover for corresponding spatial dimension. The spatial dimension for each data mover can be different. It depends on the accelerator.
 | base pointer            | RW    | Base pointer for each data mover |
 | start streamer          | RW    | This is the last RW register to transfer configurations unto the actual streamer CSRs. |
 | performance counter     | RO    | Single performance counter which tracks how many cycles the streamer ran. |
@@ -245,7 +249,7 @@ data_writer_params:{
 
 The number of elements in a list pertain to how many data movers there are. For example, there are 2 elements in the `data_reader_params` and therefore it instantiates two read data movers. There is only 1 element in the `data_writer_params` and hence only instantiates 1 write data mover.
 
-Finally there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. Basically, it only fixes the loop bound to 1. This is a special case scenario only. In the SNAX ALU, this is 0. 
+Finally there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. Basically, it only fixes the loop bound to 1. This is a special case scenario only, such as for output-stationary or weigt stationary accelerators. In the SNAX ALU, this is 0. 
 
 ## SNAX ALU Streamer CSRs
 
@@ -268,7 +272,7 @@ Below is a tabulated version of the CSRs of the streamers with the register addr
 | spatial stride 1    |       5         |   RW    | Spatial stride for input B                           |     
 | spatial stride 2    |       6         |   RW    | Spatial stride for output OUT                        |     
 | base addr 0         |       7         |   RW    | Base address for input A                             |
-| base addr 1         |       8         |   RW    | Base address for input A                             |
+| base addr 1         |       8         |   RW    | Base address for input B                             |
 | base addr 2         |       9         |   RW    | Base address for output OUT                          |
 | start               |       10        |   RW    | Start register to send configurations                |
 | perf. counter       |       11        |   RO    | Performance counter indicating number of cycles ran  | 
@@ -308,8 +312,9 @@ This is a good time to test our wrapper generation and see the changes in the CS
 - Can you verify and count how many RW and RO ports there are?
 - Why do you think the start register is missing in the listed ports?
 - Which CSR number do you think pertains to the spatial stride for input A?
+- What about the CSR configuration interface?
 
-7 - Find the generated wrapper `snax_alu_streamer_wrapper.sv`. 
+8 - Find the generated wrapper `snax_alu_streamer_wrapper.sv`. 
 
  - Can you see where the Chisel-generated streamer is instanced?
  - Can you tell what the SNAX streamer wrapper is trying to fix?
@@ -343,8 +348,8 @@ snax_test_template :{
   data_reader_params:{
     tcdm_ports_num: [8],
     spatial_bounds: [[8]],
-    spatial_dim: [1,1],
-    element_width: [64,64],
+    spatial_dim: [1],
+    element_width: [64],
   }
 
   data_writer_params:{
@@ -354,7 +359,7 @@ snax_test_template :{
     element_width: [64],
   }
 
-  stationarity: [0,0,0]
+  stationarity: [0,0]
 }
 ```
 Microarchitecturally, the streamer would look like the figure below:
