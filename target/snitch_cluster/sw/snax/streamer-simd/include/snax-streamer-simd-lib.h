@@ -47,6 +47,11 @@ void wait_streamer_simd();
 
 uint32_t read_simd_streamer_perf_counter();
 
+// Read status of SIMD, a read-only CSR. If this resgiter is one, the SIMD is
+// still working
+uint32_t read_simd_state();
+
+// Read perforamcne counter of SIMD, a read-only CSR
 uint32_t read_simd_perf_counter();
 
 // load the test data into TCDM

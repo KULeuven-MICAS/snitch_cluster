@@ -77,8 +77,13 @@ uint32_t read_simd_streamer_perf_counter() {
     return perf_counter;
 }
 
+uint32_t read_simd_state() {
+    uint32_t status = read_csr(960 + 19);
+    return staus;
+}
+
 uint32_t read_simd_perf_counter() {
-    uint32_t perf_counter = read_csr(960 + 19);
+    uint32_t perf_counter = read_csr(960 + 20);
     return perf_counter;
 }
 
