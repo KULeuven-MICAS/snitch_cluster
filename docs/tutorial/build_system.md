@@ -1,6 +1,6 @@
 # Review of Architecture
 
-Previously we discussed the [Building the Architecture](./build_system.md), the[CSR Manager Design](./csrman_design.md) and the [Streamer Design](./streamer_design.md). These are the main components that are tightly coupled together in a shell before connecting to the system. The figure below shows the system of interest again but with more labels:
+Previously we discussed the [Accelerator Design](./accelerator_design.md), the[CSR Manager Design](./csrman_design.md) and the [Streamer Design](./streamer_design.md). These are the main components that are tightly coupled together in a shell before connecting to the system. The figure below shows the system of interest again but with more labels:
 
 
 Here there are key wrappers. **(1) The accelerator shell** that needs to comply with the CSR manager and streamer interface. **(2) The CSR manager wrapper** and **(3) streamer wrapper** that converts the Chisel's unpacked signals to packed signals to easily connect RTL designs developed SystemVerilog. An **(4) accelerator wrapper** that encapsulates all components together. Finally, the **(5) top-level cluster wrapper** connects the accelerator wrapper to the entire system. Components (2), (3), (4), and (5) are all generated through a script. There are more details in the [Wrapper Generation Script](#wrapper-generation-script) section about the wrapper generation.
