@@ -30,7 +30,7 @@ dependencies:
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   hwpe-mac-engine:    { git: https://github.com/KULeuven-MICAS/hwpe-mac-engine.git, rev: 5d3b4525b665169fc8321c8a811f3c83ad3c72e8 }
   snax-gemm: { git: "https://github.com/KULeuven-MICAS/snax-gemm", rev: 7b391cb80ae3d9d69c57e224eb0380c842c07b08 }
-  snax-postprocessing-simd: { git: "https://github.com/KULeuven-MICAS/snax-postprocessing-simd", rev: b7dfcb91ea684166621b2e3a4d83fcdf0aac0b49 }
+  snax-postprocessing-simd: { git: "https://github.com/KULeuven-MICAS/snax-postprocessing-simd", rev: 889b2d9f348368a912dbc3183c65aaa27a7f0c9b }
 
 vendor_package:
   - name: musl
