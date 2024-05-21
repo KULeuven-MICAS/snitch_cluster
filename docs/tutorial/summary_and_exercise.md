@@ -55,6 +55,7 @@ make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN
 
 With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest:
 
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/6ff36b26-a207-4a5d-af91-725fe4b9b1d4)
 
 ## Accelerator Datapath Specifications
 
