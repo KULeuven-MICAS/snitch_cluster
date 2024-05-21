@@ -11,10 +11,7 @@
 #pragma once
 
 // the spatial unrolling of simd
-#define vec_len 64
-
-// set the address of the first CSR
-// uint32_t csr_offset = 1024;
+#define VEC_LEN 64
 
 // generate the configuration for CSR0
 int32_t gen_csr0_config(uint8_t input_zp_i, uint8_t output_zp_i,
@@ -45,13 +42,14 @@ void start_simd();
 // wait for the streamer to finish
 void wait_streamer_simd();
 
+// Read performance counter of streamer for SIMD, a read-only CSR
 uint32_t read_simd_streamer_perf_counter();
 
 // Read status of SIMD, a read-only CSR. If this resgiter is one, the SIMD is
 // still working
 uint32_t read_simd_state();
 
-// Read perforamcne counter of SIMD, a read-only CSR
+// Read performance counter of SIMD, a read-only CSR
 uint32_t read_simd_perf_counter();
 
 // load the test data into TCDM

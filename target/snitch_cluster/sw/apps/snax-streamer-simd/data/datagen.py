@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 KU Leuven.
+# Copyright 2024 KU Leuven.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -31,25 +31,30 @@ def postprocessing_simd_golden_model(
         min_int_i,
         double_round_i,
         multiplier_i):
-    c = np.zeros(data_in.shape)
-    for i in range(len(data_in)):
-        var = data_in[i] - input_zp_i
-        # avoid overflow
-        var = np.int64(var) * np.int64(multiplier_i)
-        var = np.int32(var >> (shift_i - 1))
-        if double_round_i:
-            if var >= 0:
-                var = var + 1
-            else:
-                var = var - 1
-        var = var >> 1
-        var = var + output_zp_i
-        if var > max_int_i:
-            var = max_int_i
-        if var < min_int_i:
-            var = min_int_i
-        c[i] = var
-    return c
+
+    # Step 1: Subtract input zero point
+    var = data_in - input_zp_i
+
+    # Step 2: Multiply with the multiplier avoiding overflow
+    var = np.int64(var) * np.int64(multiplier_i)
+
+    # Step 3: Right shift
+    var = np.int32(var >> (shift_i - 1))
+
+    # Step 4: Apply double rounding if necessary
+    if double_round_i:
+        var = np.where(var >= 0, var + 1, var - 1)
+
+    # Step 5: Final right shift
+    var = var >> 1
+
+    # Step 6: Add output zero point
+    var = var + output_zp_i
+
+    # Step 7: Clip the values to be within min and max integer range
+    var = np.clip(var, min_int_i, max_int_i)
+
+    return var
 
 
 # Add stdint.h header
@@ -73,7 +78,6 @@ def emit_gemm_data(**kwargs):
                  kwargs["tempLoop1"])]
 
     # Generating temporal strides settings
-
     data_str += [
         format_scalar_definition(
             "int32_t", "tempStride0_in", kwargs["tempStride0_in"]
@@ -114,34 +118,22 @@ def emit_gemm_data(**kwargs):
     data_str += [
         format_scalar_definition(
             "int8_t", "input_zp_i", input_zp_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int8_t", "output_zp_i", output_zp_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int8_t", "shift_i", shift_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int8_t", "max_int_i", max_int_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int8_t", "min_int_i", min_int_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int8_t", "double_round_i", double_round_i
-        )
-    ]
-    data_str += [
+        ),
         format_scalar_definition(
             "int32_t", "multiplier_i", multiplier_i
         )
@@ -149,7 +141,7 @@ def emit_gemm_data(**kwargs):
 
     # Generating random input data vector
     length_in = (
-        kwargs["tempLoop0"] * kwargs["tempLoop1"] * kwargs["vec_len"]
+        kwargs["tempLoop0"] * kwargs["tempLoop1"] * kwargs["VEC_LEN"]
     )
     data_in = np.random.randint(-2**31, 2**31 - 1, length_in)
 
@@ -169,12 +161,13 @@ def emit_gemm_data(**kwargs):
     c_cpu = np.zeros(c_golden.shape)
 
     # Writing testing data and golden data into data.h
-    data_str += [format_vector_definition("int32_t", "DataIn", data_in)]
-    data_str += [format_vector_definition("int8_t", "C_golden", c_golden)]
-    data_str += [format_vector_definition("int8_t", "C_golden_c_spec",
-                 c_golden)]
-    data_str += [format_vector_definition("int8_t", "C", c_init)]
-    data_str += [format_vector_definition("int8_t", "C_cpu", c_cpu)]
+    data_str += [format_vector_definition("int32_t", "DataIn", data_in),
+                 format_vector_definition("int8_t", "C_golden", c_golden),
+                 format_vector_definition("int8_t", "C_golden_c_spec",
+                                          c_golden),
+                 format_vector_definition("int8_t", "C", c_init),
+                 format_vector_definition("int8_t", "C_cpu", c_cpu)
+                 ]
 
     data_str = "\n\n".join(data_str)
 

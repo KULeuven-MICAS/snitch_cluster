@@ -13,12 +13,12 @@ int main() {
     if (snrt_is_compute_core()) {
         for (int loop1 = 0; loop1 < tempLoop1; loop1++) {
             for (int loop0 = 0; loop0 < tempLoop0; loop0++) {
-                for (int i = 0; i < vec_len; i++) {
-                    C_golden_c_spec[loop1 * tempLoop0 * vec_len +
-                                    loop0 * vec_len + i] =
+                for (int i = 0; i < VEC_LEN; i++) {
+                    C_golden_c_spec[loop1 * tempLoop0 * VEC_LEN +
+                                    loop0 * VEC_LEN + i] =
                         scale_quant_clamp_c_spec(
-                            DataIn[loop1 * tempLoop0 * vec_len +
-                                   loop0 * vec_len + i],
+                            DataIn[loop1 * tempLoop0 * VEC_LEN +
+                                   loop0 * VEC_LEN + i],
                             input_zp_i, output_zp_i, multiplier_i, shift_i,
                             max_int_i, min_int_i, double_round_i);
                 }

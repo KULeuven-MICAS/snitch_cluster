@@ -68,7 +68,6 @@ void start_simd() { write_csr(960 + 18, 1); }
 
 void wait_streamer_simd() {
     write_csr(960 + 18, 0);
-    write_csr(960 + 18, 0);
     write_csr(960 + 12, 0);
 }
 
@@ -77,6 +76,8 @@ uint32_t read_simd_streamer_perf_counter() {
     return perf_counter;
 }
 
+// Read status of SIMD, a read-only CSR. If this resgiter is one, the SIMD is
+// still working
 uint32_t read_simd_state() {
     uint32_t status = read_csr(960 + 19);
     return status;
@@ -99,8 +100,8 @@ void load_simd_test_data(int tempLoop0, int tempLoop1, int tempStride0,
                 base_ptr_local +
                 (loop1 * tempStride1 + loop0 * tempStride0) / sizeof(int32_t);
             addr_In =
-                base_ptr_l2 + loop1 * tempLoop0 * vec_len + loop0 * vec_len;
-            snrt_dma_start_1d(addr_in, addr_In, vec_len * sizeof(int32_t));
+                base_ptr_l2 + loop1 * tempLoop0 * VEC_LEN + loop0 * VEC_LEN;
+            snrt_dma_start_1d(addr_in, addr_In, VEC_LEN * sizeof(int32_t));
         }
     }
 }
@@ -147,11 +148,11 @@ uint32_t check_simd_result(int tempLoop0, int tempLoop1, int tempStride0,
 
     for (int loop1 = 0; loop1 < tempLoop1; loop1++) {
         for (int loop0 = 0; loop0 < tempLoop0; loop0++) {
-            for (int i = 0; i < vec_len; i++) {
+            for (int i = 0; i < VEC_LEN; i++) {
                 addr_out = base_ptr_local +
                            (loop1 * tempStride1 + loop0 * tempStride0) + i;
-                addr_Out = base_ptr_l2 + loop1 * tempLoop0 * vec_len +
-                           loop0 * vec_len + i;
+                addr_Out = base_ptr_l2 + loop1 * tempLoop0 * VEC_LEN +
+                           loop0 * VEC_LEN + i;
                 if ((int8_t)*addr_out != (int8_t)*addr_Out) {
                     error++;
                 }

@@ -13,5 +13,5 @@
     tempStride1_out: 256,
     delta_local_in: 0,
     delta_local_out: 4096,
-    vec_len: 64
+    VEC_LEN: 64
 }
