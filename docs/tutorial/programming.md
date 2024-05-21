@@ -50,7 +50,7 @@ local_a = (uint64_t *)snrt_l1_next();
 local_b = local_a + DATA_LEN;
 local_o = local_b + DATA_LEN;
 ```
-We will use `a` and `b` for inputs and `o` for the output. In the code snippet below the `snrt_l1_next()` is a built-in Snitch run-time function that assigns the start of the base address of the TCDM. You can find the function definition in `./sw/snRuntime/src/alloc.h`. The `DATA_LEN` is a `uint64_t` file indicating the total number of elements we need to process in our program. You can find this in the generated `data.h` later.
+We will use `a` and `b` for inputs and `o` for the output. In the code snippet below the `snrt_l1_next()` is a built-in Snitch run-time function that assigns the start of the base address of the TCDM. You can find the function definition in `./sw/snRuntime/src/alloc.h`. The `DATA_LEN` is a `uint64_t` data indicating the total number of elements we need to process in our program. You can find this in the generated `data.h` later.
 
 The first section is to run the Snitch with a DMA core to transfer data from an external memory (L2) to the local TCDM (L1) memory. See the code snippet below:
 
@@ -74,7 +74,7 @@ The `snrt_is_dm_core()` function is used to indicate that the assigned tasks wit
 
 The `snrt_mcycle()` is used to measure the current cycle count of the system. We use this later for tracing the number of cycles it needs to run a certain piece of code. We'll discuss more about tracing in [Other Tools](./other_tools.md) section later. Observe that the `snrt_mcycle()` is both at the start and end of the DMA tasks. We want to measure here the number of cycles it needs for the DMA to transfer the data from L2 to L1.
 
-Next, we transfer the data through the `snrt_dma_start_1d()` function where the arguments are the destination, source, and the number of bytes to transfer. You can find the function definition in `./sw/snRuntime/src/dma.h`. `local_a` and `local_b` are the destinations inside the TCDM L1 memory. Data arrays `A` and `B` are declared inside the `data.h`. `vectore_size` is of course the amount of data to transfer.
+Next, we transfer the data through the `snrt_dma_start_1d()` function where the arguments are the destination, source, and the number of bytes to transfer. You can find the function definition in `./sw/snRuntime/src/dma.h`. `local_a` and `local_b` are the destinations inside the TCDM L1 memory. Data arrays `A` and `B` are declared inside the `data.h` and it is stored in the L2. `vectore_size` is of course the amount of data to transfer.
 
 After the DMA tasks, we need to run a hardware barrier:
 
@@ -109,11 +109,11 @@ The first task is to configure the CSR registers for the streamers and the accel
 | base addr 0             | 7                        |   x3c7         | 
 | base addr 1             | 8                        |   x3c8         | 
 | base addr 2             | 9                        |   x3c9         | 
-| start                   | 10                       |   x3ca         | 
+| streamer start          | 10                       |   x3ca         | 
 | streamer perf. counter  | 11                       |   x3cb         |  
 | mode                    | 12                       |   x3cc         |
 | length                  | 13                       |   x3cd         |
-| start                   | 14                       |   x3ce         |
+| ALU acceleartor start   | 14                       |   x3ce         |
 | busy                    | 15                       |   x3cf         |
 | alu perf. counter       | 16                       |   x3d0         |
 
@@ -161,11 +161,11 @@ for(i = 0; i < N; i++):
   parfor(j = 0; j < 4; j++):
     target_address[j] = base_address + temporal_stride*i + spatial_stride*j;
 ```
-Where `N` is the configured loop-bound register. The `base_address` for each port `A`, `B`, and `OUT` are configured with `(uint64_t)local_a`, `(uint64_t)local_b`, and `(uint64_t)local_o`, respectively.
+Where `N` is the configured temporal loop-bound register. The `base_address` for each port `A`, `B`, and `OUT` are configured with `(uint64_t)local_a`, `(uint64_t)local_b`, and `(uint64_t)local_o`, respectively.
 
 The temporal strides for each input are 32 bytes, but the output is 64 bytes. These addresses are in bytes. We need 32 for the inputs because that's 8 bytes (64 bits) per PE and we have 4 PEs and therefore, 32 bytes of temporal stride. The output is 64 because we need 16 bytes (128 bits) per PE and we have 4 PEs and therefore, 64 bytes of temporal stride.
 
-All spatial strides are 8 because, for each TCDM port connected to the streamer, it will automatically increment or point to the next bank which is in byte addresses. 
+All spatial strides are 8 because, for each TCDM port connected to the streamer, it will automatically increment or point to the next bank which is 8 in byte addresses (each bank is 64bit or 8 bytes).
 
 Finally, the start signal for the streamer is configured by writing 1 to the LSB of the start register.
 
@@ -185,9 +185,9 @@ write_csr(0x3cc, MODE);
 write_csr(0x3cd, LOOP_ITER);
 write_csr(0x3ce, 1);
 ```
-The `MODE` and `LOOP_ITER` are found in the `data.h`. The `LOOP_ITER` is the effective number of loops while considering the spatial parallelism. For example, if we have 100 elements (each is 64-bit wide), then with a spatial parallelism of 4 PEs, we only need to process 25 cycles. 
+The `MODE` and `LOOP_ITER` are found in the `data.h`. The `LOOP_ITER` is the effective number of loops while considering the spatial parallelism. For example, if we have 100 elements (each is 64-bit wide), then with a spatial parallelism of 4 PEs, we only need to process 25 cycles so the `LOOP_ITER` is 25. 
 
-The last register written on address `0x3ce` is the start signal of the accelerator. Once, started the accelerator and streamer work together to process the data. We can monitor and poll the busy status of the accelerator by reading on register address `0x3cf`. The busy signal is high when the accelerator is still processing data.
+The last register written on address `0x3ce` is the start signal of the accelerator. Once started, the accelerator and streamer work together to process the data. We can monitor and poll the busy status of the accelerator by reading on register address `0x3cf`. The busy signal is high when the accelerator is still processing data.
 
 ```C
 // Do this to poll the accelerator
@@ -247,7 +247,7 @@ After generating the script you can investigate the contents of the `data.h`. Yo
 
 !!! note
 
-    Generating the `data.h` is already automatic by the `Makefile` we have. Therefore you don't need to run the `datagen.py` before building the program.
+    Generating the `data.h` is already automatic by the `Makefile` we have. Therefore you don't need to run the `datagen.py` manually before building the program.
 
 # Modifying Makefiles
 
@@ -261,7 +261,7 @@ With the source code and data generation script in place, you need to set up `Ma
 
 # Building and Running Your Program
 
-Building and running your program is easy. Build your program with:
+Building and running your program is easy. Build your program in `./target/snitch_cluster` with:
 
 ```
 make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw
