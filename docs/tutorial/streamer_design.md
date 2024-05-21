@@ -1,15 +1,15 @@
 # Streamer
 
-The SNAX streamer is a Chisel-genearted module to help streamline the delivery of data from memory to the accelerator and vice versa. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section we will only cover the high-level aspects and how to configure the streamer.
+The SNAX streamer is a Chisel-generated module to help streamline the delivery of data from memory to the accelerator and vice versa. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section, we will only cover the high-level aspects and how to configure the streamer.
 
 
 # Why Do We Need a Streamer?
 
 Accelerators attain peak performance when data continuously streams into them; otherwise, they spend cycles waiting for data availability. Delays often occur due to mismatched data arrangements in shared memory or congestion among accelerators accessing the same banks concurrently.
 
-It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the adresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
+It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the addresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/4428f8d7-2d35-4605-8bec-92929d195643)
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/d59ace4e-7802-444f-99ee-c124abf2397b)
 
 The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate memory address strides pointing to the memory addresses.
 
@@ -24,7 +24,7 @@ Another arrangement in memory layout 2 shows that the data can be arranged in a 
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/2ecaf54a-ae62-42ab-be55-b1cd3c02c377)
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/cd0e8c3e-3348-4b3e-81ee-e4e784af2965)
 
 Consider the memory layout 1. Each port of the accelerator needs to compute the target address as:
 
@@ -35,7 +35,7 @@ for(i = 0; i < 4; i++):
   target_address_a[2] = base_address_a + temporal_stride_a*i + 2;
 ```
 
-Where each `target_address_a[i]` pertains to the address of one port. Here, `base_address_a=0` and `temporal_stride_a=12`. Note that the temporal stride is different to accommodate the new memory addressing. Equivalently, we can also re-write this with another loop and call it a `parfor` loop.
+Where each `target_address_a[i]` pertains to the address of one port. Here, `base_address_a=0` and `temporal_stride_a=12`. Note that the temporal stride is different to accommodate the new memory addressing. Equivalently, we can also rewrite this with another loop and call it a `parfor` loop.
 
 ```
 for(i = 0; i < 4; i++):
@@ -52,7 +52,7 @@ target_address_a[1] = [1,13,25,37]
 target_address_a[2] = [2,14,26,38]
 ```
 
-More epcifically, in cycle 1, the addresses 0, 1, 2 are generated. In cycle 2, the addresses 12, 13, 14 are generated, and so on.
+More specifically, in cycle 1, the addresses 0, 1, and 2 are generated. In cycle 2, the addresses 12, 13, 14 are generated, and so on.
 
 This spatial stride is useful for parallel accesses. For example, accessing data for memory layout 2 can be expressed using the same for loop but with `spatial_stride_a=2`. This results in the sequences below:
 
@@ -62,7 +62,7 @@ target_address_a[1] = [2,14,26,38]
 target_address_a[2] = [4,16,28,40]
 ```
 
-Another example in memory layout 3 shows that data is placed semi-contigiously in memory. To get the data in this manner, we need a second temporal loop bound. Such that:
+Another example in memory layout 3 shows that data is placed semi-contiguously in memory. To get the data in this manner, we need a second temporal loop bound. Such that:
 
 ```
 for(i = 0; i < 2; i++):
@@ -80,7 +80,7 @@ target_address_a[1] = [1,13,13,16]
 target_address_a[2] = [2,14,14,17]
 ```
 
-Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
+Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide a design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
 
 # Flexible Affine Address Generation
 
@@ -105,23 +105,23 @@ for(tb_n_1 = 0; tb_n_1 < temporal_bound[n-1]; tb_n_1++)
           target_address = base_address + temporal_address + spatial_address
 ```
 
-Where `temporal_bound[*]` pertains to the bounds of the temporal loops and `tb_*` pertains to the temporal indices. The `spatial_bound[*]` peratins to the bounds of the spatial loops and `sb_*` pertains to the spatial indices. Wroup them according to `temporal_address` and `spatial_address` and add them to the `base_address` which results in the `target_address`.
+Where `temporal_bound[*]` pertains to the bounds of the temporal loops and `tb_*` pertains to the temporal indices. The `spatial_bound[*]` pertains to the bounds of the spatial loops and `sb_*` pertains to the spatial indices. Group them according to `temporal_address` and `spatial_address` and add them to the `base_address` which results in the `target_address`.
 
 The `temporal_bound[*]`, `tb_*`, and `sb_*` are run-time configurable. The number of the temporal loops and `sb_*` is design-time configurable.
 
-The affine address generation is the working principle of the SNAX streamer. With this, we can flexibily access data in various places of the memory. 
+The affine address generation is the working principle of the SNAX streamer. With this, we can flexibly access data in various places of the memory. 
 
 # Streamer Microarchitecture
 
 The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator as a flexible and efficient data movement unit. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in [Connect The Shell](./connect_shell.md) section.
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/37900d11-504d-4659-ba9a-aa7efe589975)
+![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/e26af3c9-43f8-4de5-b07e-02dbacecc9fd)
 
 ## Streamer Interfaces
 
 ### **(3) TCDM interface** 
 
-The **TCDM interface** has request and response channels and also uses a decoupled interface. The table below describe the details of the request and response channels:
+The **TCDM interface** has request and response channels and also uses a decoupled interface. The table below describes the details of the request and response channels:
 
 | signal name        | description                                |
 | :-----------------:| :----------------------------------------: |
@@ -152,26 +152,26 @@ The accelerator interface connects the streamer to the accelerator. It only has 
 
 The core of the streamers are the data movers which handle all write or read transactions. Each mover contains a *data mover* for handling transactions with the TCDM interconnect, FIFO buffers for handling transactions with the accelerator, and an *Address Generation Unit* (AGU) for providing the affine address generation to the data mover.
 
-We can also configure several settings for the streamers. This includes number of read and write data movers, the depth of the FIFOs, and even the data widths to use for each accelerator port. These are design-time parameters. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) will demonstrate how to configure these.
+We can also configure several settings for the streamers. This includes a number of read-and-write data movers, the depth of the FIFOs, and even the data widths to use for each accelerator port. These are design-time parameters. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) will demonstrate how to configure these.
 
 ### (6) Streamer CSR Manager
 
 The streamer has its own *(5) streamer CSR manager* which functions exactly the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
 
-The number of registers vary depending on the configured parameters in the configuration file. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) talks more about how the configuration file generates the registers. For now, it is important to understand the general set of registers that exists in the CSR manager. The table below shows the list of registers with their corresponding type and description.
+The number of registers varies depending on the configured parameters in the configuration file. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) talks more about how the configuration file generates the registers. For now, it is important to understand the general set of registers that exist in the CSR manager. The table below shows the list of registers with their corresponding type and description.
 
 | register name           | type  | description                  |
 | :---------------------: | :---- | :--------------------------- |
-| temporal loop bounds    | RW    | Temporal loop bound for each temporal dimension. | 1 depending on number of loop bounds indicated. |
-| temporal loop strides   | RW    | Temporal loop strides for each temporal dimension. Can be more than 1 depending on the number of data movers.
-| spatial loop strides    | RW    | Spatial loop strides for each data mover for corresponding spatial dimension. The spatial dimension for each data mover can be different. It depends on the accelerator.
+| temporal loop bounds    | RW    | Temporal loop bound for each temporal dimension. Can be more than 1 depending on several loop bounds indicated. |
+| temporal loop strides   | RW    | Temporal loop strides for each temporal dimension. Can be more than 1 depending on the number of data movers. |
+| spatial loop strides    | RW    | Spatial loop strides for each data mover for corresponding spatial dimension. The spatial dimension for each data mover can be different. It depends on the accelerator. |
 | base pointer            | RW    | Base pointer for each data mover |
-| start streamer          | RW    | This is the last RW register to transfer configurations unto the actual streamer CSRs. |
+| start streamer          | RW    | This is the last RW register to transfer configurations to the actual streamer CSRs. |
 | performance counter     | RO    | Single performance counter which tracks how many cycles the streamer ran. |
 
 # Configuring the Generated Streamer
 
-There are two things to consider when we configure the streamers: first is the microarchitecture and second are the CSR registers that it generates. It is important to configure the streamer towards what your accelerator needs.
+There are two things to consider when we configure the streamers: first is the microarchitecture and second are the CSR registers that it generates. It is important to configure the streamer to what your accelerator needs.
 
 ## SNAX ALU Streamer Microarchitecture
 For our SNAX ALU accelerator, we want the streamer to have the microarchitecture shown in the figure below:
@@ -179,8 +179,8 @@ For our SNAX ALU accelerator, we want the streamer to have the microarchitecture
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/156e30c3-c682-4f01-b801-fee5ba7bb139)
 
 Some notable characteristics:
-- We need two reader ports each with a data width that is 256 bits wide. We also want to use 8 FIFO buffers for each reader port. The SNAX ALU will have 4 PEs in parallel each taking in 64 bits data in each PE. Hence, the need for 256 bits wide reader port.
-- We need one writer port with a data width of 512 bits wide and uses 8 FIFO buffers. The SNAX ALU output is double the data width: 128 bits per port of a PE and hence with 4 PEs results in 512 bits wide write port.
+- We need two reader ports each with a data width that is 256 bits wide. We also want to use 8 FIFO buffers for each reader port. The SNAX ALU will have 4 PEs in parallel each taking in 64 bits of data in each PE. Hence, the a need for a 256-bit wide reader port.
+- We need one writer port with a data width of 512 bits and uses 8 FIFO buffers. The SNAX ALU output is double the data width: 128 bits per port of a PE and hence with 4 PEs results in 512 bits-wide write port.
 - We only need one temporal loob bound for this streamer. 
 - The general affine address generation for this streamer is:
 
@@ -230,7 +230,7 @@ fifo_writer_params: {
 }
 ```
 
-The `data_reader_params` and `data_writer_params` effectively configures the TCDM interface ports. It consists of `tcdm_ports_num` which control how many TCDM ports are needed. The `spatial_bounds` pertain to the spatial unrolling factors (your parfor) for each data mover. The `spatial_dim` is the dimension of spatial unrolling factors (your parfor) for each data mover. The `element_width` is the single data element width for each data mover, useful for generating spatial addresses.
+The `data_reader_params` and `data_writer_params` effectively configures the TCDM interface ports. It consists of `tcdm_ports_num` which controls how many TCDM ports are needed. The `spatial_bounds` pertain to the spatial unrolling factors (your parfor) for each data mover. The `spatial_dim` is the dimension of spatial unrolling factors (your parfor) for each data mover. The `element_width` is the single data element width for each data mover, useful for generating spatial addresses.
 
 ```hjson
 data_reader_params:{
@@ -250,18 +250,18 @@ data_writer_params:{
 
 The number of elements in a list pertain to how many data movers there are. For example, there are 2 elements in the `data_reader_params` and therefore it instantiates two read data movers. There is only 1 element in the `data_writer_params` and hence only instantiates 1 write data mover.
 
-Finally there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. Basically, it only fixes the loop bound to 1. This is a special case scenario only, such as for output-stationary or weigt stationary accelerators. In the SNAX ALU, this is 0. 
+Finally there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. Basically, it only fixes the loop bound to 1. This is a special case scenario only, such as for output-stationary or weight stationary accelerators. In the SNAX ALU, this is 0. 
 
 ## SNAX ALU Streamer CSRs
 
 Based on the configuration file we expect the CSR registers to have:
 
 - 1 register for a single loop bound as specified in the `temporal_addrgen_unit_params -> loop_dim = 1`. If the number is 2 then we would have 2 loop bounds.
-- 3 temporal stride registers, 3 spatial stride registers, and 3 base addres spointers since we have 3 data movers in total (2 read data movers and 1 write data movers).
+- 3 temporal stride registers, 3 spatial stride registers, and 3 base address pointers since we have 3 data movers in total (2 read data movers and 1 write data mover).
 - 1 start register to start the streamer.
 - 1 performance counte register for how many cycles the streamer was active.
 
-Below is a tabulated version of the CSRs of the streamers with the register address, type, and description:
+Below is a tabulated version of the CSRs of the streamers with the register offset addresses, type, and description:
 
 |  register name      |  register offset  |   type  |                   description                             |
 | :-----------------: | :-------------:   | :-----: |:--------------------------------------------------------- |
@@ -276,7 +276,7 @@ Below is a tabulated version of the CSRs of the streamers with the register addr
 | base addr 1         |       8           |   RW    | Base address for input B                                  |
 | base addr 2         |       9           |   RW    | Base address for output OUT                               |
 | start               |       10          |   RW    | Start register to send configurations and start streaming |
-| perf. counter       |       11          |   RO    | Performance counter indicating number of cycles ran       | 
+| perf. counter       |       11          |   RO    | Performance counter indicating the number of cycles ran   | 
 
 
 # Example Streamer Generation
@@ -359,12 +359,12 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 # Try Modifying the Streamer!
 
-Let's try a simple exercise but we will spoil the answer to you already. Suppose we want the following streamer charateristics:
+Let's try a simple exercise but we will spoil the answer to you already. Suppose we want the following streamer characteristics:
 - 2 temporal loop bounds
-- 1 reader and 1 writer that takes in 8 parallel inputs (and outputs) each with 64 bits wide and with FIFO depth of 16.
+- 1 reader and 1 writer that takes in 8 parallel inputs (and outputs) each 64 bits wide and with a FIFO depth of 16.
 - 8 TCDM ports for each reader and writer.
 
-The configuration streamer template should look like:
+The configuration streamer template should look like this:
 
 ```hjson
 snax_test_template :{
@@ -411,20 +411,20 @@ Some details include:
 
 In terms of CSR registers, the streamer would have the following:
 
-|  register name                 |  register addr  |   type  |                   description                        |
-| :----------------------------: | :-------------: | :-----: |:---------------------------------------------------- |
-| temporal loop bound 0          |       0         |   RW    | First temporal loop bound                            |
-| temporal loop bound 1          |       1         |   RW    | second temporal loop bound                           |
-| temporal stride 0 for bound 0  |       2         |   RW    | Temporal stride for loop bound 0 for input           |
-| temporal stride 1 for bound 0  |       3         |   RW    | Temporal stride for loop bound 0 for output          |
-| temporal stride 0 for bound 1  |       4         |   RW    | Temporal stride for loop bound 1 for input           |
-| temporal stride 1 for bound 1  |       5         |   RW    | Temporal stride for loop bound 1 for output          |
-| spatial stride 0               |       6         |   RW    | Spatial stride for input                             |
-| spatial stride 1               |       7         |   RW    | Spatial stride for output                            |        
-| base addr 0                    |       8         |   RW    | Base address for input                               |
-| base addr 1                    |       9         |   RW    | Base address for output                              |
-| start                          |       10        |   RW    | Start register to send configurations                |
-| perf. counter                  |       11        |   RO    | Performance counter indicating number of cycles ran  | 
+|  register name                 |  register offset  |   type  |                   description                            |
+| :----------------------------: | :---------------: | :-----: |:-------------------------------------------------------- |
+| temporal loop bound 0          |       0           |   RW    | First temporal loop bound                                |
+| temporal loop bound 1          |       1           |   RW    | second temporal loop bound                               |
+| temporal stride 0 for bound 0  |       2           |   RW    | Temporal stride for loop bound 0 for input               |
+| temporal stride 1 for bound 0  |       3           |   RW    | Temporal stride for loop bound 0 for output              |
+| temporal stride 0 for bound 1  |       4           |   RW    | Temporal stride for loop bound 1 for input               |
+| temporal stride 1 for bound 1  |       5           |   RW    | Temporal stride for loop bound 1 for output              |
+| spatial stride 0               |       6           |   RW    | Spatial stride for input                                 |
+| spatial stride 1               |       7           |   RW    | Spatial stride for output                                |        
+| base addr 0                    |       8           |   RW    | Base address for input                                   |
+| base addr 1                    |       9           |   RW    | Base address for output                                  |
+| start                          |       10          |   RW    | Start register to send configurations                    |
+| perf. counter                  |       11          |   RO    | Performance counter indicating the number of cycles ran  | 
 
 Because we now have two temporal loop bounds, the temporal stride registers are also doubled. We need two temporal strides, one for input and one for output, for each temporal loop bound. Therefore there are a total of 2 temporal strides for the first loop bound and another 2 temporal strides for the second loop bound.
 
