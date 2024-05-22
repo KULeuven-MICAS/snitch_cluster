@@ -8,7 +8,7 @@ There is a **(2) `snax_csr_wrapper`** which is a wrapper to combine signals from
 
 # CSR Manager Interfaces
 
-There are two sides to the CSR interfaces. First is the **(3) Snitch core interface** that handles transactions between the CPU core and the CSR manager. You control these interfaces using RISCV CSR instructions. This will be discussed in the [Programming Your Accelerator](./programming.md) section.
+There are two sides to the CSR interfaces. First is the **(3) Snitch core interface** that handles transactions between the CPU core and the CSR manager. You control these interfaces using RISCV CSR instructions. This will be discussed in the [Programming Your System](./programming.md) section.
 
 There are two sets of channels, the request channel and the response channel. The request channel is where you specify a write or read request to the CSR manager. The response channels are the responses of the CSR manager to the Snitch core. Both channels use the decoupled interface (valid-ready protocol). Each request and response signal channels are tagged with `req` and `rsp` in the table below:
 
