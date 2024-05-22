@@ -43,18 +43,18 @@ module snax_data_reshuffler_shell_wrapper #(
   output logic [RegROCount-1:0][RegDataWidth-1:0] csr_reg_ro_set_o
 );
 
-    data_reshuffler data_reshuffler_i (
-        .clk_i(clk_i),
-        .rst_ni(rst_ni),
-        .a_i(stream2acc_0_data_i),
-        .a_valid_i(stream2acc_0_valid_i),
-        .a_ready_o(stream2acc_0_ready_o),
-        .z_o(acc2stream_0_data_o),
-        .z_valid_o(acc2stream_0_valid_o),
-        .z_ready_i(acc2stream_0_ready_i),
-        .csr_en_transpose_i(csr_reg_set_i[0]),
-        .csr_valid(csr_reg_set_valid_i),
-        .csr_ready(csr_reg_set_ready_o)
-    );
+  data_reshuffler data_reshuffler_i (
+      .clk_i              ( clk_i                ),
+      .rst_ni             ( rst_ni               ),
+      .a_i                ( stream2acc_0_data_i  ),
+      .a_valid_i          ( stream2acc_0_valid_i ),
+      .a_ready_o          ( stream2acc_0_ready_o ),
+      .z_o                ( acc2stream_0_data_o  ),
+      .z_valid_o          ( acc2stream_0_valid_o ),
+      .z_ready_i          ( acc2stream_0_ready_i ),
+      .csr_en_transpose_i ( csr_reg_set_i[0]     ),
+      .csr_valid          ( csr_reg_set_valid_i  ),
+      .csr_ready          ( csr_reg_set_ready_o  )
+  );
 
 endmodule
