@@ -16,7 +16,7 @@ We annotate some notable characteristics:
 
 (5) - The **control and status register (CSR) manager** handles CSR requests from a CPU core to the accelerator.
 
-(6) - The **data streamers** provide flexible data access for the accelerators. These design and run time flexible streamers help in streamlining data delivery to the accelerator.
+(6) - The **data streamers** provide flexible data access for the accelerators. These design and run time flexible streamers help in streamlining data delivery to the accelerator and vice versa.
 
 (7) - There is a DMA to transfer data from the outside memory into the local TCDM. The programmer has full control of this DMA.
 
@@ -79,7 +79,7 @@ Building your system is fully-automated by the scripts and makefiles in this pla
 
 ## Programming Your System
 
-After building the system, we can immediatley test and profile your work through a C-code program. We write CSR read and write commands to configure the accelerator. We provide a detailed tutorial in [Programming Your Design](./programming.md). We also provide some useful tools for debugging and profiling your design in [Other Tools](./other_tools.md).
+After building the system, we can immediatley test and profile your work through a C-code program. We write the configuration to the CSRs using read and write commands to configure the accelerator. We provide a detailed tutorial in [Programming Your Design](./programming.md). We also provide some useful tools for debugging and profiling your design in [Other Tools](./other_tools.md).
 
 # General Directory Structure
 
