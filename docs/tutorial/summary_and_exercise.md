@@ -14,7 +14,7 @@ Congratulations! You're now an expert in using the SNAX shell. Let's review the 
 3 - Configuring the streamer for your accelerator.
 
 - Specifying the number of read and write ports of your accelerator.
-- Configuring the data widths, FIFO depths, and even the spatial parallelism considerations.
+- Configuring the data widths, FIFO depths, even the spatial parallelism considerations, etc.
 
 4 - Configuring the system according to your needs.
 
@@ -31,6 +31,7 @@ Congratulations! You're now an expert in using the SNAX shell. Let's review the 
 - Making the C code.
 - Making the data generation.
 - Building the software.
+- Run the RISC-V binary program
 
 7 - Profiling your system.
 
@@ -42,6 +43,7 @@ Congratulations! You're now an expert in using the SNAX shell. Let's review the 
 For building hardware you do:
 
 ```bash
+cd target/snitch_cluster
 make CFG_OVERRIDE=cfg/snax-alu.hjson bin/snitch_cluster.vlt
 ```
 
@@ -106,7 +108,7 @@ For the CSR manager, you just need to ensure that the register configurations ma
 
 For the streamer you have the following specifications:
 
-- You need to feed 1,024 bits for input ports A and B. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
+- You need to feed 1,024 bits for input ports A and B, respectively. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
 
 - This necessitates 32 TCDM ports for all the inputs.
 
