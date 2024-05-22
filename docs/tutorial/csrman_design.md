@@ -24,7 +24,7 @@ There are two sets of channels, the request channel and the response channel. Th
 | csr_rsp_ready_i      | rsp            |  Core side is ready to accept transactions   |
 
 
-The second side is the **(4) accelerator datapath interface**. The CSR manager sends the configurations of the read-write (RW) registers through a decoupled interface. However, the accelerator may have read-only (RO) registers that are meant for status monitoring. These are directly wired from the accelerator towards the CSR manager but without the need for a decoupled interface. When a user reads one of the RO registers, the CSR manager directly transmits the wired RO signals to the response ports. The table below describes these signals:
+The second side is the **(4) accelerator datapath interface**. The CSR manager sends the configurations of the read-write (RW) registers through a decoupled interface. However, the accelerator may have read-only (RO) registers that are meant for status monitoring. These are directly wired from the accelerator toward the CSR manager but without the need for a decoupled interface. When a user reads one of the RO registers, the CSR manager directly transmits the wired RO signals to the response ports. The table below describes these signals:
 
 |  signal name                      | description                                         |
 | :-------------------------------: | :-------------------------------------------------: |
@@ -33,7 +33,7 @@ The second side is the **(4) accelerator datapath interface**. The CSR manager s
 | csr_reg_set_ready_i               |  Accelerator side is ready to accept configurations |
 | csr_reg_ro_set_i [NumRoCsr][31:0] |  Packed RO register data                            |
 
-The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, respectively. These are design-time parameters which we configure for the CSR manager. See section [Configuring the Generated CSR Manager](#configuring-the-generated-csr-manager)
+The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, respectively. These are design-time parameters that we configure for the CSR manager. See section [Configuring the Generated CSR Manager](#configuring-the-generated-csr-manager)
 
 # CSR Manager Features for SNAX ALU
 
@@ -52,13 +52,13 @@ The CSR manager is useful for double buffering. For example, when an accelerator
 The RO registers are read-only registers that the CSR manager can read from. These are mostly used for monitoring purposes like status or performance counters. The addresses of the RO registers are immediately after the RW registers. For example, the register table in [Accelerator Design](./accelerator_design.md) is copied below. Observe that all RO registers are after the RW registers.
 
 
-|  register name  |  register addr  |   type  |                   description                       |
-| :-------------: | :-------------: | :-----: |:--------------------------------------------------: |
-|    mode         |       0         |   RW    | Operating modes: 0 - add, 1 - sub, 2 - mul, 3 - XOR |
-|    length       |       1         |   RW    | Number of elements to process                       |
-|    start        |       2         |   RW    | Set 1 to LSB only to start the accelerator          |
-|    busy         |       3         |   RO    | Busy status. 1 - busy, 0 - idle                     |
-|  perf. counter  |       4         |   RO    | Performance counter indicating number of cycles     |
+|  register name  |  register offset  |   type  |                   description                       |
+| :-------------: | :---------------: | :-----: |:--------------------------------------------------: |
+|    mode         |       0           |   RW    | Operating modes: 0 - add, 1 - sub, 2 - mul, 3 - XOR |
+|    length       |       1           |   RW    | Number of elements to process                       |
+|    start        |       2           |   RW    | Set 1 to LSB only to start the accelerator          |
+|    busy         |       3           |   RO    | Busy status. 1 - busy, 0 - idle                     |
+|  perf. counter  |       4           |   RO    | Performance counter indicating number of cycles     |
 
 
 
@@ -130,7 +130,7 @@ If you are working in a docker container:
 
 <details>
   <summary> Can you see where the SNAX CSR manager is instanced? </summary>
-  Yes! It has instance name `i_snax_alu_csrman_CsrManager`.
+  Yes! It has the instance name `i_snax_alu_csrman_CsrManager`.
 </details>
 
 <details>
