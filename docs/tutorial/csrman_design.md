@@ -37,15 +37,15 @@ The `NumRwCsr` and `NumRoCsr` pertain to the number of RW and RO registers, resp
 
 # CSR Manager Features for SNAX ALU
 
-The CSR manager has a set of read-write (RW) registers and read-only (RO) registers. Our CSR manager has a mechanism that bulk transfers a set of configurations to the main accelerator. The last RW register is always the start or send signal to transact all configurations into the accelerator. The figure below demonstrates this:
+The CSR manager has a set of read-write (RW) registers and read-only (RO) registers. Our CSR manager has a mechanism that bulk transfers a set of configurations to the main accelerator. The last RW register is always the start signal to transact all configurations into the accelerator. The figure below demonstrates this:
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/b9c4758a-ad20-4e3b-86f8-5dc7b649df09)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/72743450-30ff-4a6f-a08b-5096c38af24d)
 
-In our [SNAX ALU accelerator](./accelerator_design.md), we have 2 main configuration RW registers: the mode and the data length to process. The 3rd RW register is the start that sends the configured settings to the accelerator data path. It is only when you assert the LSB of the last RW register (which we named as the start register) that the CSR manager transacts all configurations to the accelerator.
+In our [SNAX ALU accelerator](./accelerator_design.md), we have 2 main configuration RW registers: the mode and the data length to process. The 3rd RW register is the start that sends the configured settings to the accelerator data path. It is only when you assert the LSB of the last RW register (which we named the start register) that the CSR manager transacts all configurations to the accelerator.
 
 When the accelerator is not available to accept configuration transactions, the CSR holds the last transaction until it is successful. The timing diagram below shows this:
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/bb31e9e5-4f80-4acc-b9ee-72f6866bec13)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/e22d6a11-123f-4928-ae68-f0212e6465c0)
 
 The CSR manager is useful for double buffering. For example, when an accelerator is already processing an old configuration, the Snitch core can already configure new settings. This does not overwrite the old configuration. This is particularly useful in hiding CSR setup cycles because we can set up configurations while the accelerator is running.
 
