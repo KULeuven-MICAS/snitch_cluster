@@ -106,3 +106,27 @@ This way the container sees the `snax_cluster` directory and you can run the pre
 ## Installing Packages and Programs Locally
 
 There are several required packages and programs in the container. If you insist on installing these yourself, then you may refer to the `Dockerfile` for guidance. You can find this at `./util/container/Dockerfile`.
+
+## Check if The System Works!
+
+To check if the system is working, let's do a quick run for building the HW and SW, then running the program.
+
+1 - Build the HW:
+
+```bash
+make CFG_OVERRIDE=cfg/snax-alu.hjson bin/snitch_cluster.vlt -j
+```
+
+2 - Build the SW:
+
+```bash
+make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw
+```
+
+3 - Run the program:
+
+```bash
+bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf
+```
+
+If it returns 0 errors, then you have the correct setup!
