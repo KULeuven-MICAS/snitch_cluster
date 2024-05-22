@@ -3,7 +3,7 @@
 
 # Snitch Cluster
 
-This repository hosts the hardware and software for the SNAX cluster and its generator. SNAX is a high-efficiency compute cluster platform designed for computation- and data- intensive artificial intelligence workloads. It provides a standard SNAX shell for conveniently integrating versatile accelerators. The SNAX shell leverages CsrManager for programming the accelerators in the control plane and data streamers for data access in the data plane.
+This repository hosts the hardware and software for the SNAX cluster and its generator. SNAX is a high-efficiency compute cluster platform designed for computation- and data- intensive artificial intelligence workloads. It provides a standard SNAX shell for conveniently integrating versatile accelerators. The SNAX shell leverages CSR manager for programming the accelerators in the control plane and data streamers for data access in the data plane.
 
 An architectural overview of SNAX is shown below.
 
@@ -70,4 +70,4 @@ The top-level is structured as follows:
 
 # Acknowledgement
 
-It is developed based on the [Snitch Cluster](https://github.com/pulp-platform/snitch_cluster).
+SNAX cluster is developed based on the [Snitch Cluster](https://github.com/pulp-platform/snitch_cluster).
