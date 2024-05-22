@@ -1,31 +1,32 @@
 # Architectural Overview
 
-In this tutorial, we will build a simple SNAX system supporting one simple ALU accelerator. The figure below shows the target architecture we will build in this tutorial:
+In this tutorial, we will build a simple SNAX system supporting one simple ALU accelerator. The figure below shows the target architecture we will build:
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/458fa1b4-0b56-4913-9798-353c7dad803a)
 
-Notable characteristics are numbered:
+We annotate some notable characteristics:
 
-1 - It has a memory that is 128kB large, with 32 banks where each bank has 64 bits of data width. We call this memory the tighly coupled data memory (TCDM).
+(1) - It has a memory that is 128kB large, with 32 banks where each bank has 64 bits of data width. We call this memory the **tighly coupled data memory (TCDM)**.
 
-2 - There is a complex TCDM interconnect that handles data transfers from Snitch CPU cores, accelerator core, the DMA and an AXI port.
+(2) - There is a complex TCDM interconnect that handles data transfers from Snitch CPU cores, accelerator core, the DMA and an AXI port.
 
-3 - There exists Snitch CPU cores that control the accelerator. The Snitch is a light-weight RV32I core for minimal management and dispatching commands to the accelerator. A separate CPU core is given to the DMA to allow parallel operations.
+(3) - There exists Snitch CPU cores that control the accelerator. The Snitch is a light-weight RV32I core for dispatching commands to the accelerator. A dedicated Snitch core is given to a DMA to allow parallel operations.
 
-4 - **Any accelerator sits in a shell marked by the yellow highlight**. This shell provides control and data interfaces to the accelerator (SNAX ALU). The SNAX shell consists of a control and status register (CSR) manager and a data streamer.
+(4) - **Any accelerator sits on a shell marked by the yellow highlight**. This shell provides control and data interfaces to the accelerator (SNAX ALU). The SNAX shell consists of a control and status register (CSR) manager and a data streamer.
 
-5 - The control and status register (CSR) manager handles CSR requests from a CPU core to the accelerator.
+(5) - The **control and status register (CSR) manager** handles CSR requests from a CPU core to the accelerator.
 
-6 - The data streamers provide flexible data access for the accelerators. These design and run time flexible streamers are provided as support for managing data that gets into the ALU.
+(6) - The **data streamers** provide flexible data access for the accelerators. These design and run time flexible streamers help in streamlining data delivery to the accelerator.
 
-7 - There is a DMA to transfer data from the outside memory into the local TCDM. The programmer has full control of this DMA.
+(7) - There is a DMA to transfer data from the outside memory into the local TCDM. The programmer has full control of this DMA.
 
-8 - There are shared instruction caches for the CPU cores.
+(8) - There are shared instruction caches for the CPU cores.
 
-9 - AXI narrow and wide interconnects for data transactions to wards the outside of the SNAX cluster.
+(9) - AXI narrow and wide interconnects for data transactions towards the outside of the SNAX cluster.
 
-As we go through the tutorial, you will see that several of these components are design-time configurable. A user can add their own custom accelerator within the broken lines of the SNAX shell. They only need to comply with the control interface coming from a CSR manager and a streamer interface for accessing data from memory.
+As we go through the tutorial, you will see that several of these components are design-time configurable. A user only needs to modify a configuration file to get these components in place.
 
+Any user, with their own custom accelerator, connects their design within the broken lines of the SNAX shell. They need to comply with the control interface coming from a CSR manager and a streamer interface for accessing data from memory.
 
 # What Do You Need to Build This System?
 
@@ -33,7 +34,7 @@ These are major steps that you will see in going through this tutorial. We empha
 
 ## Building Your Accelerator Shell
 
-The first step is to build your accelerator shell to comply with the control and data interfaces. The [Accelerator Design](./accelerator_design.md) section provides you with a discussion about our example SNAX ALU and the required interfaces. The user only needs to focus on making a shell that connects the appropriate signals for the control and data ports.
+**The first step is to build your accelerator shell to comply with the control and data interfaces**. The [Accelerator Design](./accelerator_design.md) section provides you with a discussion about our example SNAX ALU and the required interfaces. The user needs to focus on making a shell that connects the appropriate signals for the control and data ports. This is probably the most-challenging part already: *getting the connections right*.
 
 ## Configuring the System and Accelerators
 
@@ -56,7 +57,7 @@ cluster: {
    // Other things below
 ```
 
-Parameters like the `tcdm` configurations indicate the `size` in kB and the number of memory banks. These settings automatically adjust the system. You can find more details in the [Hardware Schema](schema-doc/snitch_cluster.md) section. 
+Parameters like the `tcdm` configurations indicate the TCDM memory `size` in kB and the number of memory `banks`. These settings automatically adjust the system. You can find more details in the [Hardware Schema](schema-doc/snitch_cluster.md) section. 
 
 {%
    include-markdown './accelerator_design.md'
@@ -66,7 +67,7 @@ Parameters like the `tcdm` configurations indicate the `size` in kB and the numb
 
 ## Configuring the SNAX CSR Manager
 
-A CSR manager is available to handle the control from the Snitch cores and dispatching the configuration registers to the accelerator. The accelerator needs to get the set registers through a decoupled interface. More details are in [CSR Manager Design](./csrman_design.md)
+A CSR manager is available to handle the control from the Snitch cores and dispatching the configuration registers to the accelerator. The accelerator needs to get the set of configured registers through a decoupled interface. More details are in [CSR Manager Design](./csrman_design.md)
 
 ## Configuring the SNAX Streamer
 
@@ -78,7 +79,7 @@ Building your system is fully-automated by the scripts and makefiles in this pla
 
 ## Programming Your System
 
-After building the system, we can immediatley test and profile your work through a C-code program. We write CSR functions to configure the accelerator. We provide a detail tutorial in [Programming Your Design](./programming.md).
+After building the system, we can immediatley test and profile your work through a C-code program. We write CSR read and write commands to configure the accelerator. We provide a detailed tutorial in [Programming Your Design](./programming.md).
 
 # General Directory Structure
 
@@ -91,4 +92,4 @@ It is nice to familiarize yourself with the directory structure of the platform.
    comments=false
 %}
 
-We will revisit these things later on but first let's explore and understand the first step: **Building your Accelerator**.
+We will revisit these things later on but first let's explore and understand the first step: [Building the Architecture](./build_system.md).
