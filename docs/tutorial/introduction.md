@@ -73,12 +73,6 @@ Once loaded, you will be starting at the root of the local repository. You need 
 git submodule update --init --recursive
 ```
 
-Second, you need to load some pre-requisite packages:
-
-```bash
-pip3 install -r sw/dnn/requirements.txt
-```
-
 ## Cloning the Repository Locally
 
 First, let's clone the main repository. Do not forget to include the `--recurse-submodules`.
@@ -108,12 +102,6 @@ docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:main
 ```
 
 This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed software.
-
-You need to load some pre-requisite packages:
-
-```bash
-pip3 install -r sw/dnn/requirements.txt
-```
 
 ## Installing Packages and Programs Locally
 
