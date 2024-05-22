@@ -92,7 +92,7 @@ It is nice to familiarize yourself with the directory structure of the platform.
    comments=false
 %}
 
-We will revisit these things later on but first let's explore and understand the first step: [Building the Architecture](./build_system.md).
+We will revisit these things later on but first let's explore and understand the first step: [Building the System](./build_system.md).
 
 # Some Exercises!
 

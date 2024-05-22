@@ -32,7 +32,7 @@ In this tutorial, we will explore how to attach your custom accelerator to the S
 - This section talks about our design- and run-time configurable streamer.
 - Streamer helps streamline data accesses for an accelerator. It decouples the data access with the acceleration computation datapath and introduces a prefetch mechanism to boost the utilization of the accelerator
 
-5 - [Building the Architecture](./build_system.md)
+5 - [Building the System](./build_system.md)
 
 - This guide shows how to build the architecture.
 
