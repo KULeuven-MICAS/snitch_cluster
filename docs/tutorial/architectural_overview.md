@@ -97,6 +97,11 @@ We will revisit these things later on but first let's explore and understand the
 # Some Exercises!
 
 <details>
+  <summary> What do you think does the configuration `snax_tcdm_ports` do? Where can I find the actual definition? </summary>
+  It specifies how many TCDM ports it needs to connect to. You can find it in schema-doc/snitch_cluster.md!
+</details>
+
+<details>
   <summary> In which directory would I find the IP of the `snax_alu` accelerator? </summary>
   Go to `./hw/snax_alu/src/.`
 </details>
@@ -113,7 +118,3 @@ We will revisit these things later on but first let's explore and understand the
   6. Program it!
 </details>
 
-<details>
-  <summary> What do you think does the configuration `snax_tcdm_ports` do? Where can I find the actual definition? </summary>
-  It specifies how many TCDM ports it needs to connect to. You can find it in schema-doc/snitch_cluster.md!
-</details>
