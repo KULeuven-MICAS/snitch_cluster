@@ -4,7 +4,7 @@ Previously we discussed the [Accelerator Design](./accelerator_design.md), the [
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/0090e1a4-15c5-4852-a351-7c3ee0368e1f)
 
-Here there are key wrappers. **(1) The accelerator shell** that needs to comply with the CSR manager and streamer interface. **(2) The CSR manager wrapper** and **(3) streamer wrapper** that converts the Chisel's unpacked signals to packed signals to connect RTL designs developed in SystemVerilog. An **(4) accelerator wrapper** that encapsulates all components together. Finally, the **(5) top-level cluster wrapper** connects the accelerator wrapper to the entire system. Components (2), (3), (4), and (5) are all generated through a script. There are more details in the [Wrapper Generation Script](#wrapper-generation-script) section about the wrapper generation.
+There are key wrappers: **(1) The accelerator shell** that needs to comply with the CSR manager and streamer interface. **(2) The CSR manager wrapper** and **(3) streamer wrapper** that converts the Chisel's unpacked signals to packed signals to connect RTL designs developed in SystemVerilog. An **(4) accelerator wrapper** that encapsulates all components together. Finally, the **(5) top-level cluster wrapper** connects the accelerator wrapper to the entire system. Components (2), (3), (4), and (5) are all generated through a script. There are more details in the [Wrapper Generation Script](#wrapper-generation-script) section about the wrapper generation.
 # Step-by-step Guide to Build
 
 Let's review what we have done so far to prepare the SNAX ALU system:
