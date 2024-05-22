@@ -62,6 +62,20 @@ output logic                                    csr_reg_set_ready_o,
 output logic [RegROCount-1:0][RegDataWidth-1:0] csr_reg_ro_set_o
 ```
 
+To visualize this better, take note that the CSR register ports are packed signals. Referring to the SNAX ALU's RW register table above then we can "unpack" them to see:
+
+```verilog
+csr_reg_set_i [0] = mode;
+csr_reg_set_i [1] = len;
+csr_reg_set_i [2] = start;
+```
+The same concept goes for the RO register ports:
+
+```verilog
+busy         = csr_reg_ro_set[0];
+perf_counter = csr_reg_ro_set[1];
+```
+
 The PEs that connect to an external data streamer have data signals (both input and output) concatenated together. (5) For the PEs that connect to an external data streamer, the PE data signals (both input and output) data channels decoupled interfaces. The module ports are:
 
 ```verilog
