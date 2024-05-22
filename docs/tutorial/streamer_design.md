@@ -7,26 +7,30 @@ The SNAX streamer is a Chisel-generated module to help streamline the delivery o
 
 Accelerators attain peak performance when data continuously streams into them; otherwise, they spend cycles waiting for data availability. Delays often occur due to mismatched data arrangements in shared memory or congestion among accelerators accessing the same banks concurrently.
 
-It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. The memory address on the top-right corner is a guide to show the addresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
+It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. 
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/d59ace4e-7802-444f-99ee-c124abf2397b)
 
-The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access. On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate memory address strides pointing to the memory addresses.
+The memory address on the top-right corner is a guide to show the addresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
-For example, if the data is arranged in memory layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
+The data layout refers to the arrangement of data contents in memory, while the access pattern pertains to how accelerators retrieve data from memory, such as contiguous or strided access.
+
+On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate memory address strides pointing to the memory addresses.
+
+For example, if the data is arranged in data layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
 
 ```
 for(i = 0; i < 4; i++):
   target_address_a = base_address_a + temporal_stride_a*i;
 ```
 
-Another arrangement in memory layout 2 shows that the data can be arranged in a contiguous fashion. This time, input A needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
+Another arrangement in data layout 2 shows that the data can be arranged in a contiguous fashion. This time, input A needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/cd0e8c3e-3348-4b3e-81ee-e4e784af2965)
 
-Consider the memory layout 1. Each port of the accelerator needs to compute the target address as:
+Consider the data layout 1. Each port of the accelerator needs to compute the target address as:
 
 ```
 for(i = 0; i < 4; i++):
@@ -44,7 +48,7 @@ for(i = 0; i < 4; i++):
     target_address_a[j] = base_address_a + temporal_stride_a*i + spatial_stride_i*j;
 ```
 
-We also define a `spatial_stride` to indicate the "skip-count" in the spatial dimension. For memory layout 1 we use `spatial_stride_a=1`. Thus the equivalent sequences per port are:
+We also define a `spatial_stride` to indicate the "skip-count" in the spatial dimension. For data layout 1 we use `spatial_stride_a=1`. Thus the equivalent sequences per port are:
 
 ```
 target_address_a[0] = [0,12,24,36]
@@ -54,7 +58,7 @@ target_address_a[2] = [2,14,26,38]
 
 More specifically, in cycle 1, the addresses 0, 1, and 2 are generated. In cycle 2, the addresses 12, 13, 14 are generated, and so on.
 
-This spatial stride is useful for parallel accesses. For example, accessing data for memory layout 2 can be expressed using the same for loop but with `spatial_stride_a=2`. This results in the sequences below:
+This spatial stride is useful for parallel accesses. For example, accessing data for data layout 2 can be expressed using the same for loop but with `spatial_stride_a=2`. This results in the sequences below:
 
 ```
 target_address_a[0] = [0,12,24,36]
@@ -62,7 +66,7 @@ target_address_a[1] = [2,14,26,38]
 target_address_a[2] = [4,16,28,40]
 ```
 
-Another example in memory layout 3 shows that data is placed semi-contiguously in memory. To get the data in this manner, we need a second temporal loop bound. Such that:
+Another example in data layout 3 shows that data is placed semi-contiguously in memory. To get the data in this manner, we need a second temporal loop bound. Such that:
 
 ```
 for(i = 0; i < 2; i++):
@@ -72,12 +76,12 @@ for(i = 0; i < 2; i++):
       target_address_a[k] = base_address_a + temporal_stride_a_i*i + temporal_stride_a_j*j + spatial_stride_i*k;
 ```
 
-Where `temporal_stride_a_i` is the stride for the outer temporal loop bound and `temporal_stride_a_j` is the stride for the inner temporal loop bound. We can set `temporal_stride_a_i=12` and `temporal_stride_a_j=3` to access data of memory layout 3. This results in a sequence:
+Where `temporal_stride_a_i` is the stride for the outer temporal loop bound and `temporal_stride_a_j` is the stride for the inner temporal loop bound. We can set `temporal_stride_a_i=12` and `temporal_stride_a_j=3` to access data of data layout 3. This results in a sequence:
 
 ```
-target_address_a[0] = [0,12,12,15]
-target_address_a[1] = [1,13,13,16]
-target_address_a[2] = [2,14,14,17]
+target_address_a[0] = [0,3,12,15]
+target_address_a[1] = [1,4,13,16]
+target_address_a[2] = [2,5,14,17]
 ```
 
 Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide a design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
@@ -287,6 +291,14 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 2 - Run the command:
 
+If you are working in Codespaces:
+
+```bash
+/workspaces/snax_cluster/util/wrappergen/wrappergen.py --cfg_path="/workspaces/snax_cluster/target/snitch_cluster/cfg/snax-alu.hjson" --tpl_path="/workspaces/snax_cluster/hw/templates/" --chisel_path="/workspaces/snax_cluster/hw/chisel/" --gen_path="/workspaces/snax_cluster/target/snitch_cluster/generated/"
+```
+
+If you are working in a docker container:
+
 ```bash
 /repo/util/wrappergen/wrappergen.py --cfg_path="/repo/target/snitch_cluster/cfg/snax-alu.hjson" --tpl_path="/repo/hw/templates/" --chisel_path="/repo/hw/chisel/" --gen_path="/repo/target/snitch_cluster/generated/"
 ```
@@ -297,7 +309,7 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 3 - Wait a while since this generates the CSR manager, streamer, and all other wrappers.
 
-4 - When finished, navigate to `/repo/target/snitch_cluster/generated/snax_alu/`
+4 - When finished, navigate to `./target/snitch_cluster/generated/snax_alu/`
 
 5 - Open the file `snax_alu_streamer_StreamerTop.sv`. This is the Chisel-generated file. It looks like a synthesized netlist. All modules required for the streamer are declared in this file. 
 
@@ -438,4 +450,24 @@ for(i = 0; i < N; i++):
       temporal_address = temporal_stride_i*i + temporal_stride_j*j
       spatial_address = spatial_stride*k
       target_address = base_address + temporal_address + spatial_address
+```
+
+Finally, one can calculate the number of CSR registers of the streamer with:
+
+``` Python
+# Total number of temporal loop dimensions
+num_loop_dim = snax_streamer_cfg["temporal_addrgen_unit_params"]["loop_dim"]
+
+# Total number of data movers
+num_data_mover = len(snax_streamer_cfg["data_reader_params"]["tcdm_ports_num"]) + len(snax_streamer_cfg["data_writer_params"]["tcdm_ports_num"])
+
+# This is essentially the total number of temporal loops and data movers combined
+num_dmove_x_loop_dim = num_data_mover * num_loop_dim
+
+# Total number of spatial registers
+num_spatial_dim = sum(snax_streamer_cfg["data_reader_params"]["spatial_dim"]) + sum(snax_streamer_cfg["data_writer_params"]["spatial_dim"])
+
+# Total number of registers!
+# The last two +1 are for the start register and the performance counter
+streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + num_data_mover + num_spatial_dim + 1 + 1
 ```
