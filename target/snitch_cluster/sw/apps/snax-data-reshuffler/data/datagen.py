@@ -152,8 +152,10 @@ def emit_gemm_data(**kwargs):
     op = kwargs["op"]
 
     # Generating golden data
-    # NOTE: using 4 loops to iterate through the input data and reshuffle the data.
-    # different from the hardware data reshuffler, the golden model uses the pure strided layout mapping equation,
+    # NOTE: using 4 loops to iterate through the
+    # input data and reshuffle the data.
+    # different from the hardware data reshuffler,
+    # the golden model uses the pure strided layout mapping equation,
     # no 64 data granularity constraint, no need to transpose explicitly.
     if op == "rowmajor2tiledrowmajor":
         c_golden = data_reshuffler_golden_model(
