@@ -36,7 +36,7 @@ These are major steps that you will see in going through this tutorial. We empha
 
 **The first step is to build your accelerator shell to comply with the control and data interfaces**. The [Accelerator Design](./accelerator_design.md) section provides you with a discussion about our example SNAX ALU and the required interfaces. The user needs to focus on making a shell that connects the appropriate signals for the control and data ports. This is probably the most-challenging part already: *getting the connections right*.
 
-## Configuring the System and Accelerators
+## Configuring the System for Your Accelerators
 
 In the directory `./target/snitch_cluster/cfg/` you will find several configurations describing different systems. The `snax-alu.hjson` file contains the configurations we have for the SNAX ALU system (refer to figure above). This configuration file several system customizations. It includes the size of the memory, the connection for the accelerators to the TCDM interconnect, the configurations for the CSR manager and streamer, and so on.
 
@@ -79,7 +79,7 @@ Building your system is fully-automated by the scripts and makefiles in this pla
 
 ## Programming Your System
 
-After building the system, we can immediatley test and profile your work through a C-code program. We write CSR read and write commands to configure the accelerator. We provide a detailed tutorial in [Programming Your Design](./programming.md).
+After building the system, we can immediatley test and profile your work through a C-code program. We write CSR read and write commands to configure the accelerator. We provide a detailed tutorial in [Programming Your Design](./programming.md). We also provide some useful tools for debugging and profiling your design in [Other Tools](./other_tools.md).
 
 # General Directory Structure
 
@@ -93,3 +93,27 @@ It is nice to familiarize yourself with the directory structure of the platform.
 %}
 
 We will revisit these things later on but first let's explore and understand the first step: [Building the Architecture](./build_system.md).
+
+# Some Exercises!
+
+<details>
+  <summary> In which directory would I find the IP of the `snax_alu` accelerator? </summary>
+  Go to `./hw/snax_alu/src/.`
+</details>
+
+<details>
+  <summary> How many major steps does it take to build the entire HW to SW stack? </summary>
+  6 steps!
+
+  1. Build your accelerator.
+  2. Configure the system to your accelerator.
+  3. Configure the CSR manager.
+  4. Configure the streamer.
+  5. Build your architecture.
+  6. Program it!
+</details>
+
+<details>
+  <summary> What do you think does the configuration `snax_tcdm_ports` do? Where can I find the actual definition? </summary>
+  It specifies how many TCDM ports it needs to connect to. You can find it in schema-doc/snitch_cluster.md!
+</details>
