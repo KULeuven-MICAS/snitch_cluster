@@ -287,7 +287,7 @@ With the source code and data generation script in place, you need to set up `Ma
 
 # Building and Running Your Program
 
-Building and running your program is easy. Build your program in `./target/snitch_cluster` with:
+Building and running your program is easy. First, navigate to `./target/snitch_cluster` then invoke:
 
 ```
 make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw
