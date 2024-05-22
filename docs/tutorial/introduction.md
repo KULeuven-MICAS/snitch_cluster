@@ -120,7 +120,7 @@ make CFG_OVERRIDE=cfg/snax-alu.hjson bin/snitch_cluster.vlt -j
 2 - Build the SW:
 
 ```bash
-make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw
+make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN=llvm-generic sw -j
 ```
 
 3 - Run the program:
