@@ -79,6 +79,10 @@ This is prefixed at the beginning of each generated file. Moreover, it also sets
 
 Where you should substitute `${snax_acc_name}`  with the parameter name you specified.
 
+!!! note
+
+    When you write the filenames for the `Bender.yml` file, make sure to have the correct top module name of the shell. For example, the `snax_alu_shell_wrapper.sv` should be the top-shell name of your accelerator. Then, the generated Chisel files should also haev the `${snax_acc_namee}` pre-fixed accordingly. Just like it was mentioned above.
+
 ## Updating the Makefiles!
 
 With the RTL files in place, we only need to make small modifications in the makefile such that we specify the `-target` properly during the build.
