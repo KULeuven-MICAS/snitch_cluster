@@ -25,7 +25,7 @@ In this tutorial, we will explore how to attach your custom accelerator to the S
 3 - [CSR Manager Design](./csrman_design.md)
 
 - This section describes the features of our pre-built CSR manager.
-- It helps in hiding set-up delays in between accelerator runs by introducing a configuration preloading mechanism.
+- It helps in hiding set-up delays between accelerator runs by introducing a configuration preloading mechanism.
 
 4 - [Streamer Design](./streamer_design.md)
 
