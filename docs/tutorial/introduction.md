@@ -4,7 +4,7 @@
 
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/9242dd65-be3a-4472-8ae5-e026992f6a95)
 
-SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling data layout in memory and data access pattern management. 
+SNAX supports several design-time and run-time configurations to support different accelerators and corresponding data layouts. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling data layout in memory and data access pattern management. 
 
 # Outline
 
@@ -25,12 +25,12 @@ In this tutorial, we will explore how to attach your custom accelerator to the S
 3 - [CSR Manager Design](./csrman_design.md)
 
 - This section describes the features of our pre-built CSR manager.
-- It helps in hiding set-up delays in between accelerator runs.
+- It helps in hiding set-up delays in between accelerator runs by introducing a configuration preloading mechanism.
 
 4 - [Streamer Design](./streamer_design.md)
 
 - This section talks about our design- and run-time configurable streamer.
-- Streamers help streamline data accesses for an accelerator.
+- Streamer helps streamline data accesses for an accelerator. It decouples the data access with the acceleration computation datapath and introduces a prefetch mechanism to boost the utilization of the accelerator
 
 5 - [Building the Architecture](./build_system.md)
 
@@ -53,7 +53,7 @@ In this tutorial, we will explore how to attach your custom accelerator to the S
 
 # Getting Started
 
-To follow along with the tutorial, we recommend to **create a GitHub Codespace**. Alternatively, you can **clone the repository locally** and use our prebuilt docker container.
+To follow along with the tutorial, we recommend to **create a GitHub Codespace**. Alternatively, you can also **clone the repository locally** and use our prebuilt docker container.
 
 ## Github Codespace
 
