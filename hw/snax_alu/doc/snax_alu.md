@@ -30,7 +30,9 @@ The `snax_alu_csr` is a control and status register set with signals to modify t
 |    busy         |       3         |   RO    | Busy status. 1 - busy, 0 - idle                     |
 |  perf. counter  |       4         |   RO    | Performance counter indicating number of cycles     |
 
-RW registers can be modified or read from by the CSR manager. These are mostly the configurations and start signals that get to the main data path. The RO registers are read-only registers that the CSR manager can read from. These are mostly used for monitoring purposes like status or performance counters.
+RW registers can read or write from the snitch core’s perspective. The values of these registers are input signals from the accelerator’s perspective, which can used for configurations and start signals that get to the main data path.
+
+RO registers are read-only from the snitch core’s perspective .The values of these registers are output signals from the accelerator’s perspective. These are mostly used for monitoring purposes like status or performance counters. 
 
 The mode signal is broadcast to all PEs to configure the kernel that each PE processes. The busy signal acts like an active state also broadcasted to all PEs. If it's high then the PEs set their input ready signals high to allow data to stream continuously. 
 
