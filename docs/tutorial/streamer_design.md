@@ -1,13 +1,13 @@
 # Streamer
 
-The SNAX streamer is a Chisel-generated module to help streamline the delivery of data from memory to the accelerator and vice versa. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section, we will only cover the high-level aspects and how to configure the streamer.
+The SNAX streamer is a Chisel-generated module to help streamline the data delivery from memory to the accelerator and vice versa. There is a [detailed streamer documentation](../../hw/chisel/doc/streamer.md), but in this tutorial section, we will only cover the high-level aspects and how to configure the streamer.
 
 
 # Why Do We Need a Streamer?
 
 Accelerators attain peak performance when data continuously streams into them; otherwise, they spend cycles waiting for data availability. Delays often occur due to mismatched data arrangements in shared memory or congestion among accelerators accessing the same banks concurrently.
 
-It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two different data layouts and how an accelerator would get the data. 
+It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two data layouts and how an accelerator would get the data. 
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/d59ace4e-7802-444f-99ee-c124abf2397b)
 
@@ -17,14 +17,14 @@ The data layout refers to the arrangement of data contents in memory, while the 
 
 On the left of the figure, the data layout in memory organizes the inputs and outputs on each bank. The accelerator's data access needs to be configured to access data continuously with appropriate memory address strides pointing to the memory addresses.
 
-For example, if the data is arranged in data layout 1, then input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
+For example, if the data is arranged in data layout 1, input A needs to get data in addresses `[0, 4, 8, 12]` and in the exact order. That means the starting `base_address_a=0` and skip counts with `temporal_stride_a=4`. The `target_address_a` is computed in a simple loop:
 
 ```
 for(i = 0; i < 4; i++):
   target_address_a = base_address_a + temporal_stride_a*i;
 ```
 
-Another arrangement in data layout 2 shows that the data can be arranged in a contiguous fashion. This time, input A needs to access the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
+Another arrangement in data layout 2 shows that the data can be arranged contiguously. This time, input A accesses the data in the address sequence `[0,1,2,3]`. Here we set `base_address_a=0` and `temporal_stride_a=1`.
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
@@ -84,7 +84,7 @@ target_address_a[1] = [1,4,13,16]
 target_address_a[2] = [2,5,14,17]
 ```
 
-Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their own streamer, we provide a design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
+Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their streamer, we provide a design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
 
 # Flexible Affine Address Generation
 
@@ -117,7 +117,7 @@ The affine address generation is the working principle of the SNAX streamer. Wit
 
 # Streamer Microarchitecture
 
-The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator as a flexible and efficient data movement unit. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in [Building the Architecture](./build_system.md) section.
+The figure below shows a more detailed architecture of the streamer. The **(1) streamer** sits between the TCDM interconnect and the accelerator as a flexible and efficient data movement unit. There is also a **(2) streamer wrapper** to re-wire the Chisel-generated signals. More details of the wrappers are in the [Building the Architecture](./build_system.md) section.
 
 ![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/e26af3c9-43f8-4de5-b07e-02dbacecc9fd)
 
@@ -125,7 +125,7 @@ The figure below shows a more detailed architecture of the streamer. The **(1) s
 
 ### **(3) TCDM interface** 
 
-The **TCDM interface** has request and response channels and also uses a decoupled interface. The table below describes the details of the request and response channels:
+The **TCDM interface** has request and response channels and uses a decoupled interface. The table below describes the details of the request and response channels:
 
 | signal name        | description                                |
 | :-----------------:| :----------------------------------------: |
@@ -144,11 +144,11 @@ The **TCDM interface** has request and response channels and also uses a decoupl
 
     Some of the signals are currently unused by the streamer. However, we needed to comply with the TCDM IP of the Snitch platform.
 
-The response channel only has a `valid` signal but no `ready` signal. The TCDM assumes that the receiving end will always be ready. The streamer automatically handles these response data through FIFO buffers and make sure no more new request is sent unless there are idle space to store new response.
+The response channel only has a `valid` signal but no `ready` signal. The TCDM assumes that the receiving end will always be ready. The streamer automatically handles these response data through FIFO buffers and makes sure no more new request is sent unless there is idle space to store the new responses.
 
 ### (4) Accelerator Interface
 
-The accelerator interface connects the streamer to the accelerator. It only has a single data channel with a decoupled interface. There are two directions. We have the `acc2stream` and `stream2acc` interfaces which pertain to write and read directions, respectively. This means that `acc2stream` ports will always be for write directions only and `stream2acc` will always be for read directions only.
+The accelerator interface connects the streamer to the accelerator. It only has a single data channel with a decoupled interface. There are two directions. We have the `acc2stream` and `stream2acc` interfaces which pertain to writing and reading directions, respectively. This means that `acc2stream` ports will always be for write directions only and `stream2acc` will always be for read directions only.
 
 ## Streamer Submodules
 
@@ -160,7 +160,7 @@ We can also configure several settings for the streamers. This includes a number
 
 ### (6) Streamer CSR Manager
 
-The streamer has its own *(5) streamer CSR manager* which functions exactly the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
+The streamer has its own *(5) streamer CSR manager* which functions the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
 
 The number of registers varies depending on the configured parameters in the configuration file. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) talks more about how the configuration file generates the registers. For now, it is important to understand the general set of registers that exist in the CSR manager. The table below shows the list of registers with their corresponding type and description.
 
@@ -234,7 +234,7 @@ fifo_writer_params: {
 }
 ```
 
-The `data_reader_params` and `data_writer_params` effectively configures the TCDM interface ports. It consists of `tcdm_ports_num` which controls how many TCDM ports are needed. The `spatial_bounds` pertain to the spatial unrolling factors (your parfor) for each data mover. The `spatial_dim` is the dimension of spatial unrolling factors (your parfor) for each data mover. The `element_width` is the single data element width for each data mover, useful for generating spatial addresses.
+The `data_reader_params` and `data_writer_params` effectively configure the TCDM interface ports. It consists of `tcdm_ports_num` which controls how many TCDM ports are needed. The `spatial_bounds` pertain to the spatial unrolling factors (your parfor) for each data mover. The `spatial_dim` is the dimension of spatial unrolling factors (your parfor) for each data mover. The `element_width` is the single data element width for each data mover, useful for generating spatial addresses.
 
 ```hjson
 data_reader_params:{
@@ -252,9 +252,9 @@ data_writer_params:{
 }
 ```
 
-The number of elements in a list pertain to how many data movers there are. For example, there are 2 elements in the `data_reader_params` and therefore it instantiates two read data movers. There is only 1 element in the `data_writer_params` and hence only instantiates 1 write data mover.
+The number of elements in a list pertains to how many data movers there are. For example, there are 2 elements in the `data_reader_params` and therefore it instantiates two read data movers. There is only 1 element in the `data_writer_params` and hence only instantiates 1 write data mover.
 
-Finally there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. Basically, it only fixes the loop bound to 1. This is a special case scenario only, such as for output-stationary or weight stationary accelerators. In the SNAX ALU, this is 0. 
+Finally, there is the `stationarity` configuration which is for stationarity for each data mover. If the stationarity bit is set, the innermost loop for that data mover is set to 1. This does not instantiate anything but rather affects the loop bound for a data mover. It only fixes the loop bound to 1. This is a special case scenario only, such as for output-stationary or weight-stationary accelerators. In the SNAX ALU, this is 0. 
 
 ## SNAX ALU Streamer CSRs
 
@@ -263,7 +263,7 @@ Based on the configuration file we expect the CSR registers to have:
 - 1 register for a single loop bound as specified in the `temporal_addrgen_unit_params -> loop_dim = 1`. If the number is 2 then we would have 2 loop bounds.
 - 3 temporal stride registers, 3 spatial stride registers, and 3 base address pointers since we have 3 data movers in total (2 read data movers and 1 write data mover).
 - 1 start register to start the streamer.
-- 1 performance counte register for how many cycles the streamer was active.
+- 1 performance counter register for how many cycles the streamer was active.
 
 Below is a tabulated version of the CSRs of the streamers with the register offset addresses, type, and description:
 
