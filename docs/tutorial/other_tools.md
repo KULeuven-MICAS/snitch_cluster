@@ -9,7 +9,7 @@ To dump VCD files through simulation we only need to add the `--vcd` when runnin
 ```bash
 bin/snitch_cluster.vlt sw/apps/snax-alu/build/snax-alu.elf --vcd
 ```
-The dumped file will be named as `sim.vcd`. You can view this with your favorite waveform viewing tool:
+The dumped file will be named as `sim.vcd`. You can view this with your favorite waveform viewing tool. Taking `GTKWave` as an example:
 
 ```
 gtkwave sim.vcd &
@@ -65,7 +65,7 @@ spike -h
 
 ## Running Traces
 
-We can now generate traces. Make sure you are in the ``./target/snitch_cluster/` directory.
+We can now generate traces. Make sure you are in the `./target/snitch_cluster/` directory.
 
 1 - Run simulations first:
 
@@ -88,7 +88,7 @@ trace_hart_00001.txt
 
 ## Investigating Traces
 
-The generated traces are a bit more readble from here. Open `trace_hart_00000.txt` and search for the first instance of the `mcycle` instruction (do a text search like `ctrl+f`).
+The generated traces are a bit more readable from here. Open `trace_hart_00000.txt` and search for the first instance of the `mcycle` instruction (do a text search like `ctrl+f`).
 
 ```bash
 663000      660        M 0x8000020c csrr    a4, mcycle             #; mcycle = 659, (wrb) a4  <-- 659
@@ -135,8 +135,8 @@ The generated traces are a bit more readble from here. Open `trace_hart_00000.tx
  - 2nd column is the clock cycle count.
  - 3rd column is the instruction address.
  - 4th column is the instruction.
- - 5th column are the arguments for the instruction.
- - 6th column are comments to indicate has happend.
+ - 5th column is the arguments for the instruction.
+ - 6th column is the comments section to indicate what has happened.
 
  You can see comments that indicate load operations of the load-store unit of the Snitch core. For example:
 
