@@ -52,8 +52,8 @@ module data_reshuffler #(
   logic [(SpatPar*DataWidth)-1:0] z_wide;
   logic [(SpatPar*DataWidth)-1:0] z_wide_tmp;
 
-  for (genvar i = 0; i < SpatPar; i++) begin
-    for (genvar j = 0; j < SpatPar; j++) begin
+  for (genvar i = 0; i < SpatPar; i++) begin: gen_outer_loop
+    for (genvar j = 0; j < SpatPar; j++) begin: gen_inner_loop
       assign a_split[i][j] = a_i[(i*SpatPar+j)*Elems+:Elems];
       // Transpose the data
       assign z_split[i][j] = a_split[j][i];
