@@ -9,7 +9,7 @@ Accelerators attain peak performance when data continuously streams into them; o
 
 It's crucial to differentiate between the data layout in memory and the access pattern of an accelerator. The figure below shows two data layouts and how an accelerator would get the data. 
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/d59ace4e-7802-444f-99ee-c124abf2397b)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/8c359652-01e2-4e9e-a519-a0c76daa1b0a)
 
 The memory address on the top-right corner is a guide to show the addresses of each data element. Assume each column represents a separate memory bank and each block signifies a data element, with each bank having only one read and one write access port.
 
@@ -28,7 +28,7 @@ Another arrangement in data layout 2 shows that the data can be arranged contigu
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/26665295/cd0e8c3e-3348-4b3e-81ee-e4e784af2965)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/6da24ed5-ebab-46d3-8bb0-f4a592b5ddd0)
 
 Consider the data layout 1. Each port of the accelerator needs to compute the target address as:
 
