@@ -86,9 +86,9 @@ target_address_a[2] = [2,5,14,17]
 
 Because data can be arranged differently in memory, a streamer becomes useful for configuring how to access that data. To alleviate the burden of an accelerator designer on building their streamer, we provide a design- and run-time configurable streamer, as will be shown in the section [Configuring the Generated Streamer](#configuring-the-generated-streamer). 
 
-# Flexible Affine Address Generation
+# Flexible Strided Address Generation
 
-As discussed above, it is crucial to provide support for accelerators to access data in various places. Our SNAX streamer solves this through a flexible affine address generation. We can generalize the address generation for one input or output port with the pseudo-code below:
+As discussed above, it is crucial to provide support for accelerators to access data in various places. Our SNAX streamer solves this through a flexible strided address generation. We can generalize the address generation for one input or output port with the pseudo-code below:
 
 ```
 for(tb_n_1 = 0; tb_n_1 < temporal_bound[n-1]; tb_n_1++)
@@ -113,7 +113,7 @@ Where `temporal_bound[*]` pertains to the bounds of the temporal loops and `tb_*
 
 The `temporal_bound[*]`, `tb_*`, and `sb_*` are run-time configurable. The number of the temporal loops and `sb_*` is design-time configurable.
 
-The affine address generation is the working principle of the SNAX streamer. With this, we can flexibly access data in various places of the memory. 
+The strided address generation is the working principle of the SNAX streamer. With this, we can flexibly access data in various places of the memory. 
 
 # Streamer Microarchitecture
 
@@ -154,13 +154,13 @@ The accelerator interface connects the streamer to the accelerator. It only has 
 
 ### (5) Data Movers
 
-The core of the streamers are the data movers which handle all write or read transactions. Each mover contains a *data mover* for handling transactions with the TCDM interconnect, FIFO buffers for handling transactions with the accelerator, and an *Address Generation Unit* (AGU) for providing the affine address generation to the data mover.
+The core of the streamers are the data movers which handle all write or read transactions. Each mover contains a *data mover* for handling transactions with the TCDM interconnect, FIFO buffers for handling transactions with the accelerator, and an *Address Generation Unit* (AGU) for providing the strided address generation to the data mover.
 
 We can also configure several settings for the streamers. This includes a number of read-and-write data movers, the depth of the FIFOs, and even the data widths to use for each accelerator port. These are design-time parameters. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) will demonstrate how to configure these.
 
 ### (6) Streamer CSR Manager
 
-The streamer has its own *(5) streamer CSR manager* which functions the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the affine address generation.
+The streamer has its own *(5) streamer CSR manager* which functions the same way as the [CSR Manager](./csrman_design.md) for the accelerator. Therefore, it has its own set of registers that are mainly used for the strided address generation.
 
 The number of registers varies depending on the configured parameters in the configuration file. The section [Configuring the Generated Streamer](#configuring-the-generated-streamer) talks more about how the configuration file generates the registers. For now, it is important to understand the general set of registers that exist in the CSR manager. The table below shows the list of registers with their corresponding type and description.
 
@@ -186,7 +186,7 @@ Some notable characteristics:
 - We need two reader ports each with a data width that is 256 bits wide. We also want to use 8 FIFO buffers for each reader port. The SNAX ALU will have 4 PEs in parallel each taking in 64 bits of data in each PE. Hence, the a need for a 256-bit wide reader port.
 - We need one writer port with a data width of 512 bits and uses 8 FIFO buffers. The SNAX ALU output is double the data width: 128 bits per port of a PE and hence with 4 PEs results in 512 bits-wide write port.
 - We only need one temporal loob bound for this streamer. 
-- The general affine address generation for this streamer is:
+- The general strided address generation for this streamer is:
 
 ```
 for(i = 0; i < N; i++):
@@ -441,7 +441,7 @@ In terms of CSR registers, the streamer would have the following:
 
 Because we now have two temporal loop bounds, the temporal stride registers are also doubled. We need two temporal strides, one for input and one for output, for each temporal loop bound. Therefore there are a total of 2 temporal strides for the first loop bound and another 2 temporal strides for the second loop bound.
 
-Finally, the affine address generation that this streamer can do is:
+Finally, the strided address generation that this streamer can do is:
 
 ```
 for(i = 0; i < N; i++):
