@@ -64,7 +64,7 @@ To follow along with the tutorial, we recommend to **create a GitHub Codespace**
 
 Opening a Github Codespace is the most convenient way to get started quickly. To create a new codespace, go to the main repository, and follow code -> codespace -> create codespace. Or access this at [SNAX cluster codespace](https://codespaces.new/KULeuven-MICAS/snitch_cluster).
 
-![image](https://github.com/KULeuven-MICAS/snitch_cluster/assets/47864363/27f3c084-ba26-4653-ad68-d9e898ca0597)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/2831e951-84ec-4909-a3a1-e3eef816c56e)
 
 This will launch a new window where the container image for the codespace will be built. This can take a couple of minutes, but is only required to run once. After this, a Visual Studio Code client will be launched in your browser. This system has all the requirements for developing, building and simulating a SNAX Cluster preinstalled. If you prefer this, you can also launch this codespace in the Visual Studio Code desktop client.
 
@@ -85,7 +85,7 @@ pip3 install -r sw/dnn/requirements.txt
 First let's clone the main repository. Do not forget to include the `--recurse-submodules`.
 
 ```bash
-git clone https://github.com/KULeuven-MICAS/snitch_cluster.git --recurse-submodules
+git clone https://github.com/KULeuven-MICAS/snax_cluster.git --recurse-submodules
 ```
 
 If you had already cloned the repository without the `--recurse-submodules` flag, clone its submodules with:
@@ -110,6 +110,12 @@ docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:main
 
 This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed sotfware.
 
+You need to load some pre-requisite packages:
+
+```bash
+pip3 install -r sw/dnn/requirements.txt
+```
+
 ## Installing Packages and Programs Locally
 
-There are several required packages and programs. If you insist on installing these yourself, then you may refer to the `Dockerfile` for guidance. You can find this at `./util/container/Dockerfile`.
+There are several required packages and programs in the container. If you insist on installing these yourself, then you may refer to the `Dockerfile` for guidance. You can find this at `./util/container/Dockerfile`.
