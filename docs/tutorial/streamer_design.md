@@ -28,7 +28,7 @@ Another arrangement in data layout 2 shows that the data can be arranged contigu
 
 A more complicated example is when a streamer can get multiple data in parallel. This necessitates that we need to also have an address generation that can do spatial parallelism. Particularly it would be convenient to provide a base address and a stride but have all other ports automatically increment per accelerator port. The figure below shows an example accelerator that takes in 3 inputs in parallel and also produces 3 outputs in parallel:
 
-![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/6da24ed5-ebab-46d3-8bb0-f4a592b5ddd0)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/f4b23a99-0125-4f3e-9c30-85f799545d28)
 
 Consider the data layout 1. Each port of the accelerator needs to compute the target address as:
 
