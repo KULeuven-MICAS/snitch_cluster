@@ -74,4 +74,4 @@ The top-level is structured as follows:
 
 # Acknowledgement
 
-SNAX cluster is developed based on the [Snitch Cluster](https://github.com/pulp-platform/snitch_cluster).
+SNAX is an extension of the original [Snitch Cluster](https://github.com/pulp-platform/snitch_cluster) framework. SNAX got its name as "SNitch Acceleration eXtension".
