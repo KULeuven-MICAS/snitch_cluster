@@ -2,7 +2,7 @@
 
 There are two useful tools for debugging and verifying your work. (1) Dumping waveform VCD files and (2) program stack tracing.
 
-# Dumping Wavefors with VCD Files
+# Dumping Waveforms with VCD Files
 
 To dump VCD files through simulation we only need to add the `--vcd` when running simulations.
 
