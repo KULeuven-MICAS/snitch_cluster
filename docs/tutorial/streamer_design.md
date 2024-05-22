@@ -372,6 +372,7 @@ If you are working in a docker container:
 # Try Modifying the Streamer!
 
 Let's try a simple exercise but we will spoil the answer to you already. Suppose we want the following streamer characteristics:
+
 - 2 temporal loop bounds
 - 1 reader and 1 writer that takes in 8 parallel inputs (and outputs) each 64 bits wide and with a FIFO depth of 16.
 - 8 TCDM ports for each reader and writer.
