@@ -8,9 +8,9 @@ We annotate some notable characteristics:
 
 (1) - It has a memory that is 128kB large, with 32 banks where each bank has 64 bits of data width. We call this memory the **tighly coupled data memory (TCDM)**.
 
-(2) - There is a complex TCDM interconnect that handles data transfers from Snitch CPU cores, accelerator core, the DMA and an AXI port.
+(2) - There is a complex TCDM interconnect that handles data transfers from Snitch CPU cores, accelerator core, the DMA and an AXI port to the entire TCDM memory. It can suppport both 64-bit and 512-bit transfers.
 
-(3) - There exists Snitch CPU cores that control the accelerator. The Snitch is a light-weight RV32I core for dispatching commands to the accelerator. A dedicated Snitch core is given to a DMA to allow parallel operations.
+(3) - There exists Snitch CPU cores that control the accelerator. The Snitch is a light-weight RV32I core for dispatching commands to the accelerator. 
 
 (4) - **Any accelerator sits on a shell marked by the yellow highlight**. This shell provides control and data interfaces to the accelerator (SNAX ALU). The SNAX shell consists of a control and status register (CSR) manager and a data streamer.
 
@@ -18,7 +18,7 @@ We annotate some notable characteristics:
 
 (6) - The **data streamers** provide flexible data access for the accelerators. These design and run time flexible streamers help in streamlining data delivery to the accelerator and vice versa.
 
-(7) - There is a DMA to transfer data from the outside memory into the local TCDM. The programmer has full control of this DMA.
+(7) - There is a DMA to transfer data from the outside memory into the local TCDM. A dedicated Snitch core is given to a DMA to allow parallel operations. The programmer has full control of this DMA.
 
 (8) - There are shared instruction caches for the CPU cores.
 
@@ -75,7 +75,7 @@ Parameters like the `tcdm` configurations indicate the TCDM memory `size` in kB 
    comments=false
 %}
 
-As long as you configure your system accordingly, then the entire build process can be excuted with a single `make` command. More details are in the [Building the Architecture](./build_system.md) section.
+As long as you configure your system accordingly, then the entire build process can be excuted with a single `make` command. More details are in the [Building the System](./build_system.md) section.
 
 ## Programming Your System
 
