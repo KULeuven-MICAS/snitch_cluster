@@ -1,30 +1,34 @@
 ![CI](https://github.com/pulp-platform/snitch_cluster/actions/workflows/ci.yml/badge.svg)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Snitch Cluster
+# SNAX Cluster
 
 This repository hosts the hardware and software for the SNAX cluster and its generator. SNAX is a high-efficiency compute cluster platform designed for computation- and data- intensive artificial intelligence workloads. It provides a standard SNAX shell for conveniently integrating versatile accelerators. The SNAX shell leverages CSR manager for programming the accelerators in the control plane and data streamers for data access in the data plane.
 
-An architectural overview of SNAX is shown below.
+The figure below shows an architectural overview of the SNAX cluster.
 
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/9242dd65-be3a-4472-8ae5-e026992f6a95)
 
-SNAX supports several design-time and run-time configurations to support different accelerators and corresponding data layouts. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of Snitch cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling data layout in memory and data access pattern management.
+SNAX supports several design-time and run-time configurations to support a variety of accelerators. For example, some design-time configurations include customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of Snitch cores controlling accelerators, and so much more. For run-time configurations, we provide data streamers and reshufflers to aid accelerators in organizing data layouts in memory and managing data access patterns.
 
 ## Getting Started
 
 To get started, check out the [getting started guide](https://kuleuven-micas.github.io/snax_cluster/ug/getting_started.html).
 
-We provide a [detailed tutorial](https://github.com/KULeuven-MICAS/snax_cluster/tree/main/docs/tutorial) about how to integrate an accelerator into the SNAX cluster platform. 
+We provide a [detailed tutorial](https://kuleuven-micas.github.io/snax_cluster/tutorial/introduction.html) on integrating an accelerator into the SNAX cluster platform. 
 
 ## Content
 
 What can you expect to find in this repository?
 
 - The RISC-V [Snitch integer core](https://pulp-platform.github.io/snitch_cluster/rm/snitch.html). This can be useful stand-alone if you are just interested in re-using the core for your project, e.g., as a tiny control core or you want to make a peripheral smart. The sky is the limit.
-- The [SNAX cluster](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/tutorial/architectural_overview.md). A highly configurable cluster provides a standard and clean accelerator integration interface. The control interface is defined by [CsrManager](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/tutorial/csrman_design.md) and the data interface is addressed by the [Data Streamer](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/tutorial/streamer_design.md).
+- The [SNAX cluster](https://kuleuven-micas.github.io/snax_cluster/tutorial/architectural_overview.html). A highly configurable cluster provides a standard and clean accelerator integration interface.
+
+- A [CSR Manager](https://kuleuven-micas.github.io/snax_cluster/tutorial/csrman_design.html) is included to support a standardized control and management of registers through CSR instructions.
+  
+- The [Data Streamer](https://kuleuven-micas.github.io/snax_cluster/tutorial/streamer_design.html) streamlines the data access patterns for the accelerator.
 - Versatile accelerator examples, including a [Chisel-based GEMM accelerator generator](https://github.com/KULeuven-MICAS/snax-gemm), a [rescale SIMD accelerator generator](https://github.com/KULeuven-MICAS/snax-postprocessing-simd), and a [Data Reshuffler]() for data layout transformation, are provided for reference.
-- A runtime and software example applications for the SNAX cluster and corresponding accelerators.
+- Software example applications for the SNAX cluster and corresponding accelerators.
 - RTL simulation environments for Verilator, Questa Advanced Simulator, and VCS.
 
 ## Directory Structure
