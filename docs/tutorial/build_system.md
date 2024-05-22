@@ -135,6 +135,7 @@ In principle, both scripts use a specified configuration file like the `snax-alu
 The **accelerator wrapper** script uses any of the configuration files under the `./target/snitch_cluster/cfg/.` directory. Then load them in wrapper templates found in `./hw/templates/.` directory.
 
 Inside the template directory we have:
+
 - `snax_csrman_wrapper.sv.tpl` - is for the CSR manager wrapper. This is (2) from the figure above.
 - `snax_streamer_wrapper.sv.tpl` - is for the streamer wrapper. This is (3) from the figure above.
 - `snax_acc_wrapper.sv.tpl` - is for the accelerator wrapper. This is (4) from the figure above.
