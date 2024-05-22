@@ -86,31 +86,57 @@ This is a good time to test our wrapper generation and see the changes in the CS
 
 2 - Run the command:
 
+If you are working in Codespaces:
+
+```bash
+/workspaces/snax_cluster/util/wrappergen/wrappergen.py --cfg_path="/workspaces/snax_cluster/target/snitch_cluster/cfg/snax-alu.hjson" --tpl_path="/workspaces/snax_cluster/hw/templates/" --chisel_path="/workspaces/snax_cluster/hw/chisel/" --gen_path="/workspaces/snax_cluster/target/snitch_cluster/generated/"
+```
+
+If you are working in a docker container:
+
 ```bash
 /repo/util/wrappergen/wrappergen.py --cfg_path="/repo/target/snitch_cluster/cfg/snax-alu.hjson" --tpl_path="/repo/hw/templates/" --chisel_path="/repo/hw/chisel/" --gen_path="/repo/target/snitch_cluster/generated/"
 ```
 
 !!! note
 
-    If you are working outside of the container, note that the `/repo` pertains to the root of the repository.
+    If you are working outside of the container or Codespace, note that the `/repo` or `/workspaces/snax_cluster/` pertains to the root of the repository.
 
 3 - Wait a while since this generates the CSR manager, streamer, and all other wrappers.
 
-4 - When finished, navigate to `/repo/target/snitch_cluster/generated/snax_alu/`
+4 - When finished, navigate to `./target/snitch_cluster/generated/snax_alu/`
 
 5 - Open the file `snax_alu_csrman_CsrManager.sv`. This is the Chisel-generated file. It looks like a synthesized netlist. All modules required for the CSR manager are declared in this file. 
 
 6 - Find the top module `snax_alu_csrman_CsrManager` within the `snax_alu_csrman_CsrManager.sv` file. Can you identify the signals discussed in this section?
 
-- Which are the interfaces for the Snitch core?
-- Which are the interfaces for the accelerator side?
-- How many ports are generated for the RW registers?
-- How many ports are generated for the RO registers?
+<details>
+  <summary> Which are the interfaces towards the Snitch core? </summary>
+  All signals with `*_csr_config_in_*`.
+</details>
+
+
+<details>
+  <summary> Which are the interfaces for the accelerator side? </summary>
+  All signals with `*_csr_config_out_*` and also the `*_read_only_csr_*`.
+</details>
+
+<details>
+  <summary> How many ports are generated for the RW and RO registers? </summary>
+  There are 3 RW register ports and 2 RO register ports.
+</details>
 
 7 - Find the generated wrapper `snax_alu_csrman_wrapper.sv`. Can you identify the following?
 
- - Can you see where the SNAX CSR manager is instanced?
- - Can you tell what the SNAX CSR wrapper is trying to fix?
+<details>
+  <summary> Can you see where the SNAX CSR manager is instanced? </summary>
+  Yes! It has instance name `i_snax_alu_csrman_CsrManager`.
+</details>
+
+<details>
+  <summary> Can you tell what the SNAX CSR wrapper is trying to fix? </summary>
+  It's just simply packing the unpacked Chisel-generated signals of the CSR manager.
+</details>
 
 # Try Modifying CSR Manager Yourself!
 
