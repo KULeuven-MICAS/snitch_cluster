@@ -68,4 +68,4 @@ The `snax_acc_cfg`  contains the configurations for the accelerator. The configu
 - `snax_num_ro_csr`: Is the number of read-only (RO) registers your accelerator has. This affects the connection ports CSR manager. More details in [SNAX CSR Manager](./csrman_design.md).
 - `snax_streamer_cfg`: Contains the settings for your streamer. More details are in [SNAX Streamer](./streamer_design.md)
 
-You can find more details in the [Harware Schema](schema-doc/snitch_cluster.md) section. 
+You can find more details in the [Hardware Schema](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/schema/snitch_cluster.schema.json) file. 

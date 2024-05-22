@@ -57,7 +57,7 @@ cluster: {
    // Other things below
 ```
 
-Parameters like the `tcdm` configurations indicate the TCDM memory `size` in kB and the number of memory `banks`. These settings automatically adjust the system. You can find more details in the [Hardware Schema](schema-doc/snitch_cluster.md) section. 
+Parameters like the `tcdm` configurations indicate the TCDM memory `size` in kB and the number of memory `banks`. These settings automatically adjust the system. You can find more details in the [Hardware Schema](https://github.com/KULeuven-MICAS/snax_cluster/blob/main/docs/schema/snitch_cluster.schema.json) section. 
 
 {%
    include-markdown './accelerator_design.md'
