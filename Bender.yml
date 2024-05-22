@@ -317,7 +317,7 @@ sources:
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_streamer_wrapper.sv
       # Level 2
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_wrapper.sv
-      
+
   - target: snax-streamer-simd
     files:
       # Level 0
