@@ -5,11 +5,11 @@
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/2831e951-84ec-4909-a3a1-e3eef816c56e)
 
 
-SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling memory-layout and data access pattern management. 
+SNAX supports several design-time and run-time configurations to support different accelerators. For example, some design-time configurations include: customizing the memory sizes, the interconnect structure connecting the accelerators to memory, the number of [Snitch](https://github.com/pulp-platform/snitch_cluster) cores controlling accelerators, and so much more. For run-time configuration, we provide data streamers and reshufflers to aid accelerators in handling data layout in memory and data access pattern management. 
 
 # Outline
 
-In this tutorial, we will explore how to attach your own custom accelerator to the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
+In this tutorial, we will explore how to attach your custom accelerator to the SNAX platform. The outline below guides any new user on a simple ALU accelerator example. Have fun!
 
 1 - [Architectural Overview](./architectural_overview.md)
 
@@ -20,7 +20,7 @@ In this tutorial, we will explore how to attach your own custom accelerator to t
 2 - [Accelerator Design](./accelerator_design.md)
 
 - This section describes a simple ALU processing element that will serve as the accelerator of interest
-- We focus on the data path design and control status registers (CSR) that go along with it.
+- We focus on the data path design and control status registers (CSR) that go with it.
 - We emphasize the need to comply with the CSR manager and streamer interfaces.
 
 3 - [CSR Manager Design](./csrman_design.md)
@@ -30,7 +30,7 @@ In this tutorial, we will explore how to attach your own custom accelerator to t
 
 4 - [Streamer Design](./streamer_design.md)
 
-- This section talks our design- and run-time configurable streamer.
+- This section talks about our design- and run-time configurable streamer.
 - Streamers help streamline data accesses for an accelerator.
 
 5 - [Building the Architecture](./build_system.md)
@@ -66,9 +66,9 @@ Opening a Github Codespace is the most convenient way to get started quickly. To
 
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/2831e951-84ec-4909-a3a1-e3eef816c56e)
 
-This will launch a new window where the container image for the codespace will be built. This can take a couple of minutes, but is only required to run once. After this, a Visual Studio Code client will be launched in your browser. This system has all the requirements for developing, building and simulating a SNAX Cluster preinstalled. If you prefer this, you can also launch this codespace in the Visual Studio Code desktop client.
+This will launch a new window where the container image for the codespace will be built. This can take a couple of minutes but you only run this once. After this, a Visual Studio Code client will be launched in your browser. This system has all the requirements for developing, building, and simulating a SNAX Cluster preinstalled. If you prefer this, you can launch this codespace in the Visual Studio Code desktop client.
 
-Once loaded, you will be starting at the root of the local repository. You need to do the following to ensure a smooth run through of the tutorial. First, load the git submodules as it isn't automatically pre-loaded:
+Once loaded, you will be starting at the root of the local repository. You need to do the following to ensure a smooth run-through of the tutorial. First, load the git submodules as it isn't automatically pre-loaded:
 
 ```bash
 git submodule update --init --recursive
@@ -82,13 +82,13 @@ pip3 install -r sw/dnn/requirements.txt
 
 ## Cloning the Repository Locally
 
-First let's clone the main repository. Do not forget to include the `--recurse-submodules`.
+First, let's clone the main repository. Do not forget to include the `--recurse-submodules`.
 
 ```bash
 git clone https://github.com/KULeuven-MICAS/snax_cluster.git --recurse-submodules
 ```
 
-If you had already cloned the repository without the `--recurse-submodules` flag, clone its submodules with:
+If you have already cloned the repository without the `--recurse-submodules` flag, clone its submodules with:
 
 ```bash
 git submodule update --init --recursive
@@ -96,19 +96,19 @@ git submodule update --init --recursive
 
 ## Docker Container
 
-If you cloned the repository locally, we recommend that you use our pre-built docker container.
+If you locally cloned the repository, we recommend using our pre-built docker container.
 
 ```bash
 docker pull ghcr.io/kuleuven-micas/snax:main
 ```
 
-Go to the root of the `snax_cluster` repository and mount the directory unto the container:
+Go to the root of the `snax_cluster` repository and mount the directory to the container:
 
 ```bash
 docker run -it -v `pwd`:/repo -w /repo ghcr.io/kuleuven-micas/snax:main
 ```
 
-This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed sotfware.
+This way the container sees the `snax_cluster` directory and you can run the pre-built packages and installed software.
 
 You need to load some pre-requisite packages:
 
