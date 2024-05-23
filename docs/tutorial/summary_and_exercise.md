@@ -170,7 +170,7 @@ Since the accelerator is already prepared for you, your goals are to:
 
 1. Create the `snax_exercise_shell_wrapper.sv` that complies with the interface of the generated `snax_exericse_wrapper.sv`.
 2. Modify the necessary RTL setups: `snax_exercise.hjson`, `Bender.yml`, and the `Makefile` for handling HW builds.
-3. Create a simple C-code to test this setup, have your own data generation, and modify the necessary `Makefiles` for handling SW builds.
+3. Plan and create a simple C-code test, have your own data generation, and modify the necessary `Makefiles` for handling SW builds.
 4. Run your code and see if it works!
 5. Have fun!
 
