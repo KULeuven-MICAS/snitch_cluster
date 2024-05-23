@@ -5,7 +5,8 @@ Even with efficient data streamers, the data layout in memory should be adapted 
 
 The figure below illustrates the SNAX data resuffler in more detail:
 
-![image]()
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/143962462/08be0ac4-4bcc-47ed-b304-36bf3dc1d230)
+
 
 You can find all related files of resuffler under `./hw/snax_alu/src/.` directory. The main files are:
 
