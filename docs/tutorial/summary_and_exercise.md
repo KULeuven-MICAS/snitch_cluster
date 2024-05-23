@@ -55,9 +55,15 @@ make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN
 
 # You Need an Exercise to Get Strong!!!
 
-With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it to the SNAX system. You can get the `snax_exercise` RTL files from the `snax-base-tutorial` branch.
+With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it to the SNAX system.
 
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/19fb4d48-ff24-4443-b1d8-16cf3db5f60b)
+
+You can get the `snax_exercise` RTL files from the `snax-exercise-tutorial` branch.
+
+```bash
+git checkout snax-exercise-tutorial
+```
 
 ## Accelerator Datapath Specifications
 
@@ -67,11 +73,7 @@ There are specific features for this accelerator:
 
 - Name your accelerator configuration file as `snax_exercise.hjson`
 
-- The accelerator processes the kernel fully combinationally:
-
-$$ o = \sum_i^{8} \left(a_i \times b_i \right) + \textrm{bias} $$
-
-- Or written in a pseudo-code form:
+- The accelerator processes the kernel fully combinationally. Written in pseudo-code as:
 
 ```C
 O = 0;
