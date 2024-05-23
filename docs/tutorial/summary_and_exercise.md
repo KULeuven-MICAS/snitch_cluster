@@ -55,9 +55,9 @@ make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN
 
 # You Need an Exercise to Get Strong!!!
 
-With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it to the SNAX system.
+With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it into the SNAX system.
 
-![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/19fb4d48-ff24-4443-b1d8-16cf3db5f60b)
+![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/a67954ff-61fa-480b-91cc-ed860d592d5b)
 
 You can get the `snax_exercise` RTL files from the `snax-exercise-tutorial` branch.
 
