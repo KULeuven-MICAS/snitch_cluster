@@ -55,7 +55,7 @@ make CFG_OVERRIDE=cfg/snax-alu.hjson SELECT_RUNTIME=rtl-generic SELECT_TOOLCHAIN
 
 # You Need an Exercise to Get Strong!!!
 
-With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest:
+With everything you've learned, let's do a simple exercise for a new accelerator! The figure below shows the accelerator data path of interest. This accelerator is built for you already but you need to integrate it to the SNAX system. You can get the `snax_exercise` RTL files from the `snax-base-tutorial` branch.
 
 ![image](https://github.com/KULeuven-MICAS/snax_cluster/assets/26665295/19fb4d48-ff24-4443-b1d8-16cf3db5f60b)
 
@@ -67,18 +67,22 @@ There are specific features for this accelerator:
 
 - Name your accelerator configuration file as `snax_exercise.hjson`
 
-- The accelerator processes the kernel:
+- The accelerator processes the kernel fully combinationally:
+
+$$ o = \sum_i^{8} \left(a_i \times b_i \right) + \textrm{bias} $$
+
+- Or written in a pseudo-code form:
 
 ```C
 O = 0;
-parfor (int i = 0; i < 16; i++):
+parfor (int i = 0; i < 8; i++):
     O += A[i]*B[i]
 O += bias
 ```
 
-- Taking note that the `parfor` indicates that the MAC process needs to be process spatially in 16 parallel ports.
+- Taking note that the `parfor` indicates that the MAC needs to be processed spatially in 8 parallel ports.
 
-- The accelerator is an oversimplified MAC with a bias addition that takes in 32 inputs, 16 parallel ports for input A and 16 parallel ports for input B.
+- The accelerator is an oversimplified MAC with a bias addition that takes in 16 inputs, 8 parallel ports for input A and 8 parallel ports for input B.
 
 - Each input port takes in 64 bits of data. Each input port for A and B is multiplied together and accumulated at the end. This should be done fully-combinationally.
 
@@ -90,7 +94,7 @@ O += bias
 
 - For the inputs and outputs, make sure to comply with the decoupled interface.
 
-- The CSR registers it needs to have are tabulated below:
+- The CSR registers it has are tabulated below:
 
 | register name     | register offset  | type    | description                                         |
 | :---------------: | :--------------: | :-----: |:--------------------------------------------------- |
@@ -101,6 +105,7 @@ O += bias
 | busy              | 4                | RO      | Busy status. 1 - busy, 0 - idle                     |
 | perf. counter     | 5                | RO      | Performance counter indicating number of cycles     |
 
+- There is a `snax_exercise_top.sv` which is the top-module already of the data path shown above.
 
 ## CSR Manager and Streamer Specifications
 
@@ -108,25 +113,28 @@ For the CSR manager, you just need to ensure that the register configurations ma
 
 For the streamer you have the following specifications:
 
-- You need to feed 1,024 bits for input ports A and B, respectively. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
+- You need to feed 512 bits for each input ports A and B. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
 
-- This necessitates 32 TCDM ports for all the inputs.
+- This necessitates 16 TCDM ports for all the inputs.
 
 - The output is just a single 128-bit port output and hence leads to 2 TCDM ports only.
 
-- This leads to a total of 34 TCDM ports for the streamer.
+- This leads to a total of 18 TCDM ports for the streamer.
 
 - Use a depth of 16 for all FIFOs.
 
 - Let's keep 1 loop dimension only.
 
-!!! note
+## Your Goal
 
-    Don't worry about having 34 TCDM ports. We've seen worse...
+Since the accelerator is already prepared for you, your goals are to:
+
+1. Create the `snax_exercise_shell_wrapper.sv` that complies with the interface of the generated `snax_exericse_wrapper.sv`.
+2. Modify the necessary RTL setups: `snax_exercise.hjson`, `Bender.yml`, and the `Makefile` for handling HW builds.
+3. Create a simple C-code to test this setup, have your own data generation, and modify the necessary `Makefiles` for handling SW builds.
+4. Run your code and see if it works!
 
 ## Some Helpful Guidance
-
-- You could just copy the `snax_alu` example but be warned about the changes in the interface.
 
 - When in doubt, the wrapper generation is useful for providing the appropriate interface. For example, you can generate the file and investigate if the configurations you put produce the correct files. Moreover, the generated `snax_exercise_wrapper.sv` should guide you towards the interfaces that you need to prepare for your `snax_exercise_acc_shell.sv`.
 
