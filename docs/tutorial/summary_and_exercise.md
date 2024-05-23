@@ -109,6 +109,43 @@ O += bias
 
 - There is a `snax_exercise_top.sv` which is the top module already of the data path shown above.
 
+- The control side signals are unpacked registers but with the labels per port. They should correspond to the register table above.
+
+```verilog
+//-------------------------------
+// Register RW from CSR manager
+//-------------------------------
+input  logic [RegDataWidth-1:0]   csr_rw_reg_upper_i,
+input  logic [RegDataWidth-1:0]   csr_rw_reg_lower_i,
+input  logic [RegDataWidth-1:0]   csr_rw_reg_len_i,
+input  logic [RegDataWidth-1:0]   csr_rw_reg_start_i,
+input  logic                      csr_rw_reg_valid_i,
+output logic                      csr_rw_reg_ready_o,
+//-------------------------------
+// Register RO to CSR manager
+//-------------------------------
+output logic [RegDataWidth-1:0]   csr_ro_reg_busy_o,
+output logic [RegDataWidth-1:0]   csr_ro_reg_perf_count_o,
+```
+
+- The data ports are packed signals. Observe that we have the 8 input ports of size `DataWidth`. We have only 1 output port of size `2*DataWidth`.
+
+```verilog
+//-------------------------------
+// Data path IO
+//-------------------------------
+input  logic [7:0][DataWidth-1:0] a_i,
+input  logic                      a_valid_i,
+output logic                      a_ready_o,
+input  logic [7:0][DataWidth-1:0] b_i,
+input  logic                      b_valid_i,
+output logic                      b_ready_o,
+output logic [2*DataWidth-1:0]    out_o,
+output logic                      out_valid_o,
+input  logic                      out_ready_i
+```
+
+
 ## CSR Manager and Streamer Specifications
 
 For the CSR manager, you just need to ensure that the register configurations match that of the accelerator's register specs.
