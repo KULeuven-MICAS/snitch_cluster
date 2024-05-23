@@ -21,7 +21,7 @@ Congratulations! You're now an expert in using the SNAX shell. Let's review the 
 - Attaching the accelerator configurations.
 - Specifying the memory sizes.
 
-5 - Setting up the filelist and makefiles.
+5 - Setting up the file list and makefiles.
 
 - Modifying the `Bender.yml` to add the file list.
 - Modifying `Makefiles` 
@@ -82,15 +82,15 @@ parfor (int i = 0; i < 8; i++):
 O += bias
 ```
 
-- Taking note that the `parfor` indicates that the MAC needs to be processed spatially in 8 parallel ports.
+- Take note that the `parfor` indicates that the MAC needs to be processed spatially in 8 parallel ports.
 
-- The accelerator is an oversimplified MAC with a bias addition that takes in 16 inputs, 8 parallel ports for input A and 8 parallel ports for input B.
+- The accelerator is an oversimplified MAC with a bias addition that takes in 16 inputs, 8 parallel ports for input A, and 8 parallel ports for input B.
 
 - Each input port takes in 64 bits of data. Each input port for A and B is multiplied together and accumulated at the end. This should be done fully-combinationally.
 
 - We also add a feature that adds a 64-bit fixed bias.
 
-- Since the bias is 64-bits wide, you need to set the upper and lower bits of the bias through CSR registers.
+- Since the bias is 64 bits wide, you need to set the upper and lower bits of the bias through CSR registers.
 
 - The output produces a single 128-bit output.
 
@@ -107,15 +107,15 @@ O += bias
 | busy              | 4                | RO      | Busy status. 1 - busy, 0 - idle                     |
 | perf. counter     | 5                | RO      | Performance counter indicating number of cycles     |
 
-- There is a `snax_exercise_top.sv` which is the top-module already of the data path shown above.
+- There is a `snax_exercise_top.sv` which is the top module already of the data path shown above.
 
 ## CSR Manager and Streamer Specifications
 
-For the CSR manager, you just need to ensure that the register configurations matches that of accelerator's register specs.
+For the CSR manager, you just need to ensure that the register configurations match that of the accelerator's register specs.
 
-For the streamer you have the following specifications:
+For the streamer, you have the following specifications:
 
-- You need to feed 512 bits for each input ports A and B. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
+- You need to feed 512 bits for each input port A and B. Then you split them inside the accelerator's data path, just like in the `snax_alu` example.
 
 - This necessitates 16 TCDM ports for all the inputs.
 
@@ -135,10 +135,6 @@ Since the accelerator is already prepared for you, your goals are to:
 2. Modify the necessary RTL setups: `snax_exercise.hjson`, `Bender.yml`, and the `Makefile` for handling HW builds.
 3. Create a simple C-code to test this setup, have your own data generation, and modify the necessary `Makefiles` for handling SW builds.
 4. Run your code and see if it works!
+5. Have fun!
 
-## Some Helpful Guidance
-
-- When in doubt, the wrapper generation is useful for providing the appropriate interface. For example, you can generate the file and investigate if the configurations you put produce the correct files. Moreover, the generated `snax_exercise_wrapper.sv` should guide you towards the interfaces that you need to prepare for your `snax_exercise_acc_shell.sv`.
-
-- For the `snax_exercise` directory, you would practically have 1 CSR manager, and the main accelerator shell. As for the PEs or combinational logic, it's up to you to decide.
 
