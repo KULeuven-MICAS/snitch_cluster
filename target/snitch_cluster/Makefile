@@ -37,63 +37,6 @@ TARGET = snitch_cluster
 
 include $(ROOT)/target/common/common.mk
 
-####################
-# SNAX Generations #
-####################
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-	include $(SNAX_GEMM_ROOT)/Makefile	
-
-	VSIM_BENDER += -t snax-gemm
-	VLT_BENDER  += -t snax-gemm
-	VCS_BENDER  += -t snax-gemm
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-	include $(SNAX_GEMM_ROOT)/Makefile
-
-	VSIM_BENDER += -t snax-streamer-gemm
-	VLT_BENDER  += -t snax-streamer-gemm
-	VCS_BENDER  += -t snax-streamer-gemm
-
-	SNAX_GEN += ${GENERATED_DIR}/snax-streamer-gemm
-
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-simd.hjson)
-	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-postprocessing-simd)
-	include $(SNAX_GEMM_ROOT)/Makefile
-
-	VSIM_BENDER += -t snax-streamer-simd
-	VLT_BENDER  += -t snax-streamer-simd
-	VCS_BENDER  += -t snax-streamer-simd
-
-	SNAX_GEN += ${GENERATED_DIR}/snax-streamer-simd
-
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
-
-	SNAX_GEN += ${GENERATED_DIR}/snax-alu
-
-	VSIM_BENDER += -t snax-alu
-	VLT_BENDER  += -t snax-alu
-	VCS_BENDER  += -t snax-alu
-
-endif
-
-ifeq (${CFG_OVERRIDE}, cfg/snax-data-reshuffler.hjson)
-
-	SNAX_GEN += ${GENERATED_DIR}/snax-data-reshuffler
-
-	VSIM_BENDER += -t snax-data-reshuffler
-	VLT_BENDER  += -t snax-data-reshuffler
-	VCS_BENDER  += -t snax-data-reshuffler
-
-endif
-
 ############
 # Programs #
 ############
@@ -109,6 +52,77 @@ WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
 
 BIN_DIR           ?= bin
 GENERATED_DIR     ?= $(MKFILE_DIR)generated
+
+####################
+# SNAX Generations #
+####################
+
+define generate_snax_gen
+SNAX_GEN := \
+	$(GENERATED_DIR)/$(1)/$(1)_csrman_CsrManager.sv \
+	$(GENERATED_DIR)/$(1)/$(1)_streamer_StreamerTop.sv \
+	$(GENERATED_DIR)/$(1)/$(1)_csrman_wrapper.sv \
+	$(GENERATED_DIR)/$(1)/$(1)_streamer_wrapper.sv \
+	$(GENERATED_DIR)/$(1)/$(1)_wrapper.sv
+endef
+
+# Usage example
+ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
+	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
+	include $(SNAX_GEMM_ROOT)/Makefile	
+
+	VSIM_BENDER += -t snax-gemm
+	VLT_BENDER  += -t snax-gemm
+	VCS_BENDER  += -t snax-gemm
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
+
+$(eval $(call generate_snax_gen,snax_streamer_gemm))
+
+	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
+	include $(SNAX_GEMM_ROOT)/Makefile
+
+	VSIM_BENDER += -t snax-streamer-gemm
+	VLT_BENDER  += -t snax-streamer-gemm
+	VCS_BENDER  += -t snax-streamer-gemm
+
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-simd.hjson)
+
+$(eval $(call generate_snax_gen,snax_streamer_simd))
+
+	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-postprocessing-simd)
+	include $(SNAX_GEMM_ROOT)/Makefile
+
+	VSIM_BENDER += -t snax-streamer-simd
+	VLT_BENDER  += -t snax-streamer-simd
+	VCS_BENDER  += -t snax-streamer-simd
+
+
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
+
+$(eval $(call generate_snax_gen,snax_alu))
+
+	VSIM_BENDER += -t snax-alu
+	VLT_BENDER  += -t snax-alu
+	VCS_BENDER  += -t snax-alu
+
+endif
+
+ifeq (${CFG_OVERRIDE}, cfg/snax-data-reshuffler.hjson)
+
+$(eval $(call generate_snax_gen,snax_data_reshuffler))
+
+	VSIM_BENDER += -t snax-data-reshuffler
+	VLT_BENDER  += -t snax-data-reshuffler
+	VCS_BENDER  += -t snax-data-reshuffler
+
+endif
+
 
 # Verilated and compiled snitch cluster
 VLT_AR = ${VLT_BUILDDIR}/Vtestharness__ALL.a
@@ -215,11 +229,29 @@ test/bootrom.elf test/bootrom.dump test/bootrom.bin: test/bootrom.S test/bootrom
 	riscv64-unknown-elf-objcopy -j .text -O binary test/bootrom.elf test/bootrom.bin
 
 
-$(SNAX_GEN):
-	${WRAPPER_GEN} --cfg_path="$(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)" \
+SNAX_TEMPLATE_SOURCES = $(wildcard $(SNAX_TPL_PATH)*.tpl)
+CFG_FILE = $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
+SNAX_SCALA_SOURCES = \
+	$(wildcard ${CHISEL_PATH}/src/main/scala/snax/streamer/*.scala) \
+	$(wildcard ${CHISEL_PATH}/src/main/scala/snax/csr_manager/*.scala)
+
+# Pick the first file
+FIRST_SNAX_GEN := $(firstword $(SNAX_GEN))
+# Pick all the files but the first file, if there are more than one
+OTHER_SNAX_GEN := $(filter-out $(FIRST_SNAX),$(SNAX_GEN))
+
+# Force a serialized build in parallel make through a circular dependency
+# Implemented as documented in:
+# https://www.gnu.org/software/automake/manual/html_node/Multiple-Outputs.html
+# Please note the limitations of this method over there
+$(FIRST_SNAX_GEN) : $(SNAX_TEMPLATE_SOURCES) $(CFG_FILE) $(SNAX_SCALA_SOURCES)
+	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" \
 	--tpl_path="${SNAX_TPL_PATH}" \
 	--chisel_path="${CHISEL_PATH}" \
 	--gen_path="${GENERATED_DIR}/"
+
+# This is a fake job that forces parallel make to wait for the first thing to be generated
+$(OTHER_SNAX_GEN): $(FIRST_SNAX_GEN)
 
 ############
 # Software #
@@ -257,7 +289,7 @@ clean-vlt: clean-work
 	rm -rf $(BIN_DIR)/$(TARGET).vlt $(VLT_BUILDDIR)
 
 $(VLT_AR): ${VLT_SOURCES} ${TB_SRCS}
-	$(call VERILATE,testharness)
+	+$(call VERILATE,testharness)
 verilate: $(VLT_AR)
 
 # Build targets for verilator TB
@@ -273,7 +305,7 @@ $(VLT_BUILDDIR)/generated/%.o: $(GENERATED_DIR)/%.cc ${VLT_BUILDDIR}/lib/libfesv
 
 # Build compilation script and compile all sources for Verilator simulation
 # Link verilated archive with $(VLT_COBJ)
-$(BIN_DIR)/$(TARGET).vlt: $(SNAX_GEN) $(VLT_AR) $(VLT_COBJ) ${VLT_BUILDDIR}/lib/libfesvr.a
+$(BIN_DIR)/$(TARGET).vlt: $(VLT_AR) $(VLT_COBJ) ${VLT_BUILDDIR}/lib/libfesvr.a
 	mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) -std=c++14 -L ${VLT_BUILDDIR}/lib -o $@ $(VLT_COBJ) $(VLT_AR) -lfesvr -lpthread
 

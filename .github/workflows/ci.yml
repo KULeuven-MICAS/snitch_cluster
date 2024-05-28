@@ -45,7 +45,7 @@ jobs:
           make -C target/snitch_cluster sw
       - name: Build Hardware
         run: |
-          make -C target/snitch_cluster bin/snitch_cluster.vlt
+          make -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |
@@ -104,7 +104,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-mac.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -129,7 +129,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-gemm.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -154,7 +154,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-streamer-gemm.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -179,7 +179,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-data-reshuffler.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -205,7 +205,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-mac-mult.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -231,7 +231,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-alu.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
@@ -257,7 +257,7 @@ jobs:
       - name: Build Hardware
         run: |
           make CFG_OVERRIDE=cfg/snax-streamer-simd.hjson \
-          -C target/snitch_cluster bin/snitch_cluster.vlt
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
       - name: Run Tests
         working-directory: target/snitch_cluster
         run: |-
