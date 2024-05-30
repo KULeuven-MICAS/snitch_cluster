@@ -122,19 +122,6 @@ $(eval $(call generate_snax_gen,snax_data_reshuffler))
 
 endif
 
-ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-conv.hjson)
- 
-$(eval $(call generate_snax_gen,snax_streamer_gemm))
- 
-    SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
-    include $(SNAX_GEMM_ROOT)/Makefile
- 
-    VSIM_BENDER += -t snax_streamer_gemm
-    VLT_BENDER  += -t snax_streamer_gemm
-    VCS_BENDER  += -t snax_streamer_gemm
- 
-endif
-
 ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
  
 $(eval $(call generate_snax_gen,snax_streamer_gemm))
@@ -145,12 +132,12 @@ $(eval $(call generate_snax_gen,snax_streamer_gemm))
     VSIM_BENDER += -t snax_streamer_gemm
     VLT_BENDER  += -t snax_streamer_gemm
     VCS_BENDER  += -t snax_streamer_gemm
-
+ 
 $(eval $(call generate_snax_gen,snax_data_reshuffler))
-
-	VSIM_BENDER += -t snax_data_reshuffler
-	VLT_BENDER  += -t snax_data_reshuffler
-	VCS_BENDER  += -t snax_data_reshuffler
+ 
+    VSIM_BENDER += -t snax_data_reshuffler
+    VLT_BENDER  += -t snax_data_reshuffler
+    VCS_BENDER  += -t snax_data_reshuffler
  
 endif
 

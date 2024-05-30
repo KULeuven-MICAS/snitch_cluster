@@ -409,21 +409,8 @@ for i in range(len(cfg['cores'])):
     'snax_acc_dict':snax_acc_dict
   }
 
-total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
-%>\
-  // Internal local parameters to be hooked into the Snitch / SNAX cluster
-  localparam int unsigned NumIntOutstandingLoads  [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_loads')}};
-  localparam int unsigned NumIntOutstandingMem    [${cfg['nr_cores']}] = '{${core_cfg('num_int_outstanding_mem')}};
-  localparam int unsigned NumFPOutstandingLoads   [${cfg['nr_cores']}] = '{${core_cfg('num_fp_outstanding_loads')}};
-  localparam int unsigned NumFPOutstandingMem     [${cfg['nr_cores']}] = '{${core_cfg('num_fp_outstanding_mem')}};
-  localparam int unsigned NumDTLBEntries          [${cfg['nr_cores']}] = '{${core_cfg('num_dtlb_entries')}};
-  localparam int unsigned NumITLBEntries          [${cfg['nr_cores']}] = '{${core_cfg('num_itlb_entries')}};
-  localparam int unsigned NumSequencerInstr       [${cfg['nr_cores']}] = '{${core_cfg('num_sequencer_instructions')}};
-  localparam int unsigned NumSsrs                 [${cfg['nr_cores']}] = '{${core_cfg('num_ssrs')}};
-  localparam int unsigned SsrMuxRespDepth         [${cfg['nr_cores']}] = '{${core_cfg('ssr_mux_resp_depth')}};
-  localparam int unsigned SnaxNarrowTcdmPorts     [${cfg['nr_cores']}] = '{${acc_cfg(snax_narrow_tcdm_ports_list)}};
-  localparam int unsigned SnaxWideTcdmPorts       [${cfg['nr_cores']}] = '{${acc_cfg(snax_wide_tcdm_ports_list)}};
-
+total_snax_tcdm_ports = snax_wide_ports + snax_narrow_ports
+%>
   //-----------------------------
   // SNAX Custom Instruction Ports
   //-----------------------------
