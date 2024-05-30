@@ -57,7 +57,7 @@ GENERATED_DIR     ?= $(MKFILE_DIR)generated
 ####################
 
 define generate_snax_gen
-SNAX_GEN := \
+SNAX_GEN += \
 	$(GENERATED_DIR)/$(1)/$(1)_csrman_CsrManager.sv \
 	$(GENERATED_DIR)/$(1)/$(1)_streamer_StreamerTop.sv \
 	$(GENERATED_DIR)/$(1)/$(1)_csrman_wrapper.sv \
