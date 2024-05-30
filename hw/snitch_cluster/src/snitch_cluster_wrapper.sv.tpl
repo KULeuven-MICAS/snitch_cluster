@@ -401,6 +401,7 @@ for i in range(len(cfg['cores'])):
     'snax_acc_dict':snax_acc_dict
   }
 
+total_snax_tcdm_ports = snax_wide_ports + snax_narrow_ports
 %>
   //-----------------------------
   // SNAX Custom Instruction Ports
