@@ -47,11 +47,13 @@ import chisel3.util._
 object StreamerParametersGen extends CommonParams {
   def temporalAddrGenUnitParams: Seq[TemporalAddrGenUnitParams] =
   Seq(
+% for idx in range(0,len(cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"])):
     TemporalAddrGenUnitParams(
-      loopDim = ${cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]},
+      loopDim = ${cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"][idx]},
       loopBoundWidth = 32,
       addrWidth = ${tcdm_addr_width}
-    )
+    )${', ' if not loop.last else ''}
+% endfor
   )
   def fifoReaderParams: Seq[FIFOParams] = Seq(
 % for idx in range(0,len(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"])):
