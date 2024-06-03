@@ -106,9 +106,9 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 $(eval $(call generate_snax_gen,snax_alu))
 
-	VSIM_BENDER += -t snax-alu
-	VLT_BENDER  += -t snax-alu
-	VCS_BENDER  += -t snax-alu
+	VSIM_BENDER += -t snax_alu
+	VLT_BENDER  += -t snax_alu
+	VCS_BENDER  += -t snax_alu
 
 endif
 

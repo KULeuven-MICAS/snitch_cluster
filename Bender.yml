@@ -293,7 +293,7 @@ sources:
       # Level 1
       - hw/snax_hwpe_mac/src/snax_mac_wrapper.sv
   # SNAX ALU
-  - target: snax-alu
+  - target: snax_alu
     files:
       # Level 0
       - hw/snax_alu/src/snax_alu_csr.sv
