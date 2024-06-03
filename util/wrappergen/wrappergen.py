@@ -132,7 +132,7 @@ def main():
         # Chisel parameter tag names
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
         # Pre-calculate streamer CSRs
-        num_loop_dim = acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]  # noqa: E501
+        num_loop_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"])  # noqa: E501
         num_data_mover = len(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + len(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])  # noqa: E501
         num_dmove_x_loop_dim = num_data_mover * num_loop_dim
         num_spatial_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]) + sum(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"])  # noqa: E501
