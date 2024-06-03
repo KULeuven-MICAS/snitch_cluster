@@ -100,8 +100,11 @@ ${c}${', ' if not loop.last else ''}\
 % endfor
   )
   def stationarity = Seq(${list_elem('stationarity')})
-
+%if cfg["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["share_temp_addr_gen_loop_bounds"]:
   def ifShareTempAddrGenLoopBounds = true
+%else:
+  def ifShareTempAddrGenLoopBounds = false
+%endif
 
 }
 
