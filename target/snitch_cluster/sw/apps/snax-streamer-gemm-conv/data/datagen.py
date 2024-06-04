@@ -277,6 +277,7 @@ def emit_gemm_data(**kwargs):
     Aslstride0 = 1
     Aslstride1 = Cin
 
+    # K dim
     Atlbound0 = Cin // 8
     Atlstride0 = 8
 
@@ -286,15 +287,18 @@ def emit_gemm_data(**kwargs):
     Atlbound2 = Kh
     Atlstride2 = Cin * (W + 2 * pad_w)
 
+    # N dim
     Atlbound3 = Cout // 8
     Atlstride3 = 0
 
+    # M dim
     Atlbound4 = W // 8
     Atlstride4 = Cin * 8
 
     Atlbound5 = H
     Atlstride5 = Cin * (W + 2 * pad_w) * stride_h
 
+    # Batch dim
     Atlbound6 = Nbatch
     Atlstride6 = Cin * (H + 2 * pad_h) * (W + 2 * pad_w)
 
@@ -321,15 +325,19 @@ def emit_gemm_data(**kwargs):
     Bslstride0 = 1
     Bslstride1 = Cin * Kw * Kh
 
+    # K dim
     Btlbound0 = Cin * Kw * Kh // 8
     Btlstride0 = 8
 
+    # N dim
     Btlbound1 = Cout // 8
     Btlstride1 = Cin * Kw * Kh * 8
 
+    # M dim
     Btlbound2 = H * W // 8
     Btlstride2 = 0
 
+    # Batch dim
     Btlbound3 = Nbatch
     Btlstride3 = 0
 
@@ -350,15 +358,19 @@ def emit_gemm_data(**kwargs):
     Cslstride0 = 1
     Cslstride1 = Cout
 
+    # N dim
     Ctlbound0 = Cout / 8
     Ctlstride0 = 8
 
+    # M dim
+    # K is merged because of the block gemm output stationarity
     Ctlbound1 = W / 8
     Ctlstride1 = Cout * 8
 
     Ctlbound2 = H
     Ctlstride2 = Cout * W
 
+    # Batch dim
     Ctlbound3 = Nbatch
     Ctlstride3 = Cout * H * W
 
