@@ -211,15 +211,35 @@ def emit_gemm_data(**kwargs):
     # kernel = np.random.randint(-10, 10, size=(8, 1, 1, 8))
     # stride = (1, 1)
     # padding = (0, 0)
-    # M = 1
-    # K = 1
-    # N = 1
 
     # Nbatch, H, W, Cin = (1, 32, 32, 16)
     # Cout, Kh, Kw, Cin = (16, 3, 3, 16)
 
-    Nbatch, H, W, Cin = (1, 8, 8, 8)
-    Cout, Kh, Kw, Cin = (8, 3, 3, 8)
+    # stuck
+    # Nbatch, H, W, Cin = (1, 8, 1, 8)
+    # Cout, Kh, Kw, Cin = (8, 3, 3, 8)
+
+    # stuck
+    # Nbatch, H, W, Cin = (1, 8, 8, 8)
+    # Cout, Kh, Kw, Cin = (8, 1, 1, 8)
+
+    # Nbatch, H, W, Cin = (1, 24, 24, 40)
+    # Cout, Kh, Kw, Cin = (8, 3, 3, 40)
+
+    # works!
+    # Nbatch, H, W, Cin = (1, 8, 8, 8)
+    # Cout, Kh, Kw, Cin = (8, 3, 3, 8)
+
+    # works!
+    # Nbatch, H, W, Cin = (1, 8, 8, 16)
+    # Cout, Kh, Kw, Cin = (8, 3, 3, 16)
+
+    # Nbatch, H, W, Cin = (1, 16, 16, 16)
+    # Cout, Kh, Kw, Cin = (8, 3, 3, 16)
+
+    Nbatch, H, W, Cin = (1, 16, 16, 16)
+    Cout, Kh, Kw, Cin = (16, 3, 3, 16)
+
     stride = (1, 1)
     padding = (1, 1)
 
@@ -228,15 +248,12 @@ def emit_gemm_data(**kwargs):
     kernel = np.random.randint(-10, 10, size=(Cout, Kh, Kw, Cin))
 
     # inferred config from the input data and kernel
-    # M = 128
-    # K = 18
-    # N = 2
     pad_h, pad_w = padding
     stride_h, stride_w = stride
     input_padding =  np.pad(input_data, ((0,0), (pad_h, pad_h), (pad_w, pad_w), (0,0)), mode='constant')
 
     im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)
-    
+
     M = im2col_matrix.shape[0] // 8
     K = im2col_matrix.shape[1] // 8
     N = im2col_kernel.shape[1] // 8
@@ -251,12 +268,16 @@ def emit_gemm_data(**kwargs):
         format_scalar_definition("int", "Cin", Cin),
         format_scalar_definition("int", "Cout", Cout),
         format_scalar_definition("int", "Kh", Kh),
-        format_scalar_definition("int", "Kw", Kw)
+        format_scalar_definition("int", "Kw", Kw),
+        format_scalar_definition("int", "stride_h", stride_h),
+        format_scalar_definition("int", "stride_w", stride_w),
+        format_scalar_definition("int", "pad_h", pad_h),
+        format_scalar_definition("int", "pad_w", pad_w)
     ]
 
     # Generating matrix size settings
     data_str += [
-        format_scalar_definition("int8_t", "Batch", Nbatch),
+        format_scalar_definition("int", "Batch", Nbatch),
         format_scalar_definition("int", "M", M),
         format_scalar_definition("int", "K", K),
         format_scalar_definition("int", "N", N)
@@ -355,24 +376,25 @@ def emit_gemm_data(**kwargs):
     ]
 
     # streamer setting for data mover C
-    Cslstride0 = 1
-    Cslstride1 = Cout
+    # C is int32_t so the stride is 4 times of the int8_t
+    Cslstride0 = 4
+    Cslstride1 = Cout * 4
 
     # N dim
-    Ctlbound0 = Cout / 8
-    Ctlstride0 = 8
+    Ctlbound0 = Cout // 8
+    Ctlstride0 = 8 * 4
 
     # M dim
     # K is merged because of the block gemm output stationarity
-    Ctlbound1 = W / 8
-    Ctlstride1 = Cout * 8
+    Ctlbound1 = W // 8
+    Ctlstride1 = Cout * 8 * 4
 
     Ctlbound2 = H
-    Ctlstride2 = Cout * W
+    Ctlstride2 = Cout * W * 4
 
     # Batch dim
     Ctlbound3 = Nbatch
-    Ctlstride3 = Cout * H * W
+    Ctlstride3 = Cout * H * W * 4
 
     data_str += [
         format_scalar_definition("int32_t", "Cslstride0", Cslstride0),
@@ -444,13 +466,29 @@ def test():
 
     # i = (1, 32, 32, 16)
     # w = (16, 3, 3, 16)
-    input_data = np.random.randint(-10, 10, size=(1, 32, 32, 16))
-    kernel = np.random.randint(-10, 10, size=(16, 3, 3, 16))
+    # input_data = np.random.randint(-10, 10, size=(1, 32, 32, 16))
+    # kernel = np.random.randint(-10, 10, size=(16, 3, 3, 16))
+    # stride = (1, 1)
+    # padding = (1, 1)
+    # M = 128
+    # K = 18
+    # N = 2
+
+    Nbatch, H, W, Cin = (1, 24, 24, 40)
+    Cout, Kh, Kw, Cin = (8, 3, 3, 40)
+
     stride = (1, 1)
     padding = (1, 1)
-    M = 128
-    K = 18
-    N = 2
+
+    # test data generation
+    input_data = np.random.randint(-10, 10, size=(Nbatch, H, W, Cin))
+    kernel = np.random.randint(-10, 10, size=(Cout, Kh, Kw, Cin))
+
+    im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)
+
+    M = im2col_matrix.shape[0] // 8
+    K = im2col_matrix.shape[1] // 8
+    N = im2col_kernel.shape[1] // 8
 
     # conv2d using im2col
     im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)

@@ -17,7 +17,7 @@
         addr_width: 48,
         data_width: 64,
         tcdm: {
-            size: 256,
+            size: 128,
             banks: 32,
         },
         cluster_periph_size: 64, // kB
@@ -180,6 +180,6 @@
             element_width: [32],
         }
 
-        stationarity: [0,0,1]
+        stationarity: [0,0,0]
     }
 }

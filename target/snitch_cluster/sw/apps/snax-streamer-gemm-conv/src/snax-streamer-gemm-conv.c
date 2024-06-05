@@ -50,7 +50,7 @@ int main() {
     // Transfer data from L3 to L1
     // Using DMA only
     if (snrt_is_dm_core()) {
-        load_conv_input_data(Nbatch, H, W, Cin, local_a, A);
+        load_conv_input_data(Nbatch, H + 2 * pad_h, W + 2 * pad_w, Cin, local_a, A);
         load_weight_data(Cout, Kh, Kw, Cin, local_b, B);
     }
 
@@ -85,12 +85,9 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_conv_streamer_gemm();
 
-        // Compare SNAX GEMM result with golden model
-        err += check_conv_result(local_c, C_gemm_golden, Batch, M, N);
-        printf("SNAX GEMM Conv2d: %s\n", err ? "FAIL" : "PASS");
-
         err += check_conv_result(local_c, C_direct_conv2d, Batch, M, N);
-        printf("SNAX GEMM Conv2d: %s\n", err ? "FAIL" : "PASS");
+        printf("SNAX GEMM Conv2d: %s, err = %d \n", err ? "FAIL" : "PASS", err);
+
     };
 
     return err;
