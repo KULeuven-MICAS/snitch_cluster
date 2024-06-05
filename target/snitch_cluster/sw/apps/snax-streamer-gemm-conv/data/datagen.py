@@ -221,7 +221,7 @@ def emit_gemm_data(**kwargs):
     # inferred config from the input data and kernel
     padding = pad_h, pad_w
     stride = stride_h, stride_w
-    
+
     input_padding = np.pad(
         input_data, ((0, 0), (pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode="constant"
     )
