@@ -1,4 +1,4 @@
-// Copyright 2023 KU Leuven.
+// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -126,6 +126,7 @@ uint32_t read_conv_gemm_perf_counter() {
     return perf_counter;
 }
 
+// Check the result of the implicit im2col convolution
 uint32_t check_conv_result(int32_t* output, int32_t* output_golden,
                            int32_t Batch, int32_t M, int32_t N) {
     uint32_t err = 0;

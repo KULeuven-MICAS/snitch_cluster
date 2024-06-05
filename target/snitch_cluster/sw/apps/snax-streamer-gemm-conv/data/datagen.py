@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 KU Leuven.
+# Copyright 2024 KU Leuven.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,30 +12,32 @@ import pathlib
 import hjson
 import sys
 import os
+
 # Add data utility path
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/")
-)
-from data_utils import (format_scalar_definition, format_vector_definition)  # noqa E402
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../../../util/sim/"))
+from data_utils import format_scalar_definition, format_vector_definition  # noqa E402
 
 np.random.seed(42)
+
 
 def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
     batch_size, in_height, in_width, in_channels = input_data.shape
     out_channels, kernel_height, kernel_width, _ = kernel.shape
     stride_h, stride_w = stride
     pad_h, pad_w = padding
-    
+
     # Calculate the output feature map dimensions
     out_height = (in_height - kernel_height + 2 * pad_h) // stride_h + 1
     out_width = (in_width - kernel_width + 2 * pad_w) // stride_w + 1
-    
+
     # Add padding
-    input_data_padded = np.pad(input_data, ((0,0), (pad_h, pad_h), (pad_w, pad_w), (0,0)), mode='constant')
-    
+    input_data_padded = np.pad(
+        input_data, ((0, 0), (pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode="constant"
+    )
+
     # Initialize the output feature map
-    output_data = np.zeros((batch_size, out_height, out_width, out_channels),  dtype = np.int32)
-    
+    output_data = np.zeros((batch_size, out_height, out_width, out_channels), np.int32)
+
     # Perform the convolution operation
     for b in range(batch_size):
         for oc in range(out_channels):
@@ -46,16 +48,18 @@ def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
                     ih_end = ih_start + kernel_height
                     iw_start = ow * stride_w
                     iw_end = iw_start + kernel_width
-                    
+
                     # Slice to extract the input region
-                    input_region = input_data_padded[b, ih_start:ih_end, iw_start:iw_end, :]
-                    
+                    input_region = input_data_padded[
+                        b, ih_start:ih_end, iw_start:iw_end, :
+                    ]
+
                     # Slice to extract the corresponding convolution kernel
                     conv_kernel = kernel[oc, :, :, :]
-                    
+
                     # Perform the convolution calculation
                     output_data[b, oh, ow, oc] = np.sum(input_region * conv_kernel)
-    
+
     return output_data
 
 
@@ -64,17 +68,21 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
     out_channels, kernel_height, kernel_width, _ = kernel.shape
     stride_h, stride_w = stride
     pad_h, pad_w = padding
-    
+
     # Calculate the size of the output feature map
     out_height = (in_height + 2 * pad_h - kernel_height) // stride_h + 1
     out_width = (in_width + 2 * pad_w - kernel_width) // stride_w + 1
-    
+
     # Apply zero padding to the input data
-    input_data_padded = np.pad(input_data, ((0,0), (pad_h, pad_h), (pad_w, pad_w), (0,0)), mode='constant')
-    
+    input_data_padded = np.pad(
+        input_data, ((0, 0), (pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode="constant"
+    )
+
     # Initialize the im2col matrix
-    im2col_matrix = np.zeros((batch_size, out_height * out_width, in_channels * kernel_height * kernel_width))
-    
+    im2col_matrix = np.zeros(
+        (batch_size, out_height * out_width, in_channels * kernel_height * kernel_width)
+    )
+
     # Perform the im2col transformation on the input data
     for b in range(batch_size):
         for oh in range(out_height):
@@ -84,13 +92,14 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
                 ih_end = ih_start + kernel_height
                 iw_start = ow * stride_w
                 iw_end = iw_start + kernel_width
-                
+
                 # Slice and extract the input region
                 input_region = input_data_padded[b, ih_start:ih_end, iw_start:iw_end, :]
-                
-                # Flatten the input region into a 1D vector and add it to the corresponding position in the im2col matrix
+
+                # Flatten the input region into a 1D vector and add it to the
+                # corresponding position in the im2col matrix
                 im2col_matrix[b, oh * out_width + ow, :] = input_region.reshape(-1)
-    
+
     im2col_matrix = im2col_matrix.reshape(batch_size * out_height * out_width, -1)
     im2col_kernel = kernel.reshape(out_channels, -1).T
 
@@ -98,8 +107,9 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
 
 # Golden model in python
-def block_gemm_golden_model(m, k, n, row, size, col, a, b,
-                            subtraction_a, subtraction_b):
+def block_gemm_golden_model(
+    m, k, n, row, size, col, a, b, subtraction_a, subtraction_b
+):
     c = np.zeros(m * row * n * col, dtype=(np.int32))
     for mm in range(m):
         for nn in range(n):
@@ -108,26 +118,17 @@ def block_gemm_golden_model(m, k, n, row, size, col, a, b,
                     for cc in range(col):
                         for ss in range(size):
                             c_index = (
-                                mm * n * row * col
-                                + nn * row * col
-                                + rr * col
-                                + cc
+                                mm * n * row * col + nn * row * col + rr * col + cc
                             )
                             a_index = (
-                                mm * k * row * size
-                                + kk * row * size
-                                + rr * size
-                                + ss
+                                mm * k * row * size + kk * row * size + rr * size + ss
                             )
                             b_index = (
-                                nn * k * size * col
-                                + kk * size * col
-                                + cc * size
-                                + ss
+                                nn * k * size * col + kk * size * col + cc * size + ss
                             )
-                            c[c_index] = c[c_index] + \
-                                (a[a_index] - subtraction_a) * \
-                                (b[b_index] - subtraction_b)
+                            c[c_index] = c[c_index] + (a[a_index] - subtraction_a) * (
+                                b[b_index] - subtraction_b
+                            )
     return c
 
 
@@ -141,7 +142,7 @@ def data_reshuffler_golden_model(
     spatialStride0,
     spatialStride1,
     data,
-    int32 = False,
+    int32=False,
 ):
     # abstract illusion: k innermost loop, m second innermost loop,
     # K third innermost loop, M outermost loop
@@ -206,37 +207,6 @@ MAX = 127
 
 def emit_gemm_data(**kwargs):
 
-    # Generate random input matrices
-    # input_data = np.random.randint(-10, 10, size=(1, 2, 4, 8))
-    # kernel = np.random.randint(-10, 10, size=(8, 1, 1, 8))
-    # stride = (1, 1)
-    # padding = (0, 0)
-
-    # Nbatch, H, W, Cin = (1, 32, 32, 16)
-    # Cout, Kh, Kw, Cin = (16, 3, 3, 16)
-
-    # stuck
-    # Nbatch, H, W, Cin = (1, 8, 1, 8)
-    # Cout, Kh, Kw, Cin = (8, 3, 3, 8)
-
-    # stuck
-    # Nbatch, H, W, Cin = (1, 8, 8, 8)
-    # Cout, Kh, Kw, Cin = (8, 1, 1, 8)
-
-    # Nbatch, H, W, Cin = (1, 24, 24, 40)
-    # Cout, Kh, Kw, Cin = (8, 3, 3, 40)
-
-    # works!
-    # Nbatch, H, W, Cin = (1, 8, 8, 8)
-    # Cout, Kh, Kw, Cin = (8, 3, 3, 8)
-
-    # works!
-    # Nbatch, H, W, Cin = (1, 8, 8, 16)
-    # Cout, Kh, Kw, Cin = (8, 3, 3, 16)
-
-    # Nbatch, H, W, Cin = (1, 16, 16, 16)
-    # Cout, Kh, Kw, Cin = (8, 3, 3, 16)
-
     Nbatch, H, W, Cin = (1, 16, 16, 16)
     Cout, Kh, Kw, Cin = (16, 3, 3, 16)
 
@@ -250,9 +220,13 @@ def emit_gemm_data(**kwargs):
     # inferred config from the input data and kernel
     pad_h, pad_w = padding
     stride_h, stride_w = stride
-    input_padding =  np.pad(input_data, ((0,0), (pad_h, pad_h), (pad_w, pad_w), (0,0)), mode='constant')
+    input_padding = np.pad(
+        input_data, ((0, 0), (pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode="constant"
+    )
 
-    im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)
+    im2col_matrix, im2col_kernel = im2col(
+        input_data, kernel, stride=stride, padding=padding
+    )
 
     M = im2col_matrix.shape[0] // 8
     K = im2col_matrix.shape[1] // 8
@@ -272,7 +246,7 @@ def emit_gemm_data(**kwargs):
         format_scalar_definition("int", "stride_h", stride_h),
         format_scalar_definition("int", "stride_w", stride_w),
         format_scalar_definition("int", "pad_h", pad_h),
-        format_scalar_definition("int", "pad_w", pad_w)
+        format_scalar_definition("int", "pad_w", pad_w),
     ]
 
     # Generating matrix size settings
@@ -280,7 +254,7 @@ def emit_gemm_data(**kwargs):
         format_scalar_definition("int", "Batch", Nbatch),
         format_scalar_definition("int", "M", M),
         format_scalar_definition("int", "K", K),
-        format_scalar_definition("int", "N", N)
+        format_scalar_definition("int", "N", N),
     ]
 
     # Generating base pointer settings
@@ -290,7 +264,7 @@ def emit_gemm_data(**kwargs):
     data_str += [
         format_scalar_definition("int32_t", "delta_local_a", delta_local_a),
         format_scalar_definition("int32_t", "delta_local_b", delta_local_b),
-        format_scalar_definition("int32_t", "delta_local_c", delta_local_c)
+        format_scalar_definition("int32_t", "delta_local_c", delta_local_c),
     ]
 
     # for streamer cfg
@@ -410,29 +384,33 @@ def emit_gemm_data(**kwargs):
     ]
 
     # Generating random 8 integer a and b for subtraction
-    # subtraction_a = np.random.randint(MIN, MAX)
-    # subtraction_b = np.random.randint(MIN, MAX)
-
     subtraction_a = 0
     subtraction_b = 0
 
     # Writing the subtraction value to data.h
     data_str += [
         format_scalar_definition("int8_t", "subtraction_a", subtraction_a),
-        format_scalar_definition("int8_t", "subtraction_b", subtraction_b)
+        format_scalar_definition("int8_t", "subtraction_b", subtraction_b),
     ]
 
     # conv2d using im2col
-    im2col_matrix = data_reshuffler_golden_model(K, M, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_matrix.reshape(-1))
+    im2col_matrix = data_reshuffler_golden_model(
+        K, M, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_matrix.reshape(-1)
+    )
     # row major to column major for B
     im2col_kernel = im2col_kernel.T
-    im2col_kernel = data_reshuffler_golden_model(K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.reshape(-1))
-    im2col_conv2d_res = block_gemm_golden_model(M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0)
-    # im2col_conv2d_res = data_reshuffler_golden_model(N, M, 8, 8, 8, 8 * 8 * N, 1, 8 * N, im2col_conv2d_res, 1)
+    im2col_kernel = data_reshuffler_golden_model(
+        K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.reshape(-1)
+    )
+    im2col_conv2d_res = block_gemm_golden_model(
+        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0
+    )
+    # im2col_conv2d_res = data_reshuffler_golden_model(N, M, 8, 8, 8, 8 * 8 * N,
+    # 1, 8 * N, im2col_conv2d_res, 1)
 
     # direct conv2d
     direct_conv2d_res = conv2d(input_data, kernel, stride=stride, padding=padding)
-    # output NHWC format
+    # output in NHWC format
     direct_conv2d_res = direct_conv2d_res.reshape(-1)
 
     # Writing testing data and golden data into data.h
@@ -441,11 +419,16 @@ def emit_gemm_data(**kwargs):
     data_str += [format_vector_definition("int8_t", "B", kernel.reshape(-1))]
 
     # explicit im2col matrix and kernel, store the columned input data
+    # for comparing with the implicit im2col method
     # data_str += [format_vector_definition("int8_t", "A", im2col_matrix)]
     # data_str += [format_vector_definition("int8_t", "B", im2col_kernel)]
 
-    data_str += [format_vector_definition("int32_t", "C_gemm_golden", im2col_conv2d_res)]
-    data_str += [format_vector_definition("int32_t", "C_direct_conv2d", direct_conv2d_res)]
+    data_str += [
+        format_vector_definition("int32_t", "C_gemm_golden", im2col_conv2d_res)
+    ]
+    data_str += [
+        format_vector_definition("int32_t", "C_direct_conv2d", direct_conv2d_res)
+    ]
 
     data_str = "\n\n".join(data_str)
 
@@ -454,26 +437,8 @@ def emit_gemm_data(**kwargs):
 
 def test():
     np.set_printoptions(threshold=np.inf)
-    # i = (1, 2, 4, 8)
-    # w = (8, 1, 1, 8)
-    # input_data = np.random.randint(-10, 10, size=(1, 2, 4, 8))
-    # kernel = np.random.randint(-10, 10, size=(8, 1, 1, 8))
-    # stride = (1, 1)
-    # padding = (0, 0)
-    # M = 1
-    # K = 1
-    # N = 1
 
-    # i = (1, 32, 32, 16)
-    # w = (16, 3, 3, 16)
-    # input_data = np.random.randint(-10, 10, size=(1, 32, 32, 16))
-    # kernel = np.random.randint(-10, 10, size=(16, 3, 3, 16))
-    # stride = (1, 1)
-    # padding = (1, 1)
-    # M = 128
-    # K = 18
-    # N = 2
-
+    # conv2d settings
     Nbatch, H, W, Cin = (1, 24, 24, 40)
     Cout, Kh, Kw, Cin = (8, 3, 3, 40)
 
@@ -484,22 +449,34 @@ def test():
     input_data = np.random.randint(-10, 10, size=(Nbatch, H, W, Cin))
     kernel = np.random.randint(-10, 10, size=(Cout, Kh, Kw, Cin))
 
-    im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)
+    im2col_matrix, im2col_kernel = im2col(
+        input_data, kernel, stride=stride, padding=padding
+    )
 
     M = im2col_matrix.shape[0] // 8
     K = im2col_matrix.shape[1] // 8
     N = im2col_kernel.shape[1] // 8
 
     # conv2d using im2col
-    im2col_matrix, im2col_kernel = im2col(input_data, kernel, stride=stride, padding=padding)
-    im2col_matrix = data_reshuffler_golden_model(K, M, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_matrix.reshape(-1))
-    im2col_kernel = data_reshuffler_golden_model(K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.T.reshape(-1))
-    im2col_conv2d_res = block_gemm_golden_model(M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0)
+    im2col_matrix, im2col_kernel = im2col(
+        input_data, kernel, stride=stride, padding=padding
+    )
+    im2col_matrix = data_reshuffler_golden_model(
+        K, M, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_matrix.reshape(-1)
+    )
+    im2col_kernel = data_reshuffler_golden_model(
+        K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.T.reshape(-1)
+    )
+    im2col_conv2d_res = block_gemm_golden_model(
+        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0
+    )
 
     # direct conv2d
     direct_conv2d_res = conv2d(input_data, kernel, stride=stride, padding=padding)
     direct_conv2d_res = direct_conv2d_res.reshape(-1)
-    direct_conv2d_res = data_reshuffler_golden_model(N, M, 8, 8, 8, 8 * 8 * N, 1, 8 * N, direct_conv2d_res, 1)
+    direct_conv2d_res = data_reshuffler_golden_model(
+        N, M, 8, 8, 8, 8 * 8 * N, 1, 8 * N, direct_conv2d_res, 1
+    )
 
     # result comparison
     assert (im2col_conv2d_res == direct_conv2d_res).all()
@@ -526,5 +503,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    # for testing
     # test()
+
+    main()

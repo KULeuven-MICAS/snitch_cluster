@@ -1,4 +1,4 @@
-// Copyright 2023 KU Leuven.
+// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -12,28 +12,9 @@
 
 #include "snax-streamer-gemm-conv-lib.h"
 
-// two exp for two conv2d
-// firstly, using explicit im2col to map conv2d to gemm
-// using normal streamer for gemm to compute (3 loops)
-
-// secondlly, using implicit im2col to map conv2d to gemm
-// using streamer for conv to compute (many loops)
-
-// simple test with 1x1 convolution
-// i = (1, 2, 4, 8)
-// w = (8, 1, 1, 8)
-// o = (1, 2, 4, 8)
-// stride = 1
-// padding = 0
-
-// larger conv2d
-// i = (1, 32, 32, 16)
-// w = (16, 3, 3, 16)
-// o = (1, 32, 32, 16)
-// stride = 1
-// padding = 1
-// needs 256KB TCDM
-
+// This is the main function for the SNAX GEMM for Conv2d
+// We use several nested loops to iterate over the input data and weights,
+// achieving implicit im2col
 int main() {
     // Set err value for checking
     int err = 0;
@@ -50,7 +31,8 @@ int main() {
     // Transfer data from L3 to L1
     // Using DMA only
     if (snrt_is_dm_core()) {
-        load_conv_input_data(Nbatch, H + 2 * pad_h, W + 2 * pad_w, Cin, local_a, A);
+        load_conv_input_data(Nbatch, H + 2 * pad_h, W + 2 * pad_w, Cin, local_a,
+                             A);
         load_weight_data(Cout, Kh, Kw, Cin, local_b, B);
     }
 
@@ -60,7 +42,7 @@ int main() {
     if (snrt_global_core_idx() == 0) {
         // uint32_t gemm_start = snrt_mcycle();
 
-        // Set Streamer configuration CSR
+        // Set Streamer configuration CSR for conv2d
         set_conv_streamer_csr(
             Aslstride0, Aslstride1, Atlbound0, Atlstride0, Atlbound1,
             Atlstride1, Atlbound2, Atlstride2, Atlbound3, Atlstride3, Atlbound4,
@@ -70,7 +52,7 @@ int main() {
             Ctlstride1, Ctlbound2, Ctlstride2, delta_local_a, delta_local_b,
             delta_local_c);
 
-        // Set CSR to start Streamer
+        // Set CSR to start Streamer for conv2d
         set_conv_streamer_start();
 
         // Set GEMM configuration CSR
@@ -85,9 +67,9 @@ int main() {
         // Poll until Streamer and GEMM accelerator finish
         wait_conv_streamer_gemm();
 
+        // check the result of the implicit im2col convolution
         err += check_conv_result(local_c, C_direct_conv2d, Batch, M, N);
         printf("SNAX GEMM Conv2d: %s, err = %d \n", err ? "FAIL" : "PASS", err);
-
     };
 
     return err;

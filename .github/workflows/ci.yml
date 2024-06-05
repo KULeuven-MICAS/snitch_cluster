@@ -134,7 +134,7 @@ jobs:
           sw/runtime.yaml sw/standard-fp.yaml sw/snax-streamer-gemm-run.yaml -j
 
   snax-streamer-gemm-conv-cluster-vlt-generic:
-    name: Simulate SW on SNAX GEMM Cluster for Conv2d w/ Verilator (Generic LLVM)
+    name: Simulate SW on SNAX GEMM for Conv2d w/ Verilator (Generic LLVM)
     runs-on: ubuntu-22.04
     container:
       image: ghcr.io/kuleuven-micas/snax:main

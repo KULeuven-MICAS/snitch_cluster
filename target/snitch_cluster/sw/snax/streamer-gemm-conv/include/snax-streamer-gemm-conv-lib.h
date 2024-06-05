@@ -1,4 +1,4 @@
-// Copyright 2023 KU Leuven.
+// Copyright 2024 KU Leuven.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -12,7 +12,7 @@
 
 // load input data from L3 to L1
 void load_conv_input_data(int N, int H, int W, int C, int8_t* base_ptr_local,
-                     int8_t* base_ptr_l2);
+                          int8_t* base_ptr_l2);
 
 void load_weight_data(int K, int Fy, int Fx, int C, int8_t* base_ptr_local,
                       int8_t* base_ptr_l2);
@@ -47,5 +47,6 @@ uint32_t read_conv_gemm_streamer_perf_counter();
 // Read performance counter of GEMM, a read-only CSR
 uint32_t read_conv_gemm_perf_counter();
 
-uint32_t check_conv_result(int32_t* output, int32_t* output_golden, int32_t Batch,
-                      int32_t M, int32_t N);
+// Check the result of the implicit im2col convolution
+uint32_t check_conv_result(int32_t* output, int32_t* output_golden,
+                           int32_t Batch, int32_t M, int32_t N);
