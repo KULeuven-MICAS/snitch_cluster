@@ -6,10 +6,14 @@
 
 {
     Nbatch: 1,
-    H: 32,
-    W: 32,
+    H: 16,
+    W: 16,
     Cin: 16,
     Cout: 16,
     Kh: 3,
-    Kw: 3
+    Kw: 3,
+    pad_h: 1,
+    pad_w: 1,
+    stride_h: 1,
+    stride_w: 1,
 }

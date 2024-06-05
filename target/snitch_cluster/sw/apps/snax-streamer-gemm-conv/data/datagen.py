@@ -207,19 +207,21 @@ MAX = 127
 
 def emit_gemm_data(**kwargs):
 
-    Nbatch, H, W, Cin = (1, 16, 16, 16)
-    Cout, Kh, Kw, Cin = (16, 3, 3, 16)
+    # conv2d settings
+    Nbatch, H, W, Cin = (kwargs["Nbatch"], kwargs["H"], kwargs["W"], kwargs["Cin"])
+    Cout, Kh, Kw, Cin = (kwargs["Cout"], kwargs["Kh"], kwargs["Kw"], kwargs["Cin"])
 
-    stride = (1, 1)
-    padding = (1, 1)
+    pad_h, pad_w = (kwargs["stride_h"], kwargs["stride_w"])
+    stride_h, stride_w = (kwargs["pad_h"], kwargs["pad_w"])
 
     # test data generation
     input_data = np.random.randint(-10, 10, size=(Nbatch, H, W, Cin))
     kernel = np.random.randint(-10, 10, size=(Cout, Kh, Kw, Cin))
 
     # inferred config from the input data and kernel
-    pad_h, pad_w = padding
-    stride_h, stride_w = stride
+    padding = pad_h, pad_w
+    stride = stride_h, stride_w
+    
     input_padding = np.pad(
         input_data, ((0, 0), (pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode="constant"
     )
