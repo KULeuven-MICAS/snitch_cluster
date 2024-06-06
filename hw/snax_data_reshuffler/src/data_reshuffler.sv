@@ -48,7 +48,7 @@ module data_reshuffler #(
 
   assign a_success = a_valid_i && a_ready_o;
   assign z_success = z_valid_o && z_ready_i;
-  
+
   // Always ready CSR
   assign csr_ready = 1;
 
@@ -90,7 +90,7 @@ module data_reshuffler #(
       if (z_ready_i && a_success) begin
         z_o       <= z_wide_tmp;
         z_valid_o <= 1'b1;
-      
+
       // If output is success and no new inputs
       // clear the output
       end else if (z_success) begin
@@ -105,49 +105,6 @@ module data_reshuffler #(
     end
 
   end
-
-  // always_ff @ (posedge clk_i or negedge rst_ni) begin
-  //   if(!rst_ni) begin
-  //     a_ready_o <= 1'b0;
-  //   end else begin
-  //     a_ready_o <= z_ready_i;
-
-  //   end
-  // end
-
   assign a_ready_o = z_ready_i;
-
-  // always_ff @(posedge clk_i or negedge rst_ni) begin
-  //   if (!rst_ni) begin
-  //     z_wide <= {(SpatPar * DataWidth) {1'b0}};
-  //   end else begin
-  //     if (a_success) begin
-  //       z_wide <= z_wide_tmp;
-  //     end else begin
-  //       z_wide <= z_wide;
-  //     end
-  //   end
-  // end
-
-  // always_ff @(posedge clk_i or negedge rst_ni) begin
-  //   if (!rst_ni) begin
-  //     z_valid_init <= 1'b0;
-  //   end else begin
-  //     z_valid_init <= a_success;
-  //   end
-  // end
-
-  // always_ff @(posedge clk_i or negedge rst_ni) begin
-  //   if (!rst_ni) begin
-  //     output_stalled <= 1'b0;
-  //   end else begin
-  //     output_stalled <= z_valid_o && !z_ready_i;
-  //   end
-  // end
-
-  // assign a_ready_o = !output_stalled && !(z_valid_o && !z_ready_i);
-
-  // assign z_valid_o = z_valid_init || output_stalled;
-  // assign z_o       = z_wide;
 
 endmodule
