@@ -107,7 +107,7 @@ void set_conv_block_gemm_csr(int tempLoop0, int tempLoop1, int tempLoop2,
 // Set CSR to start GEMM
 void set_conv_block_gemm_start() { write_csr(999, 1); }
 
-// Poll until Streamer and GEMM accelerator finish
+// Stall until Streamer and GEMM accelerator finish
 void wait_conv_streamer_gemm() {
     write_csr(999, 0);
     write_csr(999, 0);
