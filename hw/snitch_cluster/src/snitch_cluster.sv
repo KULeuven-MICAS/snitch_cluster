@@ -96,14 +96,17 @@ module snitch_cluster
   /// FPU configuration.
   parameter fpnew_pkg::fpu_implementation_t FPUImplementation [NrCores] =
     '{default: fpnew_pkg::fpu_implementation_t'(0)},
-    /// SNAX Acc initial narrow TCDM ports
-  parameter int unsigned SnaxAccNarrowTcdmPorts = 0,
+  /// SNAX Acc initial narrow TCDM ports
+  parameter int unsigned SnaxNarrowTcdmPorts [NrCores] = '{default: 0},
   /// SNAX Acc initial wide TCDM ports
-  parameter int unsigned SnaxAccWideTcdmPorts = 0,
+  parameter int unsigned SnaxWideTcdmPorts [NrCores] = '{default: 0},
+  /// SNAX Acc initial narrow TCDM ports
+  parameter int unsigned TotalSnaxNarrowTcdmPorts = 0,
+  /// SNAX Acc initial wide TCDM ports
+  parameter int unsigned TotalSnaxWideTcdmPorts = 0,
   /// Total Number of SNAX TCDM ports
-  parameter int unsigned TotalSnaxTcdmPorts = 0,
+  parameter int unsigned TotalSnaxTcdmPorts = TotalSnaxNarrowTcdmPorts + TotalSnaxWideTcdmPorts,
   /// SNAX Acc Narrow Wide Selection
-  parameter bit [NrCores-1:0] ConnectSnaxAccWide = 0,
   /// SNAX Use Custom Instruction Ports
   parameter bit [NrCores-1:0] SnaxUseCustomPorts = 0,
   /// Physical Memory Attribute Configuration
@@ -272,19 +275,9 @@ module snitch_cluster
   output wide_in_resp_t                 wide_in_resp_o
 );
 
-
-
-  // ---------
-  // Constants
-  // ---------
-  /// Minimum width to hold the core number.
-  localparam int unsigned CoreIDWidth = cf_math_pkg::idx_width(NrCores);
-  localparam int unsigned TCDMMemAddrWidth = $clog2(TCDMDepth);
-  localparam int unsigned TCDMSize = NrBanks * TCDMDepth * (NarrowDataWidth/8);
-  localparam int unsigned TCDMAddrWidth = $clog2(TCDMSize);
-  localparam int unsigned BanksPerSuperBank = WideDataWidth / NarrowDataWidth;
-  localparam int unsigned NrSuperBanks = NrBanks / BanksPerSuperBank;
-
+  //------------------
+  // Useful functions
+  // -----------------
   function automatic int unsigned get_tcdm_ports(int unsigned core);
     return (NumSsrs[core] > 1 ? NumSsrs[core] : 1);
   endfunction
@@ -294,6 +287,17 @@ module snitch_cluster
     for (int i = 0; i < core_idx; i++) n += get_tcdm_ports(i);
     return n;
   endfunction
+
+  //------------------
+  // Constants
+  // -----------------
+  /// Minimum width to hold the core number.
+  localparam int unsigned CoreIDWidth = cf_math_pkg::idx_width(NrCores);
+  localparam int unsigned TCDMMemAddrWidth = $clog2(TCDMDepth);
+  localparam int unsigned TCDMSize = NrBanks * TCDMDepth * (NarrowDataWidth/8);
+  localparam int unsigned TCDMAddrWidth = $clog2(TCDMSize);
+  localparam int unsigned BanksPerSuperBank = WideDataWidth / NarrowDataWidth;
+  localparam int unsigned NrSuperBanks = NrBanks / BanksPerSuperBank;
 
   localparam int unsigned NrTCDMPortsCores = get_tcdm_port_offs(NrCores);
   localparam int unsigned NumTCDMIn = NrTCDMPortsCores + 1;
@@ -674,12 +678,12 @@ module snitch_cluster
   // Therefore we allocate 8 TCDM ports for each bandwidth
 
   // Split narrow and wide TCDM ports to solve the multi-driver issue
-  tcdm_rsp_t [SnaxAccNarrowTcdmPorts-1:0] snax_tcdm_rsp_o_narrow;
-  tcdm_rsp_t [SnaxAccWideTcdmPorts-1:0] snax_tcdm_rsp_o_wide;
+  tcdm_rsp_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_rsp_o_narrow;
+  tcdm_rsp_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_rsp_o_wide;
 
-  if ((NumSnaxWideTcdmPorts > 0) && (SnaxAccNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
-    assign snax_tcdm_rsp_o[SnaxAccWideTcdmPorts-1:0] = snax_tcdm_rsp_o_wide;
-    assign snax_tcdm_rsp_o[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-SnaxAccNarrowTcdmPorts]
+  if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
+    assign snax_tcdm_rsp_o[TotalSnaxWideTcdmPorts-1:0] = snax_tcdm_rsp_o_wide;
+    assign snax_tcdm_rsp_o[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]
         = snax_tcdm_rsp_o_narrow;
   end else if (NumSnaxWideTcdmPorts > 0) begin: gen_wide_only_map
     assign snax_tcdm_rsp_o = snax_tcdm_rsp_o_wide;
@@ -689,7 +693,7 @@ module snitch_cluster
 
   // Use this ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
-  localparam int unsigned NumSnaxWideTcdmPorts = SnaxAccWideTcdmPorts / 8;
+  localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
 
   if (NumSnaxWideTcdmPorts > 0) begin: gen_yes_wide_acc_connect
 
@@ -911,10 +915,10 @@ module snitch_cluster
   // generate TCDM for snax if any of the cores has SNAX enabled
   // Make ConnectSnaxAccWide a switcher for now that all accelerators connect to wide
   // if this happens
-  if( (SnaxAccNarrowTcdmPorts > 0)) begin: gen_yes_snax_tcdm_interconnect
+  if( (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_yes_snax_tcdm_interconnect
 
     snitch_tcdm_interconnect #(
-      .NumInp (NumTCDMIn + SnaxAccNarrowTcdmPorts),
+      .NumInp (NumTCDMIn + TotalSnaxNarrowTcdmPorts),
       .NumOut (NrBanks),
       .tcdm_req_t (tcdm_req_t),
       .tcdm_rsp_t (tcdm_rsp_t),
@@ -931,7 +935,7 @@ module snitch_cluster
       .rst_ni,
       .req_i ({axi_soc_req,
                tcdm_req,
-               snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-SnaxAccNarrowTcdmPorts]}),
+               snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
       .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o_narrow}),
       .mem_req_o (ic_req),
       .mem_rsp_i (ic_rsp)
