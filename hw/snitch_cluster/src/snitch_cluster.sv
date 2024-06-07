@@ -689,15 +689,37 @@ module snitch_cluster
   localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
 
   if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
-    always_comb begin
-      snax_tcdm_req_wide = snax_tcdm_req_i[TotalSnaxWideTcdmPorts-1:0];
-      snax_tcdm_req_narrow = 
-        snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts];
 
-      snax_tcdm_rsp_o[TotalSnaxWideTcdmPorts-1:0] = snax_tcdm_rsp_wide;
-      snax_tcdm_rsp_o[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]
-          = snax_tcdm_rsp_narrow;
+    integer total_offset, wide_offset, narrow_offset, curr_wide, curr_narrow;
+
+    always_comb begin
+      total_offset = 0;
+      wide_offset = 0;
+      narrow_offset = 0;
+
+      for (int i = 0; i < NrCores; i++) begin
+        curr_wide = SnaxWideTcdmPorts[i];
+        curr_narrow = SnaxNarrowTcdmPorts[i];
+
+        // Wide re-mapping
+        for(int j = 0; j < curr_wide; j++) begin
+          snax_tcdm_req_wide[j+wide_offset] = snax_tcdm_req_i[j+total_offset];
+          snax_tcdm_rsp_o[j+total_offset] = snax_tcdm_rsp_wide[j+wide_offset];
+        end
+
+        // Narrow re-mapping
+        for(int j = 0; j < curr_narrow; j++) begin
+          snax_tcdm_req_narrow[j+narrow_offset] = snax_tcdm_req_i[j+curr_wide+total_offset];
+          snax_tcdm_rsp_o[j+curr_wide+total_offset] = snax_tcdm_rsp_narrow[j+narrow_offset];
+        end
+
+
+        wide_offset += curr_wide;
+        narrow_offset += curr_narrow;
+        total_offset += (curr_wide + curr_narrow);
+      end
     end
+
   end else if (NumSnaxWideTcdmPorts > 0) begin: gen_wide_only_map
     always_comb begin
       snax_tcdm_req_wide = snax_tcdm_req_i;
