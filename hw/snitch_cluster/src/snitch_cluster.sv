@@ -678,22 +678,29 @@ module snitch_cluster
   // Therefore we allocate 8 TCDM ports for each bandwidth
 
   // Split narrow and wide TCDM ports to solve the multi-driver issue
-  tcdm_rsp_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_rsp_o_narrow;
-  tcdm_rsp_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_rsp_o_wide;
+  tcdm_req_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_req_narrow;
+  tcdm_req_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_req_wide;
 
-  if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
-    assign snax_tcdm_rsp_o[TotalSnaxWideTcdmPorts-1:0] = snax_tcdm_rsp_o_wide;
-    assign snax_tcdm_rsp_o[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]
-        = snax_tcdm_rsp_o_narrow;
-  end else if (NumSnaxWideTcdmPorts > 0) begin: gen_wide_only_map
-    assign snax_tcdm_rsp_o = snax_tcdm_rsp_o_wide;
-  end else begin: gen_narrow_only_map
-    assign snax_tcdm_rsp_o = snax_tcdm_rsp_o_narrow;
-  end
+  tcdm_rsp_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_rsp_narrow;
+  tcdm_rsp_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_rsp_wide;
 
   // Use this ports for the total number and needs to be cute into multiple versions
   // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
   localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
+
+  if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
+    assign snax_tcdm_req_narrow = snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts];
+
+    assign snax_tcdm_rsp_o[TotalSnaxWideTcdmPorts-1:0] = snax_tcdm_rsp_wide;
+    assign snax_tcdm_rsp_o[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]
+        = snax_tcdm_rsp_narrow;
+  end else if (NumSnaxWideTcdmPorts > 0) begin: gen_wide_only_map
+    assign snax_tcdm_rsp_o = snax_tcdm_rsp_wide;
+  end else if (TotalSnaxNarrowTcdmPorts > 0) begin: gen_narrow_only_map
+    assign snax_tcdm_rsp_o = snax_tcdm_rsp_narrow;
+  end else begin: gen_no_snax_map
+    assign snax_tcdm_rsp_o = '0;
+  end
 
   if (NumSnaxWideTcdmPorts > 0) begin: gen_yes_wide_acc_connect
 
@@ -744,33 +751,33 @@ module snitch_cluster
 
         // Response ports
         {
-          snax_tcdm_rsp_o_wide[i*8+7].p.data,
-          snax_tcdm_rsp_o_wide[i*8+6].p.data,
-          snax_tcdm_rsp_o_wide[i*8+5].p.data,
-          snax_tcdm_rsp_o_wide[i*8+4].p.data,
-          snax_tcdm_rsp_o_wide[i*8+3].p.data,
-          snax_tcdm_rsp_o_wide[i*8+2].p.data,
-          snax_tcdm_rsp_o_wide[i*8+1].p.data,
-          snax_tcdm_rsp_o_wide[i*8].p.data
+          snax_tcdm_rsp_wide[i*8+7].p.data,
+          snax_tcdm_rsp_wide[i*8+6].p.data,
+          snax_tcdm_rsp_wide[i*8+5].p.data,
+          snax_tcdm_rsp_wide[i*8+4].p.data,
+          snax_tcdm_rsp_wide[i*8+3].p.data,
+          snax_tcdm_rsp_wide[i*8+2].p.data,
+          snax_tcdm_rsp_wide[i*8+1].p.data,
+          snax_tcdm_rsp_wide[i*8].p.data
         } = snax_wide_rsp[i].p.data;
 
-        snax_tcdm_rsp_o_wide[i*8+7].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+6].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+5].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+4].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+3].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+2].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8+1].p_valid = snax_wide_rsp[i].p_valid;
-        snax_tcdm_rsp_o_wide[i*8].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+7].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+6].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+5].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+4].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+3].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+2].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8+1].p_valid = snax_wide_rsp[i].p_valid;
+        snax_tcdm_rsp_wide[i*8].p_valid = snax_wide_rsp[i].p_valid;
 
-        snax_tcdm_rsp_o_wide[i*8+7].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+6].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+5].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+4].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+3].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+2].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8+1].q_ready = snax_wide_rsp[i].q_ready;
-        snax_tcdm_rsp_o_wide[i*8].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+7].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+6].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+5].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+4].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+3].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+2].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8+1].q_ready = snax_wide_rsp[i].q_ready;
+        snax_tcdm_rsp_wide[i*8].q_ready = snax_wide_rsp[i].q_ready;
       end
     end
 
@@ -935,8 +942,9 @@ module snitch_cluster
       .rst_ni,
       .req_i ({axi_soc_req,
                tcdm_req,
-               snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
-      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_o_narrow}),
+               snax_tcdm_req_narrow}),
+               //snax_tcdm_req_i[TotalSnaxTcdmPorts-1:TotalSnaxTcdmPorts-TotalSnaxNarrowTcdmPorts]}),
+      .rsp_o ({axi_soc_rsp, tcdm_rsp, snax_tcdm_rsp_narrow}),
       .mem_req_o (ic_req),
       .mem_rsp_i (ic_rsp)
     );
