@@ -736,44 +736,6 @@ module snitch_cluster
     end
   end
 
-
-  // if ((TotalSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
-
-  //   int total_offset = 0;
-  //   int wide_offset = 0;
-  //   int narrow_offset = 0;
-  //   int curr_wide = 0;
-  //   int curr_narrow = 0;
-
-  //   always_comb begin
-  //     // Note: Wide first then narrow
-  //     for(int i = 0; i < NrCores; i++) begin
-
-  //       curr_wide = SnaxWideTcdmPorts[i];
-  //       curr_narrow = SnaxNarrowTcdmPorts[i];
-
-  //       // Requests
-  //       snax_tcdm_req_wide[(curr_wide+wide_offset)-1:wide_offset] =
-  //         snax_tcdm_req_i[(curr_wide+total_offset)-1:(total_offset)];
-
-  //       snax_tcdm_req_narrow[(curr_narrow+narrow_offset)-1:narrow_offset] =
-  //         snax_tcdm_req_i[(curr_wide+curr_narrow+total_offset)-1:(curr_wide+total_offset)];
-
-  //       // Responses
-  //       snax_tcdm_rsp_o[(curr_wide+total_offset)-1:(total_offset)] =
-  //         snax_tcdm_rsp_wide[(curr_wide+wide_offset)-1:wide_offset];
-
-  //       snax_tcdm_rsp_o[(curr_wide+curr_narrow+total_offset)-1:(curr_wide+total_offset)] =
-  //         snax_tcdm_rsp_narrow[(curr_narrow+narrow_offset)-1:narrow_offset];
-
-  //       wide_offset += curr_wide;
-  //       narrow_offset += curr_narrow;
-  //       total_offset += (curr_wide + curr_narrow);
-  //     end
-  //   end
-  // end
-  
-
   if (NumSnaxWideTcdmPorts > 0) begin: gen_yes_wide_acc_connect
 
     // First declare the wide SNAX tcdm ports
