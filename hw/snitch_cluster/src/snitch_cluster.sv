@@ -673,31 +673,44 @@ module snitch_cluster
   assign ext_dma_req.q.amo = reqrsp_pkg::AMONone;
   assign ext_dma_req.q.user = '0;
 
-  // Multiplexing between connecting large accelerators to this part
-  // Note that we are limited by the 512 bit DMA bandwidth
-  // Therefore we allocate 8 TCDM ports for each bandwidth
+  //------------------------
+  // Splitting of narrow-wide connections
+  // for heterogeneous interconnection
+  //------------------------
 
   // Split narrow and wide TCDM ports to solve the multi-driver issue
+  // Use these ports for the total number and needs to be cute into multiple versions
+  // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
+
   tcdm_req_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_req_narrow;
   tcdm_req_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_req_wide;
 
   tcdm_rsp_t [TotalSnaxNarrowTcdmPorts-1:0] snax_tcdm_rsp_narrow;
   tcdm_rsp_t [TotalSnaxWideTcdmPorts-1:0] snax_tcdm_rsp_wide;
 
-  // Use this ports for the total number and needs to be cute into multiple versions
-  // It needs to be divided by 8 because each narrow TCDM port is 64 bits wide
   localparam int unsigned NumSnaxWideTcdmPorts = TotalSnaxWideTcdmPorts / 8;
 
   if ((NumSnaxWideTcdmPorts > 0) && (TotalSnaxNarrowTcdmPorts > 0)) begin: gen_narrow_wide_map
 
     integer total_offset, wide_offset, narrow_offset, curr_wide, curr_narrow;
 
+    //------------------------
+    // Designer note:
+    // SystemVerilog does not allow non-constant
+    // dynamic slicings (:+ or :-) styles so it's a limitation
+    // to overcome this you need to manually specify ports
+    // regardless if it's bit-wise or port wise.
+    // That is the technique used in the procedural block below
+    //------------------------
+
     always_comb begin
+
       total_offset = 0;
       wide_offset = 0;
       narrow_offset = 0;
 
       for (int i = 0; i < NrCores; i++) begin
+
         curr_wide = SnaxWideTcdmPorts[i];
         curr_narrow = SnaxNarrowTcdmPorts[i];
 
@@ -713,24 +726,27 @@ module snitch_cluster
           snax_tcdm_rsp_o[j+curr_wide+total_offset] = snax_tcdm_rsp_narrow[j+narrow_offset];
         end
 
-
         wide_offset += curr_wide;
         narrow_offset += curr_narrow;
         total_offset += (curr_wide + curr_narrow);
       end
+
     end
 
   end else if (NumSnaxWideTcdmPorts > 0) begin: gen_wide_only_map
+    // For wide only connection ports
     always_comb begin
       snax_tcdm_req_wide = snax_tcdm_req_i;
       snax_tcdm_rsp_o    = snax_tcdm_rsp_wide;
     end
   end else if (TotalSnaxNarrowTcdmPorts > 0) begin: gen_narrow_only_map
+    // For narrow only connection ports
     always_comb begin
       snax_tcdm_req_narrow = snax_tcdm_req_i;
       snax_tcdm_rsp_o      = snax_tcdm_rsp_narrow;
     end
   end else begin: gen_no_snax_map
+    // When there are no accelerators in the system
     always_comb begin
       snax_tcdm_rsp_o = '0;
     end
