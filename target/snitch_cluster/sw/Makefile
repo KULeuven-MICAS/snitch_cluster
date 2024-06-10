@@ -15,7 +15,7 @@ else
 RUNTIME = runtime/rtl
 endif
 
-SUBDIRS += $(RUNTIME) snax/mac snax/gemm snax/streamer-gemm snax/streamer-simd snax/data-reshuffler snax/streamer-gemm-conv math apps tests
+SUBDIRS += math $(RUNTIME) snax/mac snax/gemm snax/streamer-gemm snax/streamer-simd snax/data-reshuffler snax/streamer-gemm-conv apps tests
 
 .PHONY: all $(SUBDIRS)
 
