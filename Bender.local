@@ -5,6 +5,3 @@
 overrides:
     # Some of our dependencies have false conflicts with our new AXI version; force our version.
     axi: {git: https://github.com/pulp-platform/axi.git, version: 0.39.0}
-    # Original snitch cluster uses the old FPnew, while occamy uses the new FPnew
-    # FPnew: { git: https://github.com/openhwgroup/cvfpu,    rev: 1202ca3 }
-    
