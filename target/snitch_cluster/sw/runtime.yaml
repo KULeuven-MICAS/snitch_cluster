@@ -18,4 +18,3 @@ runs:
   - elf: tests/build/varargs_1.elf
   - elf: tests/build/varargs_2.elf
   - elf: tests/build/zero_mem.elf
-
