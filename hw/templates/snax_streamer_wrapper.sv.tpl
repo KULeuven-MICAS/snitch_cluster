@@ -164,7 +164,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
     // Accelerator ports
     //-----------------------------
 % if "fifo_writer_params" in cfg["snax_streamer_cfg"]:
-  // Ports from accelerator to streamer by writer data movers
+    // Ports from accelerator to streamer by writer data movers
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_writer_params"]["fifo_width"])):
     .io_data_accelerator2streamer_data_${idx}_bits  (  acc2stream_${idx}_data_i ),
     .io_data_accelerator2streamer_data_${idx}_valid ( acc2stream_${idx}_valid_i ),
@@ -173,7 +173,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
 % endfor
 % endif
 % if "fifo_reader_writer_params" in cfg["snax_streamer_cfg"]:
-  // Ports from accelerator to streamer by reader-writer data movers
+    // Ports from accelerator to streamer by reader-writer data movers
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_reader_writer_params"]["fifo_width"])):
   .io_data_accelerator2streamer_data_${idx+num_writer_offset}_bits  (  acc2stream_${idx+num_writer_offset}_data_i ),
   .io_data_accelerator2streamer_data_${idx+num_writer_offset}_valid ( acc2stream_${idx+num_writer_offset}_valid_i ),
@@ -182,7 +182,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
 % endfor
 % endif
 % if "fifo_reader_params" in cfg["snax_streamer_cfg"]:
-  // Ports from streamer to accelerator by reader data movers
+    // Ports from streamer to accelerator by reader data movers
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_reader_params"]["fifo_width"])):
     .io_data_streamer2accelerator_data_${idx}_bits  (  stream2acc_${idx}_data_o ),
     .io_data_streamer2accelerator_data_${idx}_valid ( stream2acc_${idx}_valid_o ),
@@ -191,7 +191,7 @@ module ${cfg["tag_name"]}_streamer_wrapper #(
 % endfor
 % endif
 % if "fifo_reader_writer_params" in cfg["snax_streamer_cfg"]:
-  // Ports from streamer to accelerator by reader-writer data movers
+    // Ports from streamer to accelerator by reader-writer data movers
 % for idx in range(len(cfg["snax_streamer_cfg"]["fifo_reader_writer_params"]["fifo_width"])):
     .io_data_streamer2accelerator_data_${idx+num_reader_offset}_bits  (  stream2acc_${idx+num_reader_offset}_data_o ),
     .io_data_streamer2accelerator_data_${idx+num_reader_offset}_valid ( stream2acc_${idx+num_reader_offset}_valid_o ),
