@@ -51,14 +51,59 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
         f.write(str(tpl.render_unicode(cfg=cfg)))
     return
 
-
+# Call chisel environment and generate the system verilog file
 def gen_chisel_file(chisel_path, chisel_param, gen_path):
-    # Call chisel environment and generate the system verilog file
     cmd = f" cd {chisel_path} && \
         mill Snax.runMain {chisel_param} {gen_path}"
     os.system(cmd)
 
     return
+
+# Count number of CSRs for streamer
+def streamer_csr_num(acc_cfgs):
+    
+    # Regardless if shared or not, it is the same total
+    # This is the total number of loop dimension registers
+    num_loop_dim = sum(acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"])
+
+    # Calculation of data movers
+    num_data_reader = 0
+    num_data_writer = 0
+    num_data_reader_writer = 0
+    num_data_mover = 0
+
+    # Calculation of spatial dimensions per data mover
+    num_spatial_reader = 0
+    num_spatial_writer = 0
+    num_spatial_reader_writer = 0
+    num_spatial_dim = 0
+
+    if("data_reader_params" in acc_cfgs["snax_streamer_cfg"]):
+        num_data_reader = len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
+        num_spatial_reader = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"])
+
+    if("data_writer_params" in acc_cfgs["snax_streamer_cfg"]):
+        num_data_writer = len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
+        num_spatial_writer = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"])
+
+    if("data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]):
+        num_data_reader_writer = len(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_ports_num"])
+        num_spatial_reader_writer = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_dim"])
+
+    # This sets the total number of base pointers
+    num_data_mover = num_data_reader + num_data_writer + num_data_reader_writer
+    num_spatial_dim = num_spatial_reader + num_spatial_writer + num_spatial_reader_writer
+
+    if (acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["share_temp_addr_gen_loop_bounds"]):  # noqa: E501
+        # num_dmove_x_loop_dim is the total number of stride registers
+        num_dmove_x_loop_dim = num_data_mover * num_loop_dim
+        streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + num_spatial_dim + num_data_mover + 1 + 1  # noqa: E501
+    else:
+        # 2x num_loop_dim is because 1 is for the loop bound
+        # while the other is for number of strides
+        streamer_csr_num = 2 * num_loop_dim + num_spatial_dim + num_data_mover + 1 + 1  # noqa: E501
+
+    return streamer_csr_num
 
 
 # Main function run and parsing
@@ -131,19 +176,8 @@ def main():
         acc_cfgs[i]["tcdm_addr_width"] = tcdm_addr_width
         # Chisel parameter tag names
         acc_cfgs[i]["tag_name"] = acc_cfgs[i]["snax_acc_name"]
-        # Pre-calculate streamer CSRs
-        if (acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["share_temp_addr_gen_loop_bounds"]):  # noqa: E501
-            num_loop_dim = acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"][0]  # noqa: E501
-            num_data_mover = len(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + len(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])  # noqa: E501
-            num_dmove_x_loop_dim = num_data_mover * num_loop_dim
-            num_spatial_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]) + sum(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"])  # noqa: E501
-            streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + num_data_mover + num_spatial_dim + 1 + 1  # noqa: E501
-        else:
-            num_loop_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"])  # noqa: E501
-            num_data_mover = len(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]) + len(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])  # noqa: E501
-            num_spatial_dim = sum(acc_cfgs[i]["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]) + sum(acc_cfgs[i]["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"])  # noqa: E501
-            streamer_csr_num = 2 * num_loop_dim + num_data_mover + num_spatial_dim + 1 + 1  # noqa: E501
-        acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num
+        # Calculating number of registers for streamer
+        acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num(acc_cfgs[i])
 
     # Generate template out of given configurations
     # TODO: Make me a generation for the necessary files!
