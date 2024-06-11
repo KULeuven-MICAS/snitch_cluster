@@ -51,6 +51,7 @@ def gen_file(cfg, tpl, target_path: str, file_name: str) -> None:
         f.write(str(tpl.render_unicode(cfg=cfg)))
     return
 
+
 # Call chisel environment and generate the system verilog file
 def gen_chisel_file(chisel_path, chisel_param, gen_path):
     cmd = f" cd {chisel_path} && \
@@ -59,12 +60,14 @@ def gen_chisel_file(chisel_path, chisel_param, gen_path):
 
     return
 
+
 # Count number of CSRs for streamer
 def streamer_csr_num(acc_cfgs):
-    
     # Regardless if shared or not, it is the same total
     # This is the total number of loop dimension registers
-    num_loop_dim = sum(acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"])
+    num_loop_dim = sum(
+        acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["loop_dim"]  # noqa: E501
+    )
 
     # Calculation of data movers
     num_data_reader = 0
@@ -78,30 +81,55 @@ def streamer_csr_num(acc_cfgs):
     num_spatial_reader_writer = 0
     num_spatial_dim = 0
 
-    if("data_reader_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_data_reader = len(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"])
-        num_spatial_reader = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"])
+    if "data_reader_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_data_reader = len(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["tcdm_ports_num"]  # noqa: E501
+        )
+        num_spatial_reader = sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]
+        )
 
-    if("data_writer_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_data_writer = len(acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"])
-        num_spatial_writer = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"])
+    if "data_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_data_writer = len(
+            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"]  # noqa: E501
+        )
+        num_spatial_writer = sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]
+        )
 
-    if("data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]):
-        num_data_reader_writer = len(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_ports_num"])
-        num_spatial_reader_writer = sum(acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_dim"])
+    if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
+        num_data_reader_writer = len(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["tcdm_ports_num"]  # noqa: E501
+        )
+        num_spatial_reader_writer = sum(
+            acc_cfgs["snax_streamer_cfg"]["data_reader_writer_params"]["spatial_dim"]  # noqa: E501
+        )
 
     # This sets the total number of base pointers
     num_data_mover = num_data_reader + num_data_writer + num_data_reader_writer
-    num_spatial_dim = num_spatial_reader + num_spatial_writer + num_spatial_reader_writer
+    num_spatial_dim = (
+        num_spatial_reader + num_spatial_writer + num_spatial_reader_writer
+    )
 
-    if (acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"]["share_temp_addr_gen_loop_bounds"]):  # noqa: E501
+    if acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"][
+        "share_temp_addr_gen_loop_bounds"
+    ]:
         # num_dmove_x_loop_dim is the total number of stride registers
         num_dmove_x_loop_dim = num_data_mover * num_loop_dim
-        streamer_csr_num = num_loop_dim + num_dmove_x_loop_dim + num_spatial_dim + num_data_mover + 1 + 1  # noqa: E501
+        streamer_csr_num = (
+            num_loop_dim
+            + num_dmove_x_loop_dim
+            + num_spatial_dim
+            + num_data_mover
+            + 1
+            + 1
+        )
     else:
         # 2x num_loop_dim is because 1 is for the loop bound
         # while the other is for number of strides
-        streamer_csr_num = 2 * num_loop_dim + num_spatial_dim + num_data_mover + 1 + 1  # noqa: E501
+        streamer_csr_num = (
+            2 * num_loop_dim + num_spatial_dim + num_data_mover + 1 + 1
+        )  # noqa: E501
 
     return streamer_csr_num
 
@@ -132,7 +160,8 @@ def main():
         help="Points to the streamer chisel source path",
     )
     parser.add_argument(
-        "--gen_path", type=str, default="./", help="Points to the output directory"
+        "--gen_path", type=str, default="./",
+        help="Points to the output directory"
     )
 
     # Get the list of parsing
@@ -196,7 +225,7 @@ def main():
         )
 
         # CSR manager scala parameter generation
-        chisel_target_path = args.chisel_path + "src/main/scala/snax/csr_manager/"
+        chisel_target_path = args.chisel_path + "src/main/scala/snax/csr_manager/"  # noqa: E501
         file_name = "CsrManParamGen.scala"
         tpl_scala_param_file = args.tpl_path + "csrman_param_gen.scala.tpl"
         tpl_scala_param = get_template(tpl_scala_param_file)
@@ -222,7 +251,7 @@ def main():
 
         # This first one generates the streamer wrapper
         file_name = acc_cfgs[i]["snax_acc_name"] + "_streamer_wrapper.sv"
-        tpl_streamer_wrapper_file = args.tpl_path + "snax_streamer_wrapper.sv.tpl"
+        tpl_streamer_wrapper_file = args.tpl_path + "snax_streamer_wrapper.sv.tpl"  # noqa: E501
         tpl_streamer_wrapper = get_template(tpl_streamer_wrapper_file)
         gen_file(
             cfg=acc_cfgs[i],
