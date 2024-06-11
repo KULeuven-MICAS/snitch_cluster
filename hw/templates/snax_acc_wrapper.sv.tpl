@@ -334,9 +334,9 @@ module ${cfg["tag_name"]}_wrapper # (
 % if "fifo_reader_writer_params" in cfg["snax_streamer_cfg"]:
     // Ports from streamer to accelerator by reader-writer data movers
 % for idx, dw in enumerate(cfg["snax_streamer_cfg"]["fifo_reader_writer_params"]["fifo_width"]):
-    .stream2acc_${idx+num_reader_offset}_data_i  ( stream2acc_${idx+num_reader_offset}_data  ),
-    .stream2acc_${idx+num_reader_offset}_valid_i ( stream2acc_${idx+num_reader_offset}_valid ),
-    .stream2acc_${idx+num_reader_offset}_ready_o ( stream2acc_${idx+num_reader_offset}_ready ),
+    .stream2acc_${idx+num_reader_offset}_data_o  ( stream2acc_${idx+num_reader_offset}_data  ),
+    .stream2acc_${idx+num_reader_offset}_valid_o ( stream2acc_${idx+num_reader_offset}_valid ),
+    .stream2acc_${idx+num_reader_offset}_ready_i ( stream2acc_${idx+num_reader_offset}_ready ),
 
 % endfor
 % endif
