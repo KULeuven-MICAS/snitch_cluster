@@ -94,7 +94,7 @@ def streamer_csr_num(acc_cfgs):
             acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["tcdm_ports_num"]  # noqa: E501
         )
         num_spatial_writer = sum(
-            acc_cfgs["snax_streamer_cfg"]["data_reader_params"]["spatial_dim"]
+            acc_cfgs["snax_streamer_cfg"]["data_writer_params"]["spatial_dim"]
         )
 
     if "data_reader_writer_params" in acc_cfgs["snax_streamer_cfg"]:
