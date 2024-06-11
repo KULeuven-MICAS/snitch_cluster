@@ -138,8 +138,6 @@
             fifo_depth: [2, 2],
         }
 
-        fifo_writer_params: {}
-
         fifo_reader_writer_params: {
             fifo_width: [2048],
             fifo_depth: [2],
@@ -151,8 +149,6 @@
             spatial_dim: [2, 2],
             element_width: [8, 8],
         }
-
-        data_writer_params:{}
 
         data_reader_writer_params:{
             tcdm_ports_num: [32],
