@@ -57,7 +57,12 @@ RUN wget https://github.com/chipsalliance/verible/releases/download/v${VERIBLE_V
   rm -rf verible-v${VERIBLE_VERSION}-linux-static-x86_64.tar.gz tempdir
 
 # Install LLVM 17 + MLIR + clang-format
-RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 17 && rm llvm.sh
+
+COPY --from=ghcr.io/opencompl/quidditch/toolchain:runtime-github-actions /opt/quidditch-toolchain /opt/quidditch-toolchain
+ENV PATH="/opt/quidditch-toolchain/bin:${PATH}"
+
+RUN wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+RUN add-apt-repository -y "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-17 main" && apt-get update
 RUN apt-get -y install mlir-17-tools
 RUN apt-get -y install clang-format-17
 

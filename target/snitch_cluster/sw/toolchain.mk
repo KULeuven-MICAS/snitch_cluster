@@ -21,8 +21,8 @@ ifneq ($(SELECT_TOOLCHAIN), llvm-generic)
 LLVM_BINROOT    = /tools/riscv-llvm/bin
 LLVM_VERSION    = 
 else
-LLVM_BINROOT    = /usr/bin
-LLVM_VERSION    = -17
+LLVM_BINROOT    = /opt/quidditch-toolchain/bin
+LLVM_VERSION    =
 endif
 RISCV_CC        ?= $(LLVM_BINROOT)/clang$(LLVM_VERSION)
 RISCV_LD        ?= $(LLVM_BINROOT)/ld.lld$(LLVM_VERSION)
