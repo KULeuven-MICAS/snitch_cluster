@@ -51,13 +51,13 @@ class DataReaderWriterIO(
 
 }
 
-// the DataReaderWriter class is a module that can both reads and writes data
-// It instantiates a DataReader and a DataWriter module, each has its own seperate set of CSR, temporal/spatial address generation unit...
-// The reader and writer work in dependetly but share the reqeust ports to TCDM
+//The DataReaderWriter class is a module that can both read and write data
+// It instantiates a DataReader and a DataWriter module, each having its own separate set of CSR, temporal/spatial address generation units.
+// The reader and writer work independently but share the request ports to TCDM
 // To decide whether to read or write, the DataReaderWriter module uses a control signal
-// When one of the DataReader or DataWriter needs send request to TCDM (read fifo empty or write fifo not empty), choose the one that needs to send request
-// when both DataReader and DataWriter needs to send request, choose the writer first
-// When none of them needs to send request, chill a bit
+// When one of the DataReader or DataWriter needs to send a request to TCDM (read fifo empty or write fifo not empty), choose the one that needs to send the request
+//When both DataReader and DataWriter need to send a request, choose the writer first
+// When none of them needs to send a request, chill a bit
 class DataReaderWriter(
     params: DataMoverParams,
     tagName: String = ""
