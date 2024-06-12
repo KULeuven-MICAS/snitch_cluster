@@ -500,7 +500,9 @@ class Streamer(
           WriterFifo(
             (i - params.dataWriterNum - params.dataReaderNum) / 2 + params.dataWriterNum
           ).io.in <> io.data.accelerator2streamer
-            .data((i - params.dataWriterNum - params.dataReaderNum) / 2 + params.dataWriterNum)
+            .data(
+              (i - params.dataWriterNum - params.dataReaderNum) / 2 + params.dataWriterNum
+            )
         }
       }
     }

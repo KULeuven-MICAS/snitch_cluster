@@ -103,7 +103,12 @@ class DataReaderWriter(
   }
 
   /* connect signals for reader */
-  data_reader.io.tcdm_rsp <> io.tcdm_rsp
+  when(!RegNext(writeValid)) {
+    data_reader.io.tcdm_rsp <> io.tcdm_rsp
+  }.otherwise {
+    data_reader.io.tcdm_rsp.foreach(_.valid := false.B)
+    data_reader.io.tcdm_rsp.foreach(_.bits.data := false.B)
+  }
 
   data_reader.io.ptr_agu_i <> io.ptr_agu_i(0)
   data_reader.io.spatialStrides_csr_i <> io.spatialStrides_csr_i(0)

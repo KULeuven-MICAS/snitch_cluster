@@ -106,9 +106,9 @@ def streamer_csr_num(acc_cfgs):
         )
 
     # This sets the total number of base pointers
-    num_data_mover = num_data_reader + num_data_writer + num_data_reader_writer
+    num_data_mover = num_data_reader + num_data_writer + num_data_reader_writer * 2
     num_spatial_dim = (
-        num_spatial_reader + num_spatial_writer + num_spatial_reader_writer
+        num_spatial_reader + num_spatial_writer + num_spatial_reader_writer * 2
     )
 
     if acc_cfgs["snax_streamer_cfg"]["temporal_addrgen_unit_params"][
