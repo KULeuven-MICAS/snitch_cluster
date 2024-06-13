@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
   # create symbolic links for all *-17 binaries
   for f in /usr/bin/*-17; do ln -s $f ${f%-17}; done && \
   # Update pip for git installs
-  pip3 install --upgrade pip 
+  pip3 install --upgrade pip
 
 
 
@@ -58,7 +58,6 @@ ENV VERIBLE_VERSION 0.0-3644-g6882622d
 # Install pre-builts:
 # Bender
 RUN cd /usr/bin && curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh -s 0.28.1 && cd /
-
 
 # spike-dasm
 RUN wget https://github.com/pulp-platform/riscv-isa-sim/releases/download/snitch-v0.1.0/snitch-spike-dasm-0.1.0-x86_64-linux-gnu-ubuntu18.04.tar.gz && \
@@ -86,12 +85,12 @@ RUN mkdir -p /opt/snitch-llvm \
 
 # Install Python Requirements from kuleuven-micas/snax_cluster
 RUN git clone https://github.com/kuleuven-micas/snax_cluster.git && \
-    cd snax_cluster && pip3 install -r python-requirements.txt && \
+    cd snax_cluster && pip3 install --no-cache-dir -r python-requirements.txt && \
     cd .. && \
     rm -rf snax_cluster && \
 # Install Python Requirements from kuleuven-micas/snax-mlir
     git clone https://github.com/kuleuven-micas/snax-mlir.git && \
-    cd snax-mlir && pip3 install -r requirements.txt && \
+    cd snax-mlir && pip3 install --no-cache-dir -r requirements.txt && \
     cd .. && \
     rm -rf snax-mlir
 
