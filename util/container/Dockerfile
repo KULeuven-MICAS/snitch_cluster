@@ -50,7 +50,8 @@ RUN git clone https://github.com/verilator/verilator && \
   make -j$(nproc) && \
   make install && \
   cd .. && \
-  rm -rf verilator
+  rm -rf verilator && \
+  rm -rf /root/.cache
 
 ENV VLT_ROOT /usr/local/share/verilator
 ENV VERIBLE_VERSION 0.0-3644-g6882622d
@@ -72,7 +73,10 @@ RUN wget https://github.com/pulp-platform/riscv-isa-sim/releases/download/snitch
 # Install scala-cli
     curl -sSLf https://scala-cli.virtuslab.org/get | sh && \
 # Install mill build tool
-    curl -L https://raw.githubusercontent.com/lefou/millw/0.4.11/millw > mill && chmod +x mill && mv mill /usr/local/bin
+    curl -L https://raw.githubusercontent.com/lefou/millw/0.4.11/millw > mill && chmod +x mill && mv mill /usr/local/bin && \
+# Remove cache
+    rm -rf /root/.cache
+
 # Old-school Snitch-llvm toolchain
 RUN mkdir -p /opt/snitch-llvm \
     && wget -qO- https://github.com/pulp-platform/llvm-project/releases/download/0.12.0/riscv32-pulp-llvm-ubuntu1804-0.12.0.tar.gz | \
