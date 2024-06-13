@@ -77,16 +77,6 @@ RUN wget https://github.com/pulp-platform/riscv-isa-sim/releases/download/snitch
 # Remove cache
     rm -rf /root/.cache
 
-# Old-school Snitch-llvm toolchain
-RUN mkdir -p /opt/snitch-llvm \
-    && wget -qO- https://github.com/pulp-platform/llvm-project/releases/download/0.12.0/riscv32-pulp-llvm-ubuntu1804-0.12.0.tar.gz | \
-    tar xz --strip-components=1 -C /opt/snitch-llvm && \
-    rm -rf /opt/snitch-llvm/bin && \
-    rm -rf /opt/snitch-llvm/libexec && \
-    rm -rf /opt/snitch-llvm/share && \
-    rm -rf /opt/snitch-llvm/lib/cmake /opt/snitch-llvm/*.a /opt/snitch-llvm/*.so /opt/snitch-llvm/*.12 && \
-    rm -rf /opt/snitch-llvm/include
-
 # Install Python Requirements from kuleuven-micas/snax_cluster
 RUN git clone https://github.com/kuleuven-micas/snax_cluster.git && \
     cd snax_cluster && pip3 install --no-cache-dir -r python-requirements.txt && \
