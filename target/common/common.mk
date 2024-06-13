@@ -73,7 +73,7 @@ VLT_FLAGS    += -Wno-fatal
 VLT_FLAGS    += +define+SYNTHESIS
 VLT_FLAGS    += --unroll-count 1024
 ifeq ($(VERILATOR_VERSION), 5)
-	VLT_CXXSTD_FLAGS += -std=c++20 -lpthread -latomic
+	VLT_CXXSTD_FLAGS += -std=c++20 -pthread -latomic
 else 
 	VLT_CXXSTD_FLAGS += -std=c++14 -pthread
 endif

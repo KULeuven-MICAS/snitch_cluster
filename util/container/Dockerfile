@@ -33,7 +33,6 @@ RUN apt-get update && apt-get install -y lsb-release wget software-properties-co
   libfl2 libfl-dev zlib1g zlib1g-dev \
   sbt \
   python3-pip && \
-
   # create symbolic links for all *-17 binaries
   for f in /usr/bin/*-17; do ln -s $f ${f%-17}; done && \
   # Update pip for git installs
@@ -51,14 +50,7 @@ RUN git clone https://github.com/verilator/verilator && \
   make -j$(nproc) && \
   make install && \
   cd .. && \
-  rm -rf verilator && \
-  # Change defaults in verilator file
-  sed -i /usr/local/share/verilator/include/verilated.mk \
-        -e "s/CXX = g++/CXX = clang++-17/g" \
-        -e "s/LINK = g++/LINK = clang++-17/g" \
-        -e "s/AR = ar/AR = llvm-ar-17/g" \
-        -e "s/CFG_CXXFLAGS_STD = /CFG_CXXFLAGS_STD = -std=c++20/g" \
-        -e "s/CFG_CXXFLAGS_COROUTINES = -fcoroutines/CFG_CXXFLAGS_COROUTINES = /g"
+  rm -rf verilator
 
 ENV VLT_ROOT /usr/local/share/verilator
 ENV VERIBLE_VERSION 0.0-3644-g6882622d
