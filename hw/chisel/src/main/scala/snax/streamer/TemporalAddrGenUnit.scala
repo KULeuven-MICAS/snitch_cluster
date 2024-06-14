@@ -204,7 +204,9 @@ class TemporalAddrGenUnit(
     .map { case (a, b) => a * b })
     .reduce(_ +& _) +& ptr
 
-  addr_gen_finish := (loop_counters_last.reduce(_ & _) && io.ptr_o.fire) || zeroLoopBoundCase
+  addr_gen_finish := (loop_counters_last.reduce(
+    _ & _
+  ) && io.ptr_o.fire) || zeroLoopBoundCase
 
   // the decoupled interface is driven by the module state
   io.ptr_o.valid := cstate === sBUSY && !zeroLoopBoundCase

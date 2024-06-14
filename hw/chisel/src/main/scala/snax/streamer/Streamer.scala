@@ -295,9 +295,9 @@ class Streamer(
       if (params.stationarity(i) == 1) {
         for (j <- 0 until params.temporalDimInt) {
           if (j == 0) {
-            when(io.csr.bits.loopBounds_i(0)(j) === 0.U){
+            when(io.csr.bits.loopBounds_i(0)(j) === 0.U) {
               address_gen_unit(i).io.loopBounds_i.bits(j) := 0.U
-            }.otherwise{
+            }.otherwise {
               address_gen_unit(i).io.loopBounds_i.bits(j) := 1.U
             }
           } else {
@@ -329,9 +329,9 @@ class Streamer(
       if (params.stationarity(i) == 1) {
         for (j <- 0 until params.temporalDimSeq(i)) {
           if (j == 0) {
-            when(io.csr.bits.loopBounds_i(i)(j) === 0.U){
+            when(io.csr.bits.loopBounds_i(i)(j) === 0.U) {
               address_gen_unit(i).io.loopBounds_i.bits(j) := 0.U
-            }.otherwise{
+            }.otherwise {
               address_gen_unit(i).io.loopBounds_i.bits(j) := 1.U
             }
           } else {
@@ -398,7 +398,9 @@ class Streamer(
     if (i < params.dataReaderNum) {
       address_gen_unit(i).io.ptr_o <> data_reader(i).io.ptr_agu_i
       data_reader(i).io.addr_gen_done := address_gen_unit(i).io.done
-      data_reader(i).io.zeroLoopBoundCase := address_gen_unit(i).io.zeroLoopBoundCase
+      data_reader(i).io.zeroLoopBoundCase := address_gen_unit(
+        i
+      ).io.zeroLoopBoundCase
     } else {
       if (i < params.dataReaderNum + params.dataWriterNum) {
         address_gen_unit(i).io.ptr_o <> data_writer(
@@ -423,7 +425,9 @@ class Streamer(
         ).io.addr_gen_done(reader_writer_idx_rw) := address_gen_unit(i).io.done
         data_reader_writer(
           reader_writer_idx
-        ).io.zeroLoopBoundCase(reader_writer_idx_rw) := address_gen_unit(i).io.zeroLoopBoundCase
+        ).io.zeroLoopBoundCase(reader_writer_idx_rw) := address_gen_unit(
+          i
+        ).io.zeroLoopBoundCase
       }
     }
   }
