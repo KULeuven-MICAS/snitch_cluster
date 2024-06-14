@@ -10,7 +10,7 @@ CHISEL_MODULE = BlockGemmSIMD
 pkg_name = gemm_simd
 
 define gen_sv_file
-	mkdir -p $(MK_DIR)generated/$(pkg_name) && cd $(MK_DIR) && mill "runMain snax_acc.$(pkg_name).$(1)"
+	mkdir -p $(MK_DIR)generated/$(pkg_name) && cd $(MK_DIR) && sbt "runMain snax_acc.$(pkg_name).$(1)"
 endef
 
 CHISEL_GENERATED_DIR = $(MK_DIR)generated
