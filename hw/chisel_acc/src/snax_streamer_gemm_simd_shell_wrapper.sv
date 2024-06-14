@@ -104,7 +104,7 @@ module snax_streamer_gemm_simd_shell_wrapper #(
     .io_data_gemm_data_d_o_ready(acc2stream_1_ready_i),
     .io_data_gemm_data_d_o_valid(acc2stream_1_valid_o),
     .io_data_gemm_data_d_o_bits(acc2stream_1_data_o),
-    
+
     .io_data_simd_data_ready(acc2stream_0_ready_i),
     .io_data_simd_data_valid(acc2stream_0_valid_o),
     .io_data_simd_data_bits(acc2stream_0_data_o)
