@@ -34,6 +34,8 @@ class DataReaderWriterIO(
   // all the temporal addresses have been produced
   val addr_gen_done = Vec(2, Input(Bool()))
 
+  val zeroLoopBoundCase = Vec(2, Input(Bool()))
+
   // output signal to indicate the data movement process is done
   val data_movement_done = Vec(2, Output(Bool()))
 
@@ -113,6 +115,7 @@ class DataReaderWriter(
   data_reader.io.ptr_agu_i <> io.ptr_agu_i(0)
   data_reader.io.spatialStrides_csr_i <> io.spatialStrides_csr_i(0)
   data_reader.io.addr_gen_done <> io.addr_gen_done(0)
+  data_reader.io.zeroLoopBoundCase <> io.zeroLoopBoundCase(0)
   data_reader.io.data_movement_done <> io.data_movement_done(0)
 
   data_reader.io.data_fifo_o <> io.data_fifo_o
@@ -122,6 +125,7 @@ class DataReaderWriter(
   data_writer.io.ptr_agu_i <> io.ptr_agu_i(1)
   data_writer.io.spatialStrides_csr_i <> io.spatialStrides_csr_i(1)
   data_writer.io.addr_gen_done <> io.addr_gen_done(1)
+  data_writer.io.zeroLoopBoundCase <> io.zeroLoopBoundCase(1)
   data_writer.io.data_movement_done <> io.data_movement_done(1)
 
   data_writer.io.data_fifo_i <> io.data_fifo_i
