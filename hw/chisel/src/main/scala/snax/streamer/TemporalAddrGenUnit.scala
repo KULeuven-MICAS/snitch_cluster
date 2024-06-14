@@ -53,6 +53,7 @@ class TemporalAddrGenUnitIO(
   // done signal indicating current transaction is done, ready for next config and transaction
   val done = Output(Bool())
 
+  // signal to indicate the case when any of the loop bounds are zero
   val zeroLoopBoundCase = Output(Bool())
 }
 
@@ -98,6 +99,7 @@ class TemporalAddrGenUnit(
   )
   val ptr = RegInit(0.U((params.addrWidth).W))
 
+  // signal to indicate the case when any of the loop bounds are zero
   val zeroLoopBoundCase = WireInit(0.B)
 
   /** The following code is the FSM for the TemporalAddrGenUnit module.

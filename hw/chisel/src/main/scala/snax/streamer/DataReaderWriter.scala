@@ -34,6 +34,7 @@ class DataReaderWriterIO(
   // all the temporal addresses have been produced
   val addr_gen_done = Vec(2, Input(Bool()))
 
+  // signal to indicate the case when any of the loop bounds are zero
   val zeroLoopBoundCase = Vec(2, Input(Bool()))
 
   // output signal to indicate the data movement process is done

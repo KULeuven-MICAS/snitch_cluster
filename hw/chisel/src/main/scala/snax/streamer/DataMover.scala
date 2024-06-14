@@ -34,6 +34,7 @@ class DataMoverIO(params: DataMoverParams) extends Bundle {
   // all the temporal addresses have been produced
   val addr_gen_done = Input(Bool())
 
+  // signal to indicate the case when any of the loop bounds are zero
   val zeroLoopBoundCase = Input(Bool())
 
   // output signal to indicate the data movement process is done
