@@ -86,7 +86,7 @@ int main() {
         write_csr(0x3cd, LOOP_ITER);
 
         // Start streamer then start ALU
-        write_csr(0x3ca, 1); 
+        write_csr(0x3ca, 1);
         write_csr(0x3ce, 1);
 
         // Mark the end of the CSR setup cycles
