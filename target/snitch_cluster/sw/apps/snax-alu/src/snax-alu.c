@@ -100,8 +100,6 @@ int main() {
         // accelerator returns correct answers
         // For every incorrect answer, increment err
         for (uint32_t i = 0; i < DATA_LEN; i++) {
-            // Need to combine upper 64bit bank
-            // with the lower 64 bit bank
             if (OUT[i] != *(local_o + i)) {
                 err++;
             }
