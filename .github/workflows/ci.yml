@@ -292,6 +292,32 @@ jobs:
           make CFG_OVERRIDE=cfg/snax-streamer-gemmX.hjson \
           -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
 
+  sw-snax-gemmX-data-reshuffler-cluster-vlt-generic:
+    name: Simulate SW on GEMMX-DR w/ Verilator (Generic LLVM)
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/kuleuven-micas/snax:main
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+      - name: Build Hardware
+        run: |
+          make CFG_OVERRIDE=cfg/snax-streamer-gemmX-data-reshuffler.hjson \
+          -C target/snitch_cluster bin/snitch_cluster.vlt -j$(nproc)
+      - name: Build Software
+        run: |
+          make -C target/snitch_cluster sw \
+          CFG_OVERRIDE=cfg/snax-streamer-gemmX-data-reshuffler.hjson \
+          SELECT_RUNTIME=rtl-generic \
+          SELECT_TOOLCHAIN=llvm-generic
+      - name: Run Tests
+        working-directory: target/snitch_cluster
+        run: |-
+          ./run.py --simulator verilator \
+          sw/runtime.yaml \
+          sw/snax-streamer-gemm-conv-simd-run.yaml -j
+
   ############################################
   # Build SW on Snitch Cluster w/ Banshee #
   #########################################
