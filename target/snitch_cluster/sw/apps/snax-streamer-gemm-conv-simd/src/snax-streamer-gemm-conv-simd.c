@@ -23,15 +23,15 @@ int main() {
 
     // Prepare addresses in TCDM
     int8_t *local_a, *local_b;
-    int32_t* local_c, *local_d32;
+    int32_t *local_c, *local_d32;
     int8_t *local_d8;
 
     // Allocate space in TCDM
-    local_a = (int8_t*)(snrt_l1_next() + delta_local_a);
-    local_b = (int8_t*)(snrt_l1_next() + delta_local_b);
-    local_c = (int32_t*)(snrt_l1_next() + delta_local_c);
-    local_d32 = (int32_t*)(snrt_l1_next() + delta_local_d32);
-    local_d8 = (int8_t*)(snrt_l1_next() + delta_local_d8);
+    local_a = (int8_t *)(snrt_l1_next() + delta_local_a);
+    local_b = (int8_t *)(snrt_l1_next() + delta_local_b);
+    local_c = (int32_t *)(snrt_l1_next() + delta_local_c);
+    local_d32 = (int32_t *)(snrt_l1_next() + delta_local_d32);
+    local_d8 = (int8_t *)(snrt_l1_next() + delta_local_d8);
 
     // Transfer data from L3 to L1
     // Using DMA only
@@ -45,38 +45,33 @@ int main() {
     snrt_cluster_hw_barrier();
 
     if (snrt_is_dm_core()) {
-            snrt_dma_start_1d(local_c, C,
-                        M * N * meshRow * meshCol * sizeof(int32_t));
+        snrt_dma_start_1d(local_c, C,
+                          M * N * meshRow * meshCol * sizeof(int32_t));
     }
 
     snrt_cluster_hw_barrier();
 
     if (snrt_global_core_idx() == 0) {
-
         // Set Streamer configuration CSR for conv2d
         set_gemmx_streamer_csr(
-            Aslstride0, Aslstride1, Atlbound0, Atlstride0,
-            Atlbound1, Atlstride1, Atlbound2, Atlstride2, Atlbound3,
-            Atlstride3, Atlbound4, Atlstride4, Atlbound5, Atlstride5,
-            
-            Bslstride0, Bslstride1, Btlbound0,
-            Btlstride0, Btlbound1, Btlstride1, Btlbound2, Btlstride2, 
+            Aslstride0, Aslstride1, Atlbound0, Atlstride0, Atlbound1,
+            Atlstride1, Atlbound2, Atlstride2, Atlbound3, Atlstride3, Atlbound4,
+            Atlstride4, Atlbound5, Atlstride5,
 
-            D8slstride0, D8slstride1, D8tlbound0, 
-            D8tlstride0, D8tlbound1, D8tlstride1,
-            D8tlbound2, D8tlstride2,
+            Bslstride0, Bslstride1, Btlbound0, Btlstride0, Btlbound1,
+            Btlstride1, Btlbound2, Btlstride2,
 
-            Cslstride0, Cslstride1, Ctlbound0,
-            Ctlstride0, Ctlbound1, Ctlstride1,
-            Ctlbound2, Ctlstride2,
+            D8slstride0, D8slstride1, D8tlbound0, D8tlstride0, D8tlbound1,
+            D8tlstride1, D8tlbound2, D8tlstride2,
 
-            D32slstride0, D32slstride1, D32tlbound0, 
-            D32tlstride0, D32tlbound1, D32tlstride1,
-            D32tlbound2, D32tlstride2,
+            Cslstride0, Cslstride1, Ctlbound0, Ctlstride0, Ctlbound1,
+            Ctlstride1, Ctlbound2, Ctlstride2,
 
-            delta_local_a, delta_local_b, delta_local_d8, delta_local_c, delta_local_d32,
-            bypassSIMD
-        );
+            D32slstride0, D32slstride1, D32tlbound0, D32tlstride0, D32tlbound1,
+            D32tlstride1, D32tlbound2, D32tlstride2,
+
+            delta_local_a, delta_local_b, delta_local_d8, delta_local_c,
+            delta_local_d32, bypassSIMD);
 
         // Set CSR to start Streamer for conv2d
         set_gemmx_streamer_start();
@@ -84,14 +79,14 @@ int main() {
         // Set GEMM configuration CSR
         uint32_t subtraction_setting =
             gen_subtraction_config(subtraction_a, subtraction_b);
-            
+
         uint32_t csr0 =
             gen_csr0_config(input_zp_i, output_zp_i, shift_i, max_int_i);
         uint32_t csr1 = gen_csr1_config(min_int_i, double_round_i);
         uint32_t csr2 = gen_csr2_config(multiplier_i);
 
-        set_gemmx_csr(K, N, M, subtraction_setting, csr0, csr1, csr2,
-                                M * N, bypassSIMD);
+        set_gemmx_csr(K, N, M, subtraction_setting, csr0, csr1, csr2, M * N,
+                      bypassSIMD);
 
         // Set CSR to start GEMM
         set_gemmx_start();
@@ -100,12 +95,15 @@ int main() {
         wait_gemmx_and_streamer();
 
         // check the result of the implicit im2col convolution
-        if(!bypassSIMD){
-            err += check_gemmx_result_D8(local_d8, D8_direct_conv2d, Batch, M, N);
-        }else{
-            err += check_gemmx_result_D32(local_d32, D32_direct_conv2d, Batch, M, N);
+        if (!bypassSIMD) {
+            err +=
+                check_gemmx_result_D8(local_d8, D8_direct_conv2d, Batch, M, N);
+        } else {
+            err += check_gemmx_result_D32(local_d32, D32_direct_conv2d, Batch,
+                                          M, N);
         }
-        printf("SNAX GEMM Conv2d: %s, err = %d . bypassSIMD = %d .\n", err ? "FAIL" : "PASS", err, bypassSIMD);
+        printf("SNAX GEMM Conv2d: %s, err = %d . bypassSIMD = %d .\n",
+               err ? "FAIL" : "PASS", err, bypassSIMD);
     };
 
     return err;

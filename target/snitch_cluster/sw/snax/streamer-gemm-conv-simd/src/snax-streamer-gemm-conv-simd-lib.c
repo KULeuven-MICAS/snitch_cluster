@@ -4,10 +4,10 @@
 //
 // Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
+#include "snax-streamer-gemm-conv-simd-lib.h"
 #include <stdbool.h>
 #include "snrt.h"
 #include "stdint.h"
-#include "snax-streamer-gemm-conv-simd-lib.h"
 
 // load input data from L3 to L1
 void load_conv_input_data(int N, int H, int W, int C, int8_t* base_ptr_local,
@@ -26,26 +26,23 @@ void load_weight_data(int K, int Fy, int Fx, int C, int8_t* base_ptr_local,
 void set_gemmx_streamer_csr(
     int Aslstride0, int Aslstride1, int Atlbound0, int Atlstride0,
     int Atlbound1, int Atlstride1, int Atlbound2, int Atlstride2, int Atlbound3,
-    int Atlstride3, int Atlbound4, int Atlstride4, int Atlbound5, int Atlstride5,
-    
-    int Bslstride0, int Bslstride1, int Btlbound0,
-    int Btlstride0, int Btlbound1, int Btlstride1, int Btlbound2, int Btlstride2, 
+    int Atlstride3, int Atlbound4, int Atlstride4, int Atlbound5,
+    int Atlstride5,
 
-    int D8slstride0, int D8slstride1, int D8tlbound0, 
-    int D8tlstride0, int D8tlbound1, int D8tlstride1,
-    int D8tlbound2, int D8tlstride2,
+    int Bslstride0, int Bslstride1, int Btlbound0, int Btlstride0,
+    int Btlbound1, int Btlstride1, int Btlbound2, int Btlstride2,
 
-    int Cslstride0, int Cslstride1, int Ctlbound0,
-    int Ctlstride0, int Ctlbound1, int Ctlstride1, 
-    int Ctlbound2, int Ctlstride2,
+    int D8slstride0, int D8slstride1, int D8tlbound0, int D8tlstride0,
+    int D8tlbound1, int D8tlstride1, int D8tlbound2, int D8tlstride2,
 
-    int D32slstride0, int D32slstride1, int D32tlbound0, 
-    int D32tlstride0, int D32tlbound1, int D32tlstride1,
-    int D32tlbound2, int D32tlstride2,
+    int Cslstride0, int Cslstride1, int Ctlbound0, int Ctlstride0,
+    int Ctlbound1, int Ctlstride1, int Ctlbound2, int Ctlstride2,
 
-    int delta_local_a, int delta_local_b, int delta_local_d8, int delta_local_c, int delta_local_d32,
-    int bypassSIMD) {
+    int D32slstride0, int D32slstride1, int D32tlbound0, int D32tlstride0,
+    int D32tlbound1, int D32tlstride1, int D32tlbound2, int D32tlstride2,
 
+    int delta_local_a, int delta_local_b, int delta_local_d8, int delta_local_c,
+    int delta_local_d32, int bypassSIMD) {
     // loop bounds, from innermost to outermost, for data mover A
     write_csr(960, Atlbound0);
     write_csr(961, Atlbound1);
@@ -60,7 +57,7 @@ void set_gemmx_streamer_csr(
     write_csr(968, Btlbound2);
 
     // for D8, from N to M
-    if(bypassSIMD == 0) {
+    if (bypassSIMD == 0) {
         write_csr(969, D8tlbound0);
         write_csr(970, D8tlbound1);
         write_csr(971, D8tlbound2);
@@ -76,7 +73,7 @@ void set_gemmx_streamer_csr(
     write_csr(974, Ctlbound2);
 
     // for D32, from N to M
-    if(bypassSIMD == 0) {
+    if (bypassSIMD == 0) {
         write_csr(975, 0);
         write_csr(976, 0);
         write_csr(977, 0);
@@ -148,43 +145,42 @@ void set_gemmx_streamer_csr(
 
     // base ptr for D32
     write_csr(1010, (uint32_t)(delta_local_d32 + snrt_l1_next()));
-
 }
 
 // Set CSR to start STREAMER
-void set_gemmx_streamer_start() { write_csr(1005+6, 1); }
+void set_gemmx_streamer_start() { write_csr(1005 + 6, 1); }
 
 // Set GEMM configuration CSR
 void set_gemmx_csr(int tempLoop0, int tempLoop1, int tempLoop2,
-                             int subtractions, uint32_t csr0, uint32_t csr1, uint32_t csr2,
-                            uint32_t temporal_loop_bound, uint32_t bypassSIMD) {
+                   int subtractions, uint32_t csr0, uint32_t csr1,
+                   uint32_t csr2, uint32_t temporal_loop_bound,
+                   uint32_t bypassSIMD) {
     // set loop bounds, from innermost to outermost, aka from K to N to M
-    write_csr(1007+6, tempLoop0);
-    write_csr(1008+6, tempLoop1);
-    write_csr(1009+6, tempLoop2);
+    write_csr(1007 + 6, tempLoop0);
+    write_csr(1008 + 6, tempLoop1);
+    write_csr(1009 + 6, tempLoop2);
 
     // set subtraction a and b
-    write_csr(1010+6, subtractions);
+    write_csr(1010 + 6, subtractions);
 
     // set the constants for the SIMD unit
-    write_csr(1011+6, csr0);
-    write_csr(1012+6, csr1);
-    write_csr(1013+6, csr2);
+    write_csr(1011 + 6, csr0);
+    write_csr(1012 + 6, csr1);
+    write_csr(1013 + 6, csr2);
 
     // set the temporal loop bound
-    write_csr(1014+6, temporal_loop_bound);
-    write_csr(1015+6, bypassSIMD);
-
+    write_csr(1014 + 6, temporal_loop_bound);
+    write_csr(1015 + 6, bypassSIMD);
 }
 
 // Set CSR to start GEMM
-void set_gemmx_start() { write_csr(1016+6, 1); }
+void set_gemmx_start() { write_csr(1016 + 6, 1); }
 
 // Stall until Streamer and GEMM accelerator finish
 void wait_gemmx_and_streamer() {
-    write_csr(1005+6, 0);
-    write_csr(1005+6, 0);
-    write_csr(1016+6, 0);
+    write_csr(1005 + 6, 0);
+    write_csr(1005 + 6, 0);
+    write_csr(1016 + 6, 0);
 }
 
 // Read performance counter of the Streamer, a read-only CSR
@@ -200,7 +196,7 @@ uint32_t read_gemmx_perf_counter() {
 }
 
 uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
-                           int32_t Batch, int32_t M, int32_t N){
+                               int32_t Batch, int32_t M, int32_t N) {
     uint32_t err = 0;
     uint32_t size = 0;
     size = Batch * M * N * 8 * 8;
@@ -214,7 +210,7 @@ uint32_t check_gemmx_result_D8(int8_t* output, int8_t* output_golden,
 }
 
 uint32_t check_gemmx_result_D32(int32_t* output, int32_t* output_golden,
-                           int32_t Batch, int32_t M, int32_t N){
+                                int32_t Batch, int32_t M, int32_t N) {
     uint32_t err = 0;
     uint32_t size = 0;
     size = Batch * M * N * 8 * 8;
