@@ -108,8 +108,9 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
 # Golden model in python
 # Golden model in python
-def block_gemm_golden_model(m, k, n, row, size, col, a, b,
-                            subtraction_a, subtraction_b, c):
+def block_gemm_golden_model(
+    m, k, n, row, size, col, a, b, subtraction_a, subtraction_b, c
+):
     d = np.zeros(m * row * n * col, dtype=(np.int32))
     for mm in range(m):
         for nn in range(n):
@@ -118,26 +119,17 @@ def block_gemm_golden_model(m, k, n, row, size, col, a, b,
                     for cc in range(col):
                         for ss in range(size):
                             c_index = (
-                                mm * n * row * col
-                                + nn * row * col
-                                + rr * col
-                                + cc
+                                mm * n * row * col + nn * row * col + rr * col + cc
                             )
                             a_index = (
-                                mm * k * row * size
-                                + kk * row * size
-                                + rr * size
-                                + ss
+                                mm * k * row * size + kk * row * size + rr * size + ss
                             )
                             b_index = (
-                                nn * k * size * col
-                                + kk * size * col
-                                + cc * size
-                                + ss
+                                nn * k * size * col + kk * size * col + cc * size + ss
                             )
-                            d[c_index] = d[c_index] + \
-                                (a[a_index] - subtraction_a) * \
-                                (b[b_index] - subtraction_b)
+                            d[c_index] = d[c_index] + (a[a_index] - subtraction_a) * (
+                                b[b_index] - subtraction_b
+                            )
     d = np.add(c, d)
     return d
 
@@ -206,14 +198,15 @@ def data_reshuffler_golden_model(
 
 # Golden model for postprocessing in python
 def postprocessing_simd_golden_model(
-        data_in,
-        input_zp_i,
-        output_zp_i,
-        shift_i,
-        max_int_i,
-        min_int_i,
-        double_round_i,
-        multiplier_i):
+    data_in,
+    input_zp_i,
+    output_zp_i,
+    shift_i,
+    max_int_i,
+    min_int_i,
+    double_round_i,
+    multiplier_i,
+):
 
     # Step 1: Subtract input zero point
     var = data_in - input_zp_i
@@ -281,7 +274,7 @@ def emit_gemm_data(**kwargs):
     N = im2col_kernel.shape[1] // 8
 
     length_c = M * N * 8 * 8
-    bias = np.random.randint(-2**30, 2**30 - 1, length_c)
+    bias = np.random.randint(-(2**30), 2**30 - 1, length_c)
 
     data_str = []
 
@@ -525,9 +518,9 @@ def emit_gemm_data(**kwargs):
     im2col_kernel = data_reshuffler_golden_model(
         K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.reshape(-1)
     )
-    im2col_conv2d_res = block_gemm_golden_model(
-        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0, bias
-    )
+    # im2col_conv2d_res = block_gemm_golden_model(
+    #     M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0, bias
+    # )
     # im2col_conv2d_res = data_reshuffler_golden_model(N, M, 8, 8, 8, 8 * 8 * N,
     # 1, 8 * N, im2col_conv2d_res, 1)
 
@@ -547,7 +540,6 @@ def emit_gemm_data(**kwargs):
     # data_str += [format_vector_definition("int8_t", "A", im2col_matrix)]
     # data_str += [format_vector_definition("int8_t", "B", im2col_kernel)]
 
-
     # -----------------------------------------------------------
     # Postprocessing
     # -----------------------------------------------------------
@@ -559,38 +551,26 @@ def emit_gemm_data(**kwargs):
     max_int_i = MAX
     min_int_i = MIN
     double_round_i = np.random.randint(0, 1)
-    multiplier_i = np.random.randint(-2**31, 2**31 - 1)
+    multiplier_i = np.random.randint(-(2**31), 2**31 - 1)
 
     # Writing the constant values to data.h
     data_str += [
-        format_scalar_definition(
-            "int8_t", "input_zp_i", input_zp_i
-        ),
-        format_scalar_definition(
-            "int8_t", "output_zp_i", output_zp_i
-        ),
-        format_scalar_definition(
-            "int8_t", "shift_i", shift_i
-        ),
-        format_scalar_definition(
-            "int8_t", "max_int_i", max_int_i
-        ),
-        format_scalar_definition(
-            "int8_t", "min_int_i", min_int_i
-        ),
-        format_scalar_definition(
-            "int8_t", "double_round_i", double_round_i
-        ),
-        format_scalar_definition(
-            "int32_t", "multiplier_i", multiplier_i
-        )
+        format_scalar_definition("int8_t", "input_zp_i", input_zp_i),
+        format_scalar_definition("int8_t", "output_zp_i", output_zp_i),
+        format_scalar_definition("int8_t", "shift_i", shift_i),
+        format_scalar_definition("int8_t", "max_int_i", max_int_i),
+        format_scalar_definition("int8_t", "min_int_i", min_int_i),
+        format_scalar_definition("int8_t", "double_round_i", double_round_i),
+        format_scalar_definition("int32_t", "multiplier_i", multiplier_i),
     ]
 
     bypassSIMD = kwargs["bypassSIMD"]
     data_str += [format_scalar_definition("int32_t", "bypassSIMD", bypassSIMD)]
 
     data_str += [
-        format_vector_definition("int32_t", "D32_direct_conv2d", np.add(direct_conv2d_res, bias))
+        format_vector_definition(
+            "int32_t", "D32_direct_conv2d", np.add(direct_conv2d_res, bias)
+        )
     ]
 
     if bypassSIMD == 0:
