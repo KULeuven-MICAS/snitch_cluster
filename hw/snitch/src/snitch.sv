@@ -128,7 +128,8 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   logic any_interrupt_pending;
 
   // Instruction fetch
-  logic [31:0] pc_d, (* mark_debug = "true" *) pc_q;
+  logic [31:0] pc_d;
+  (* mark_debug = "true" *) logic [31:0] pc_q;
   logic wfi_d, wfi_q;
   logic [31:0] consec_pc;
   // Immediates
