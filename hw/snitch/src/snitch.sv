@@ -61,7 +61,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   parameter type addr_t = logic [AddrWidth-1:0],
   parameter type data_t = logic [DataWidth-1:0]
 ) (
-  input  logic          clk_i,
+  (* mark_debug = "true" *) input  logic          clk_i,
   input  logic          rst_i,
   input  logic [31:0]   hart_id_i,
   /// Interrupts
@@ -72,9 +72,9 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   /// Tie to `1` if unused
   input  logic          flush_i_ready_i,
   // Instruction Refill Port
-  output addr_t         inst_addr_o,
+  (* mark_debug = "true" *) output addr_t         inst_addr_o,
   output logic          inst_cacheable_o,
-  input  logic [31:0]   inst_data_i,
+  (* mark_debug = "true" *) input  logic [31:0]   inst_data_i,
   output logic          inst_valid_o,
   input  logic          inst_ready_i,
   /// Accelerator Interface - Master Port
@@ -128,7 +128,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   logic any_interrupt_pending;
 
   // Instruction fetch
-  logic [31:0] pc_d, pc_q;
+  logic [31:0] pc_d, (* mark_debug = "true" *) pc_q;
   logic wfi_d, wfi_q;
   logic [31:0] consec_pc;
   // Immediates
