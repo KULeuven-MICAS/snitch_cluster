@@ -47,13 +47,13 @@ class RescalePEIO(params: RescaleSIMDParams) extends Bundle {
 
 // processing element module.
 // see specification: https://gist.github.com/jorendumoulin/83352a1e84501ec4a7b3790461fee2bf for more details
-class RescalePE(params: RescaleSIMDParams) extends Module with RequireAsyncReset {
+class RescalePE(params: RescaleSIMDParams)
+    extends Module
+    with RequireAsyncReset {
   val io = IO(new RescalePEIO(params))
 
   val var0_0 = RegInit((0.S((64).W)))
   val var0 = RegInit((0.S((64).W)))
-  // val var0_0 = WireInit(0.S((64).W))
-  // val var0 = WireInit(0.S((64).W))
   val var1 = WireInit(0.S((32).W))
   val var2 = WireInit(0.S((32).W))
   val var3 = WireInit(0.S((32).W))
@@ -64,7 +64,7 @@ class RescalePE(params: RescaleSIMDParams) extends Module with RequireAsyncReset
 
   // post processing operations
   var0_0 := (io.input_i - io.ctrl_i.input_zp_i)
-  
+
   var0 := var0_0 * io.ctrl_i.multiplier_i
 
   var1 := (var0 >> (io.ctrl_i.shift_i.asUInt - 1.U))(31, 0).asSInt

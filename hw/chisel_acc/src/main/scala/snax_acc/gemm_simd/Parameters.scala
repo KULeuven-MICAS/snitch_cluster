@@ -7,31 +7,32 @@ import snax_acc.simd._
 import snax_acc.gemm._
 
 case class BlockGemmRescaleSIMDParams(
-  gemmParams: GemmParams,
-  rescaleSIMDParams: RescaleSIMDParams,
-  withPipeline: Boolean
+    gemmParams: GemmParams,
+    rescaleSIMDParams: RescaleSIMDParams,
+    withPipeline: Boolean
 )
 
-object BlockGemmRescaleSIMDDefaultConfig{
+object BlockGemmRescaleSIMDDefaultConfig {
 
-  // !!! NEEDS extra change in the source code too!
+  // this parameter is to select if use pipelined simd or not
+  // by default, it is true
   def withPipeline: Boolean = true
 
   lazy val blockGemmRescaleSIMDConfig: BlockGemmRescaleSIMDParams = {
 
-  if(withPipeline == true){
-    BlockGemmRescaleSIMDParams(
-      snax_acc.gemm.DefaultConfig.gemmConfig,
-      snax_acc.simd.PipelinedConfig.rescaleSIMDConfig,
-      withPipeline
-    )
-  }else{
-    BlockGemmRescaleSIMDParams(
-      snax_acc.gemm.DefaultConfig.gemmConfig,
-      snax_acc.simd.DefaultConfig.rescaleSIMDConfig,
-      withPipeline
-    )
-  }
+    if (withPipeline == true) {
+      BlockGemmRescaleSIMDParams(
+        snax_acc.gemm.DefaultConfig.gemmConfig,
+        snax_acc.simd.PipelinedConfig.rescaleSIMDConfig,
+        withPipeline
+      )
+    } else {
+      BlockGemmRescaleSIMDParams(
+        snax_acc.gemm.DefaultConfig.gemmConfig,
+        snax_acc.simd.DefaultConfig.rescaleSIMDConfig,
+        withPipeline
+      )
+    }
 
   }
 

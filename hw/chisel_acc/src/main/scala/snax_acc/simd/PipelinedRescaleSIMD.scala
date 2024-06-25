@@ -15,28 +15,28 @@ class PipelinedRescaleSIMD(params: RescaleSIMDParams)
   val ncompstate = WireInit(sNotCOMP)
 
   compstate := ncompstate
-  
+
   chisel3.dontTouch(compstate)
-  when(cstate === sBUSY){
+  when(cstate === sBUSY) {
     switch(compstate) {
-      is(sNotCOMP){
-        when(io.data.input_i.fire){
+      is(sNotCOMP) {
+        when(io.data.input_i.fire) {
           ncompstate := sCOMP
-        }.otherwise{
+        }.otherwise {
           ncompstate := sNotCOMP
         }
       }
-      is(sCOMP){
-        when(io.data.output_o.fire && !io.data.input_i.fire){
+      is(sCOMP) {
+        when(io.data.output_o.fire && !io.data.input_i.fire) {
           ncompstate := sNotCOMP
-        }.elsewhen(io.data.input_i.fire){
+        }.elsewhen(io.data.input_i.fire) {
           ncompstate := sCOMP
-        }.otherwise{
+        }.otherwise {
           ncompstate := sCOMP
         }
       }
     }
-  }.otherwise{
+  }.otherwise {
     ncompstate := sNotCOMP
   }
 
@@ -47,54 +47,76 @@ class PipelinedRescaleSIMD(params: RescaleSIMDParams)
   val pipe_input_counter = RegInit(0.U(32.W))
 
   pe_input_valid := io.data.input_i.fire || (compstate === sCOMP && pipe_input_counter =/= lane_comp_cycle.U)
-  when(pe_input_valid && pipe_input_counter =/= lane_comp_cycle.U - 1.U){
+  when(pe_input_valid && pipe_input_counter =/= lane_comp_cycle.U - 1.U) {
     pipe_input_counter := pipe_input_counter + 1.U
-  }.elsewhen(pe_input_valid && pipe_input_counter === lane_comp_cycle.U - 1.U){
+  }.elsewhen(pe_input_valid && pipe_input_counter === lane_comp_cycle.U - 1.U) {
     pipe_input_counter := 0.U
-  }.elsewhen(compstate === sNotCOMP || cstate === sIDLE){
+  }.elsewhen(compstate === sNotCOMP || cstate === sIDLE) {
     pipe_input_counter := 0.U
   }
 
   // store the input data for params.laneLen - 1 lane
-  val input_data_reg = RegInit(0.U(((params.dataLen - params.laneLen) * params.inputType).W))
-  when(io.data.input_i.fire){
-    input_data_reg := io.data.input_i.bits(params.dataLen * params.inputType - 1, params.laneLen * params.inputType)
-  }.elsewhen(compstate === sCOMP && lane.map(_.io.valid_i).reduce(_ && _)){
-    input_data_reg := input_data_reg >> (params.inputType.U * params.laneLen.U) 
+  val input_data_reg = RegInit(
+    0.U(((params.dataLen - params.laneLen) * params.inputType).W)
+  )
+  when(io.data.input_i.fire) {
+    input_data_reg := io.data.input_i.bits(
+      params.dataLen * params.inputType - 1,
+      params.laneLen * params.inputType
+    )
+  }.elsewhen(compstate === sCOMP && lane.map(_.io.valid_i).reduce(_ && _)) {
+    input_data_reg := input_data_reg >> (params.inputType.U * params.laneLen.U)
   }
 
   val current_input_data = WireInit(0.U((params.laneLen * params.inputType).W))
-  current_input_data := Mux(io.data.input_i.fire, io.data.input_i.bits(params.laneLen * params.inputType - 1, 0), input_data_reg(params.laneLen * params.inputType - 1, 0))
+  current_input_data := Mux(
+    io.data.input_i.fire,
+    io.data.input_i.bits(params.laneLen * params.inputType - 1, 0),
+    input_data_reg(params.laneLen * params.inputType - 1, 0)
+  )
 
   // give each RescalePE right control signal and data
   // collect the result of each RescalePE
   for (i <- 0 until params.laneLen) {
-    when(pe_input_valid){
-      lane(i).io.input_i := current_input_data((i + 1) * params.inputType - 1, i * params.inputType).asSInt
+    when(pe_input_valid) {
+      lane(i).io.input_i := current_input_data(
+        (i + 1) * params.inputType - 1,
+        i * params.inputType
+      ).asSInt
       lane(i).io.valid_i := true.B
-    }.otherwise{
+    }.otherwise {
       lane(i).io.input_i := 0.S
       lane(i).io.valid_i := false.B
     }
-      lane(i).io.ctrl_i := ctrl_csr
-      result(i) := lane(i).io.output_o
+    lane(i).io.ctrl_i := ctrl_csr
+    result(i) := lane(i).io.output_o
   }
 
   // lane output valid process counter
   val pipe_out_counter = RegInit(0.U(16.W))
   val lane_output_valid = lane.map(_.io.valid_o).reduce(_ && _)
-  when(compstate === sCOMP && lane_output_valid && pipe_out_counter =/= lane_comp_cycle.U - 1.U){
+  when(
+    compstate === sCOMP && lane_output_valid && pipe_out_counter =/= lane_comp_cycle.U - 1.U
+  ) {
     pipe_out_counter := pipe_out_counter + 1.U
-  }.elsewhen(compstate === sCOMP && lane_output_valid && pipe_out_counter === lane_comp_cycle.U - 1.U){
+  }.elsewhen(
+    compstate === sCOMP && lane_output_valid && pipe_out_counter === lane_comp_cycle.U - 1.U
+  ) {
     pipe_out_counter := 0.U
-  }.elsewhen(compstate === sNotCOMP || cstate === sIDLE){
+  }.elsewhen(compstate === sNotCOMP || cstate === sIDLE) {
     pipe_out_counter := 0.U
   }
 
   // collect the valid output data
   val output_data_reg = RegInit(0.U((params.dataLen * params.outputType).W))
-  when(lane_output_valid){
-    output_data_reg := Cat(Cat(result.reverse), output_data_reg(params.dataLen * params.outputType - 1, params.laneLen * params.outputType))
+  when(lane_output_valid) {
+    output_data_reg := Cat(
+      Cat(result.reverse),
+      output_data_reg(
+        params.dataLen * params.outputType - 1,
+        params.laneLen * params.outputType
+      )
+    )
   }
 
   // always valid for new input on less is sending last output
@@ -107,9 +129,15 @@ class PipelinedRescaleSIMD(params: RescaleSIMDParams)
 
   // concat every result to a big data bus for output
   // if is keep sending output, send the stored result
-  when(lane_output_valid && pipe_out_counter === lane_comp_cycle.U - 1.U){
-    io.data.output_o.bits := Cat(Cat(result.reverse), output_data_reg(params.dataLen * params.outputType - 1, params.laneLen * params.outputType))
-  }.otherwise{
+  when(lane_output_valid && pipe_out_counter === lane_comp_cycle.U - 1.U) {
+    io.data.output_o.bits := Cat(
+      Cat(result.reverse),
+      output_data_reg(
+        params.dataLen * params.outputType - 1,
+        params.laneLen * params.outputType
+      )
+    )
+  }.otherwise {
     io.data.output_o.bits := output_data_reg
   }
 

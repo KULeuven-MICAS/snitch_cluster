@@ -4,13 +4,13 @@ import chisel3._
 import chisel3.util._
 
 case class RescaleSIMDParams(
-  inputType: Int,
-  outputType: Int,
-  constantType: Int,
-  constantMulType: Int,
-  dataLen: Int,
-  laneLen: Int,
-  readWriteCsrNum: Int
+    inputType: Int,
+    outputType: Int,
+    constantType: Int,
+    constantMulType: Int,
+    dataLen: Int,
+    laneLen: Int,
+    readWriteCsrNum: Int
 )
 
 // parameters for Rescale SIMD accelerator
@@ -32,7 +32,7 @@ object RescaleSIMDConstant {
 
 }
 
-object DefaultConfig{
+object DefaultConfig {
   val rescaleSIMDConfig = RescaleSIMDParams(
     inputType = RescaleSIMDConstant.inputType,
     outputType = RescaleSIMDConstant.outputType,
@@ -44,7 +44,7 @@ object DefaultConfig{
   )
 }
 
-object PipelinedConfig{
+object PipelinedConfig {
   val rescaleSIMDConfig = RescaleSIMDParams(
     inputType = RescaleSIMDConstant.inputType,
     outputType = RescaleSIMDConstant.outputType,
