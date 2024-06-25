@@ -240,7 +240,7 @@ def emit_gemm_data(**kwargs):
         K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.reshape(-1)
     )
     im2col_conv2d_res = block_gemm_golden_model(
-        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0
+        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0, np.zeros(M * N * 8 * 8)
     )
     # im2col_conv2d_res = data_reshuffler_golden_model(N, M, 8, 8, 8, 8 * 8 * N,
     # 1, 8 * N, im2col_conv2d_res, 1)
@@ -305,7 +305,7 @@ def test():
         K, N, 8, 8, 8, 8 * 8 * K, 1, 8 * K, im2col_kernel.T.reshape(-1)
     )
     im2col_conv2d_res = block_gemm_golden_model(
-        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0
+        M, K, N, 8, 8, 8, im2col_matrix, im2col_kernel, 0, 0, np.zeros(M * N * 8 * 8)
     )
 
     # direct conv2d
