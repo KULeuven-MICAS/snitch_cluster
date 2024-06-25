@@ -6,10 +6,10 @@
 #
 # Xiaoling Yi <xiaoling.yi@esat.kuleuven.be>
 
-
 import numpy as np
 
-
+# Function to perform 2D convolution on the input data using the specified kernel,
+# stride, and padding. It returns the output feature map.
 def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
     batch_size, in_height, in_width, in_channels = input_data.shape
     out_channels, kernel_height, kernel_width, _ = kernel.shape
@@ -52,7 +52,8 @@ def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
     return output_data
 
-
+# Function to transform input data into columns for efficient convolution operations.
+# It returns the transformed input data and reshaped kernel.
 def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
     batch_size, in_height, in_width, in_channels = input_data.shape
     out_channels, kernel_height, kernel_width, _ = kernel.shape
@@ -95,8 +96,8 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
     return im2col_matrix, im2col_kernel
 
-
-# Golden model in python
+# Golden model function to perform block matrix multiplication with specific parameters.
+# It returns the resulting matrix after the computation.
 def block_gemm_golden_model(
     m, k, n, row, size, col, a, b, subtraction_a, subtraction_b, c
 ):
@@ -122,7 +123,8 @@ def block_gemm_golden_model(
     d = np.add(c, d)
     return d
 
-
+# Golden model function for reshuffling data with specified parameters. It applies
+# strided layout mapping to the input data and returns the reshuffled data array.
 def data_reshuffler_golden_model(
     tempLoop0,
     tempLoop1,
@@ -184,8 +186,8 @@ def data_reshuffler_golden_model(
 
     return result_array.ravel()
 
-
-# Golden model for postprocessing in python
+# Golden model function for SIMD postprocessing of data. It performs operations such as
+# zero point subtraction, multiplication, right shift, double rounding, and clipping.
 def postprocessing_simd_golden_model(
     data_in,
     input_zp_i,
