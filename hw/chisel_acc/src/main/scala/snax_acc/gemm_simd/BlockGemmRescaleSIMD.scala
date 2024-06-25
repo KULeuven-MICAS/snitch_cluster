@@ -6,12 +6,12 @@ import chisel3.util._
 import snax_acc.simd._
 import snax_acc.gemm._
 
-// The BlockGemmSIMD's control port declaration.
-class BlockGemmSIMDCtrlIO extends Bundle {
+// The BlockGemmRescaleSIMD's control port declaration.
+class BlockGemmRescaleSIMDCtrlIO(params: BlockGemmRescaleSIMDParams) extends Bundle {
 
-  val gemm_ctrl = Flipped(DecoupledIO(new BlockGemmCtrlIO()))
+  val gemm_ctrl = Flipped(DecoupledIO(new BlockGemmCtrlIO(params.gemmParams)))
   val simd_ctrl = Flipped(
-    Decoupled(Vec(SIMDConstant.readWriteCsrNum, UInt(32.W)))
+    Decoupled(Vec(params.rescaleSIMDParams.readWriteCsrNum, UInt(32.W)))
   )
   val bypassSIMD = Input(Bool())
   val busy_o = Output(Bool())
@@ -19,27 +19,36 @@ class BlockGemmSIMDCtrlIO extends Bundle {
 
 }
 
-// The BlockGemmSIMD's data port declaration. Decoupled interface connected to the streamer
-class BlockGemmSIMDDataIO extends Bundle {
-  val gemm_data = new BlockGemmDataIO()
+// The BlockGemmRescaleSIMD's data port declaration. Decoupled interface connected to the streamer
+class BlockGemmRescaleSIMDDataIO(params: BlockGemmRescaleSIMDParams) extends Bundle {
+  val gemm_data = new BlockGemmDataIO(params.gemmParams)
   val simd_data = Decoupled(
-    UInt((SIMDConstant.laneLen * SIMDConstant.outputType).W)
+    UInt((params.rescaleSIMDParams.dataLen * params.rescaleSIMDParams.outputType).W)
   )
 }
 
-class BlockGemmSIMDIO extends Bundle {
-  val ctrl = new BlockGemmSIMDCtrlIO()
-  val data = new BlockGemmSIMDDataIO()
+class BlockGemmRescaleSIMDIO(params: BlockGemmRescaleSIMDParams) extends Bundle {
+  val ctrl = new BlockGemmRescaleSIMDCtrlIO(params)
+  val data = new BlockGemmRescaleSIMDDataIO(params)
 }
 
-class BlockGemmSIMD extends Module with RequireAsyncReset {
+class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module with RequireAsyncReset {
 
-  val io = IO(new BlockGemmSIMDIO())
+  val io = IO(new BlockGemmRescaleSIMDIO(params))
 
-  val gemm = Module(new BlockGemm())
-  val simd = Module(new SIMD())
+  val gemm = Module(new BlockGemm(params.gemmParams))
 
-  // gemm  control signal connection
+  // val simd = params.withPipeline match {
+  //   case true =>
+  //     Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
+  //   case false =>
+  //     Module(new RescaleSIMD(params.rescaleSIMDParams))
+  //   case _ => throw new Exception("Unknown SIMD configuration")
+  // }
+  val simd = Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
+  // val simd = Module(new RescaleSIMD(params.rescaleSIMDParams))
+
+  // gemm control signal connection
   gemm.io.ctrl <> io.ctrl.gemm_ctrl
   // gemm input data
   gemm.io.data.a_i <> io.data.gemm_data.a_i
@@ -84,9 +93,9 @@ class BlockGemmSIMD extends Module with RequireAsyncReset {
     io.data.simd_data.bits <> 0.U
     io.data.simd_data.valid <> false.B
     // fake ready signal
-    simd.io.data.out_o.ready := false.B
+    simd.io.data.output_o.ready := false.B
   }.otherwise {
-    io.data.simd_data <> simd.io.data.out_o
+    io.data.simd_data <> simd.io.data.output_o
   }
 
   io.ctrl.busy_o := gemm.io.busy_o || simd.io.busy_o
@@ -98,9 +107,9 @@ class BlockGemmSIMD extends Module with RequireAsyncReset {
 
 }
 
-object BlockGemmSIMD extends App {
+object BlockGemmRescaleSIMD extends App {
   emitVerilog(
-    new (BlockGemmSIMD),
+    new BlockGemmRescaleSIMD(BlockGemmRescaleSIMDDefaultConfig.blockGemmRescaleSIMDConfig),
     Array("--target-dir", "generated/gemm_simd")
   )
 }
