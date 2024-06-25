@@ -8,6 +8,7 @@
 
 import numpy as np
 
+
 # Function to perform 2D convolution on the input data using the specified kernel,
 # stride, and padding. It returns the output feature map.
 def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
@@ -51,6 +52,7 @@ def conv2d(input_data, kernel, stride=(1, 1), padding=(0, 0)):
                     output_data[b, oh, ow, oc] = np.sum(input_region * conv_kernel)
 
     return output_data
+
 
 # Function to transform input data into columns for efficient convolution operations.
 # It returns the transformed input data and reshaped kernel.
@@ -96,6 +98,7 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
     return im2col_matrix, im2col_kernel
 
+
 # Golden model function to perform block matrix multiplication with specific parameters.
 # It returns the resulting matrix after the computation.
 def block_gemm_golden_model(
@@ -122,6 +125,7 @@ def block_gemm_golden_model(
                             )
     d = np.add(c, d)
     return d
+
 
 # Golden model function for reshuffling data with specified parameters. It applies
 # strided layout mapping to the input data and returns the reshuffled data array.
@@ -185,6 +189,7 @@ def data_reshuffler_golden_model(
                     ]
 
     return result_array.ravel()
+
 
 # Golden model function for SIMD postprocessing of data. It performs operations such as
 # zero point subtraction, multiplication, right shift, double rounding, and clipping.
