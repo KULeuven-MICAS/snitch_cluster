@@ -107,7 +107,6 @@ def im2col(input_data, kernel, stride=(1, 1), padding=(0, 0)):
 
 
 # Golden model in python
-# Golden model in python
 def block_gemm_golden_model(
     m, k, n, row, size, col, a, b, subtraction_a, subtraction_b, c
 ):
