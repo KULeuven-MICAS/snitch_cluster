@@ -7,88 +7,7 @@ import chisel3.VecInit
 // Rescale SIMD module
 // This module implements this spec: specification: https://gist.github.com/jorendumoulin/83352a1e84501ec4a7b3790461fee2bf in parallel
 class PipelinedRescaleSIMD(params: RescaleSIMDParams)
-    extends Module
-    with RequireAsyncReset {
-  val io = IO(new RescaleSIMDIO(params))
-
-  // generating parallel RescalePEs
-  val lane = Seq.fill(params.laneLen)(Module(new RescalePE(params)))
-
-  // control csr registers for storing the control data
-  val ctrl_csr = Reg(new RescalePECtrl(params))
-
-  // result from different RescalePEs
-  val result = Wire(
-    Vec(params.laneLen, SInt(params.outputType.W))
-  )
-
-  // the receiver isn't ready, needs to send several cycles
-  val keep_output = RegInit(0.B)
-
-  val simd_output_fire = WireInit(0.B)
-
-  val write_counter = RegInit(0.U(32.W))
-
-  // State declaration
-  val sIDLE :: sBUSY :: Nil = Enum(2)
-  val cstate = RegInit(sIDLE)
-  val nstate = WireInit(sIDLE)
-
-  // signals for state transition
-  val config_valid = WireInit(0.B)
-  val computation_finish = WireInit(0.B)
-
-  // Changing states
-  cstate := nstate
-
-  chisel3.dontTouch(cstate)
-  switch(cstate) {
-    is(sIDLE) {
-      when(config_valid) {
-        nstate := sBUSY
-      }.otherwise {
-        nstate := sIDLE
-      }
-
-    }
-    is(sBUSY) {
-      when(computation_finish) {
-        nstate := sIDLE
-      }.otherwise {
-        nstate := sBUSY
-      }
-    }
-  }
-
-  io.busy_o := cstate === sBUSY
-
-  val performance_counter = RegInit(0.U(32.W))
-  when(cstate === sBUSY) {
-    performance_counter := performance_counter + 1.U
-  }.elsewhen(config_valid) {
-    performance_counter := 0.U
-  }
-  io.performance_counter := performance_counter
-
-  config_valid := io.ctrl.fire
-
-  // when config valid, store the configuration for later computation
-  ctrl_csr.input_zp_i := io.ctrl.bits(0)(7, 0).asSInt
-  ctrl_csr.output_zp_i := io.ctrl.bits(0)(15, 8).asSInt
-
-  // this control input port is 32 bits, so it needs 1 csr
-  ctrl_csr.multiplier_i := io.ctrl.bits(2).asSInt
-
-  ctrl_csr.shift_i := io.ctrl.bits(0)(23, 16).asSInt
-  ctrl_csr.max_int_i := io.ctrl.bits(0)(31, 24).asSInt
-
-  ctrl_csr.min_int_i := io.ctrl.bits(1)(7, 0).asSInt
-
-  // this control input port is only 1 bit
-  ctrl_csr.double_round_i := io.ctrl.bits(1)(8).asBool
-
-  // length of the data
-  ctrl_csr.len := io.ctrl.bits(3)
+    extends RescaleSIMD(params) {
 
   // state: pe in-compute or not
   val sNotCOMP :: sCOMP :: Nil = Enum(2)
@@ -196,18 +115,6 @@ class PipelinedRescaleSIMD(params: RescaleSIMDParams)
 
   // first valid from RescalePE or keep sending valid if receiver side is not ready
   io.data.output_o.valid := (lane_output_valid && pipe_out_counter === lane_comp_cycle.U - 1.U) || keep_output
-
-  simd_output_fire := io.data.output_o.fire
-  when(simd_output_fire) {
-    write_counter := write_counter + 1.U
-  }.elsewhen(cstate === sIDLE) {
-    write_counter := 0.U
-  }
-
-  computation_finish := (write_counter === ctrl_csr.len - 1.U) && simd_output_fire && cstate === sBUSY
-
-  // always ready for configuration
-  io.ctrl.ready := cstate === sIDLE
 
 }
 

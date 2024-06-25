@@ -38,14 +38,14 @@ class BlockGemmRescaleSIMD(params: BlockGemmRescaleSIMDParams) extends Module wi
 
   val gemm = Module(new BlockGemm(params.gemmParams))
 
-  // val simd = params.withPipeline match {
-  //   case true =>
-  //     Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
-  //   case false =>
-  //     Module(new RescaleSIMD(params.rescaleSIMDParams))
-  //   case _ => throw new Exception("Unknown SIMD configuration")
-  // }
-  val simd = Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
+  val simd = params.withPipeline match {
+    case true =>
+      Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
+    case false =>
+      Module(new RescaleSIMD(params.rescaleSIMDParams))
+    case _ => throw new Exception("Unknown SIMD configuration")
+  }
+  // val simd = Module(new PipelinedRescaleSIMD(params.rescaleSIMDParams))
   // val simd = Module(new RescaleSIMD(params.rescaleSIMDParams))
 
   // gemm control signal connection
