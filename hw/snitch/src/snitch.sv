@@ -64,7 +64,7 @@ module snitch import snitch_pkg::*; import riscv_instr::*; #(
   input  logic [31:0]   hart_id_i,
   /// Interrupts
   input  interrupts_t   irq_i,
-  /// Boot address port 
+  /// Boot address port
   input  logic [31:0]   boot_addr_i,
   /// Instruction cache flush request
   output logic          flush_i_valid_o,
