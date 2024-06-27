@@ -470,7 +470,6 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .WideIdWidthIn (${cfg['pkg_name']}::WideIdWidthIn),
     .NarrowUserWidth (${cfg['pkg_name']}::NarrowUserWidth),
     .WideUserWidth (${cfg['pkg_name']}::WideUserWidth),
-    .BootAddr (${to_sv_hex(cfg['boot_addr'], 32)}),
     .narrow_in_req_t (${cfg['pkg_name']}::narrow_in_req_t),
     .narrow_in_resp_t (${cfg['pkg_name']}::narrow_in_resp_t),
     .narrow_out_req_t (${cfg['pkg_name']}::narrow_out_req_t),
@@ -571,7 +570,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .mtip_i ( mtip_i ),
     .msip_i ( msip_i ),
     //-----------------------------
-    // Cluster base addressing
+    // Cluster base and boot addressing
     //-----------------------------
 % if cfg['tie_ports']:
     .hart_base_id_i ( ${to_sv_hex(cfg['cluster_base_hartid'], 10)} ),
@@ -580,6 +579,7 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     .hart_base_id_i ( hart_base_id_i ),
     .cluster_base_addr_i ( cluster_base_addr_i ),
 % endif
+    .boot_addr_i  (${to_sv_hex(cfg['boot_addr'], 32)}),
     //-----------------------------
     // ISO crossings
     //-----------------------------
