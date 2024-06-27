@@ -55,6 +55,11 @@ ${',' if not loop.last else ''}
 // verilog_lint: waive-start package-filename
 package ${cfg['pkg_name']};
 
+  // Addressing Parameters
+  localparam int unsigned HartBaseID = ${to_sv_hex(cfg['cluster_base_hartid'], 10)};
+  localparam int unsigned ClusterBaseAddr = ${to_sv_hex(cfg['cluster_base_addr'], cfg['addr_width'])};
+  localparam int unsigned BootAddr = ${to_sv_hex(cfg['boot_addr'], 32)};
+
   // Base and pre-calculated parameters
   localparam int unsigned NrCores = ${cfg['nr_cores']};
   localparam int unsigned NrHives = ${cfg['nr_hives']};
@@ -281,13 +286,12 @@ module ${cfg['name']}_wrapper (
   input  logic [${cfg['pkg_name']}::NrCores-1:0] meip_i,
   input  logic [${cfg['pkg_name']}::NrCores-1:0] mtip_i,
   input  logic [${cfg['pkg_name']}::NrCores-1:0] msip_i,
-% if not cfg['tie_ports']:
   //-----------------------------
   // Cluster base addressing
   //-----------------------------
   input  logic [9:0]                             hart_base_id_i,
   input  logic [${cfg['addr_width']-1}:0]        cluster_base_addr_i,
-% endif
+  input  logic [31:0]                            boot_addr_i,
 % if cfg['timing']['iso_crossings']:
   //-----------------------------
   // ISO crossings
@@ -572,14 +576,9 @@ total_snax_tcdm_ports = total_snax_narrow_ports + total_snax_wide_ports
     //-----------------------------
     // Cluster base and boot addressing
     //-----------------------------
-% if cfg['tie_ports']:
-    .hart_base_id_i ( ${to_sv_hex(cfg['cluster_base_hartid'], 10)} ),
-    .cluster_base_addr_i ( ${to_sv_hex(cfg['cluster_base_addr'], cfg['addr_width'])} ),
-% else:
     .hart_base_id_i ( hart_base_id_i ),
     .cluster_base_addr_i ( cluster_base_addr_i ),
-% endif
-    .boot_addr_i  (${to_sv_hex(cfg['boot_addr'], 32)}),
+    .boot_addr_i  (boot_addr_i),
     //-----------------------------
     // ISO crossings
     //-----------------------------
