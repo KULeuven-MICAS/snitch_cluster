@@ -33,6 +33,6 @@ $(DR_GENERATED_FILES): $(DR_SCALA_SOURCES)
 .PHONY: clean-data clean
 
 clean-chisel-generated-sv:
-	rm -f -r $(CHISEL_GENERATED_FILES) $(CHISEL_GENERATED_FILES_OLD) $(CHISEL_GENERATED_DIR)
+	rm -f -r $(CHISEL_GENERATED_FILES) $(DR_GENERATED_FILES) $(CHISEL_GENERATED_DIR)
 
 clean: clean-chisel-generated-sv	
