@@ -154,6 +154,12 @@ def main():
         help="Points to the streamer template file path",
     )
     parser.add_argument(
+        "--test_path",
+        type=str,
+        default="./",
+        help="Points to the testharness path",
+    )
+    parser.add_argument(
         "--chisel_path",
         type=str,
         default="./",
@@ -209,7 +215,6 @@ def main():
         acc_cfgs[i]["streamer_csr_num"] = streamer_csr_num(acc_cfgs[i])
 
     # Generate template out of given configurations
-    # TODO: Make me a generation for the necessary files!
     for i in range(len(acc_cfgs)):
         # First part is for chisel generation
         # Generate the parameter files for chisel streamer generation
@@ -285,7 +290,19 @@ def main():
             gen_path=rtl_target_path,
         )
 
-    print("Generation done!")
+    print("Generation of accelerator specific wrapeprs done!")
+
+    # Generation of testharness
+    test_target_path = args.test_path
+    file_name = "testharness.sv"
+    tpl_testharness_file = args.tpl_path + "testharness.sv.tpl"  # noqa: E501
+    tpl_testharness = get_template(tpl_testharness_file)
+    gen_file(
+        cfg=cfg,
+        tpl=tpl_testharness,
+        target_path=test_target_path,
+        file_name=file_name,
+    )
 
 
 if __name__ == "__main__":
