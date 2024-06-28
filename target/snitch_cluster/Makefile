@@ -31,6 +31,7 @@ ROOT        := ${MKFILE_DIR}../..
 SNITCH_ROOT := $(ROOT)
 SNAX_CFG_PATH := $(ROOT)/target/snitch_cluster/cfg/
 SNAX_TPL_PATH := $(ROOT)/hw/templates/
+SNAX_TEST_PATH := $(ROOT)/target/snitch_cluster/test/
 CHISEL_PATH := $(ROOT)/hw/chisel/
 
 include $(ROOT)/target/common/common.mk
@@ -51,6 +52,12 @@ WRAPPER_GEN     ?= $(ROOT)/util/wrappergen/wrappergen.py
 SW_DIR             = sw
 TARGET_C_HDRS_DIR ?= $(SW_DIR)/runtime/common
 GENERATED_DIR     ?= $(MKFILE_DIR)generated
+
+####################
+#  Default Values  #
+####################
+CLUSTER_NAME = snitch_cluster
+
 
 ####################
 # SNAX Generations #
@@ -105,6 +112,8 @@ endif
 ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 $(eval $(call generate_snax_gen,snax_alu))
+
+	CLUSTER_NAME = snax_alu_cluster
 
 	VSIM_BENDER += -t snax_alu
 	VLT_BENDER  += -t snax_alu
@@ -173,6 +182,14 @@ $(eval $(call generate_snax_gen,snax_data_reshuffler))
  
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
+
+VSIM_BENDER += -t snitch_cluster
+VLT_BENDER  += -t snitch_cluster
+VCS_BENDER  += -t snitch_cluster
+
+endif
+
 VSIM_BENDER += -t QUESTA_SIM
 
 # Verilated and compiled snitch cluster
@@ -189,10 +206,6 @@ CFG         = cfg/lru.hjson
 #####################
 # Simulator options #
 #####################
-
-VSIM_BENDER += -t snitch_cluster
-VLT_BENDER  += -t snitch_cluster
-VCS_BENDER  += -t snitch_cluster
 
 QUESTA_64BIT = -64
 VLOG_64BIT   = -64
@@ -283,8 +296,8 @@ test/bootrom.elf test/bootrom.dump test/bootrom.bin: test/bootrom.S test/bootrom
 	riscv64-unknown-elf-objdump -d test/bootrom.elf > test/bootrom.dump
 	riscv64-unknown-elf-objcopy -j .text -O binary test/bootrom.elf test/bootrom.bin
 
-
 SNAX_TEMPLATE_SOURCES = $(wildcard $(SNAX_TPL_PATH)*.tpl)
+
 CFG_FILE = $(ROOT)/target/snitch_cluster/$(CFG_OVERRIDE)
 SNAX_SCALA_SOURCES = \
 	$(wildcard ${CHISEL_PATH}/src/main/scala/snax/streamer/*.scala) \
@@ -302,6 +315,7 @@ OTHER_SNAX_GEN := $(filter-out $(FIRST_SNAX),$(SNAX_GEN))
 $(FIRST_SNAX_GEN) : $(SNAX_TEMPLATE_SOURCES) $(CFG_FILE) $(SNAX_SCALA_SOURCES)
 	${WRAPPER_GEN} --cfg_path="$(CFG_FILE)" \
 	--tpl_path="${SNAX_TPL_PATH}" \
+	--test_path="${SNAX_TEST_PATH}" \
 	--chisel_path="${CHISEL_PATH}" \
 	--gen_path="${GENERATED_DIR}/"
 
@@ -346,8 +360,11 @@ $(TARGET_C_HDRS_DIR)/snitch_cluster_peripheral.h: $(ROOT)/hw/snitch_cluster/src/
 $(GENERATED_DIR):
 	mkdir -p $@
 
-$(GENERATED_DIR)/snitch_cluster_wrapper.sv: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
-	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --wrapper
+$(GENERATED_DIR)/$(CLUSTER_NAME)_wrapper.sv: ${CFG} ${CLUSTER_GEN_PREREQ} ${SNAX_GEN} | $(GENERATED_DIR)
+	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --wrapper --wrapper_name="$(CLUSTER_NAME)"
+
+# $(GENERATED_DIR)/snitch_cluster_wrapper.sv: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
+# 	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --wrapper
 
 $(GENERATED_DIR)/link.ld: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 	$(CLUSTER_GEN) -c $< -o $(GENERATED_DIR) --linker
@@ -366,7 +383,7 @@ $(GENERATED_DIR)/bootdata.cc: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 
 # Clean all build directories and temporary files for Questasim simulation
 clean-vlt: clean-work
-	rm -rf bin/snitch_cluster.vlt $(VLT_BUILDDIR)
+	rm -rf bin $(VLT_BUILDDIR) test/testharness.sv
 
 $(VLT_AR): ${VLT_SOURCES} ${TB_SRCS}
 	+$(call VERILATE,testharness)
