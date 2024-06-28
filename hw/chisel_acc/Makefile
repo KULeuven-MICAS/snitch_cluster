@@ -15,7 +15,7 @@ endef
 GEMMX = BlockGemmRescaleSIMD
 GEMMX_PKG_NAME = gemmx
 
-GEMMX_GENERATED_FILES = $(MK_DIR)generated/$(GEMMX_PKG_NAME)/$(GEMMX).sv
+GEMMX_GENERATED_FILES = $(MK_DIR)generated/$(GEMMX_PKG_NAME)/$(CHISEL_MODULE).sv
 GEMMX_SCALA_SOURCES := $(wildcard src/main/scala/snax_acc/$(GEMMX_PKG_NAME)/*.scala)
 
 $(GEMMX_GENERATED_FILES): $(GEMMX_SCALA_SOURCES)
