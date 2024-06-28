@@ -15,8 +15,8 @@ import snax.xdma.designParams._
 // Todo: the decoupled signal cut should be added inbetween extensions to avoid long combinatorial path?
 // New operand difinition <|> in commonCells.scala
 
-// The IO Class that used for interface between local Datapath and DMA Ctrl
-class ReaderWriterCfgIO(param: ReaderWriterDataPathParam) extends Bundle {
+// The ReaderWriterCfg Class that used for interface between local Datapath and DMA Ctrl
+class ReaderWriterCfg(param: ReaderWriterDataPathParam) extends Bundle {
     val agu_cfg = new AddressGenUnitCfgIO(param = param.rwParam.agu_param) // Buffered within AGU
     val ext_cfg = if (param.extParam.length != 0) {
         Vec(
@@ -63,8 +63,8 @@ class DMADataPath(readerparam: ReaderWriterDataPathParam, writerparam: ReaderWri
     extends Module {
     val io = IO(new Bundle {
         // All config signal for reader and writer
-        val reader_cfg = Input(new ReaderWriterCfgIO(readerparam))
-        val writer_cfg = Input(new ReaderWriterCfgIO(writerparam))
+        val reader_cfg = Input(new ReaderWriterCfg(readerparam))
+        val writer_cfg = Input(new ReaderWriterCfg(writerparam))
 
         val loopBack_i = Input(Bool()) // Unbuffered
         // Two start signal will inform the new cfg is available, trigger agu, and inform all extension that a stream is coming
@@ -263,13 +263,13 @@ object DMADataPath_SystemVerilogEmitter extends App {
 
 class Serializer_Deserializer_Tester(param: ReaderWriterDataPathParam) extends Module {
     val io = IO(new Bundle {
-        val in = Input(new ReaderWriterCfgIO(param))
+        val in = Input(new ReaderWriterCfg(param))
         val out_serialized = Output(UInt(512.W))
-        val out = Output(new ReaderWriterCfgIO(param))
+        val out = Output(new ReaderWriterCfg(param))
     })
 
     io.out_serialized := io.in.serialize()
-    val out = Wire(new ReaderWriterCfgIO(param))
+    val out = Wire(new ReaderWriterCfg(param))
     out.deserialize(io.out_serialized)
     io.out := out
 }
