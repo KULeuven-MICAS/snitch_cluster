@@ -227,3 +227,69 @@ def postprocessing_simd_golden_model(
     var = np.clip(var, min_int_i, max_int_i)
 
     return var
+
+
+def max_pooling_3d(
+    input_tensor, pool_size_w, pool_size_h, stride_w, stride_h, padding_w, padding_h
+):
+
+    H, W, C = input_tensor.shape
+
+    out_width = (W + 2 * padding_w - pool_size_w) // stride_w + 1
+    out_height = (H + 2 * padding_h - pool_size_h) // stride_h + 1
+
+    input_padded = np.pad(
+        input_tensor,
+        ((padding_h, padding_h), (padding_w, padding_w), (0, 0)),
+        mode="constant",
+        constant_values=0,
+    )
+
+    pooled_tensor = np.zeros((out_height, out_width, C), dtype=np.int8)
+
+    for i in range(out_height):
+        for j in range(out_width):
+            for k in range(C):
+                h_start = i * stride_h
+                h_end = h_start + pool_size_h
+                w_start = j * stride_w
+                w_end = w_start + pool_size_w
+                pooled_tensor[i, j, k] = np.max(
+                    input_padded[h_start:h_end, w_start:w_end, k]
+                )
+
+    return pooled_tensor
+
+
+def max_pooling_4d(
+    input_tensor, pool_size_w, pool_size_h, stride_w, stride_h, padding_w, padding_h
+):
+
+    C8, H, W, _ = input_tensor.shape
+    assert input_tensor.shape[3] == 8
+
+    out_width = (W + 2 * padding_w - pool_size_w) // stride_w + 1
+    out_height = (H + 2 * padding_h - pool_size_h) // stride_h + 1
+
+    input_padded = np.pad(
+        input_tensor,
+        ((0, 0), (padding_h, padding_h), (padding_w, padding_w), (0, 0)),
+        mode="constant",
+        constant_values=0,
+    )
+
+    pooled_tensor = np.zeros((C8, out_height, out_width, 8), dtype=np.int8)
+
+    for c in range(C8):
+        for i in range(out_height):
+            for j in range(out_width):
+                for k in range(8):
+                    h_start = i * stride_h
+                    h_end = h_start + pool_size_h
+                    w_start = j * stride_w
+                    w_end = w_start + pool_size_w
+                    pooled_tensor[c, i, j, k] = np.max(
+                        input_padded[c, h_start:h_end, w_start:w_end, k]
+                    )
+
+    return pooled_tensor

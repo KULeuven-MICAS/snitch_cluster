@@ -129,8 +129,8 @@
     snax_data_reshuffler_streamer_template :{
 
         temporal_addrgen_unit_params: {
-            loop_dim: [2],
-            share_temp_addr_gen_loop_bounds: true,
+            loop_dim: [5, 3],
+            share_temp_addr_gen_loop_bounds: false,
         }
 
         fifo_reader_params: {
