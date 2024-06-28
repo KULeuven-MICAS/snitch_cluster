@@ -6,28 +6,13 @@
 
 {
     // ifMaxPool: false,
-    ifMaxPool: true,
+    // ifMaxPool: true,
+    ifMaxPool: false,
 
     // parameters for maxpool
+    // ifC8HW8datalayout: true,
+    ifC8HW8datalayout: false,
     Nbatch: 1,
-    // works for HWC
-    // don't work for C8HW8
-    // H: 2,
-    // W: 24,
-    // Cin: 64,
-
-    // don't work for HWC
-    // same error as C8HW8
-    // H: 2,
-    // W: 8,
-    // Cin: 8,
-
-    // works for HWC
-    // work for C8HW8
-    // H: 1,
-    // W: 24,
-    // Cin: 64,
-
     H: 32,
     W: 32,
     Cin: 8,
