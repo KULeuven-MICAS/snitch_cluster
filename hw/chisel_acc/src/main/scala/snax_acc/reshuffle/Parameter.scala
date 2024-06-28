@@ -27,7 +27,7 @@ object ReshufflerConstant {
   // Pooling parallelism
   def poolLaneLen = 64
 
-  // we use 3 CSR for Reshuffler configuration,
+  // we use 1 CSR for Reshuffler configuration
   def readWriteCsrNum = 1
 
   def sizeConfigWidth = 32
