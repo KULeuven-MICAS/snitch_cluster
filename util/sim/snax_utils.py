@@ -230,7 +230,14 @@ def postprocessing_simd_golden_model(
 
 
 def max_pooling(
-    input_tensor, pool_size_w, pool_size_h, stride_w, stride_h, padding_w, padding_h, mode = "HWC"
+    input_tensor,
+    pool_size_w,
+    pool_size_h,
+    stride_w,
+    stride_h,
+    padding_w,
+    padding_h,
+    mode="HWC",
 ):
 
     # if mode == "HWC", C8 is 1, C = realCin
@@ -238,6 +245,8 @@ def max_pooling(
     C8, H, W, C = input_tensor.shape
     if mode != "HWC":
         assert input_tensor.shape[3] == 8 and C == 8
+    elif mode == "HWC":
+        assert input_tensor.shape[0] == 1 and C8 == 1
 
     out_width = (W + 2 * padding_w - pool_size_w) // stride_w + 1
     out_height = (H + 2 * padding_h - pool_size_h) // stride_h + 1
