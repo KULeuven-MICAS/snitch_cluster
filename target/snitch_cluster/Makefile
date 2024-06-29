@@ -58,6 +58,8 @@ GENERATED_DIR     ?= $(MKFILE_DIR)generated
 ####################
 BYPASS_ACCGEN = false
 CLUSTER_NAME = snitch_cluster
+CSRMAN_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/csr_manager/CsrManParamGen.scala
+STREAM_PARAM_SCALA_PATH = $(ROOT)/hw/chisel/src/main/scala/snax/streamer/StreamParamGen.scala
 
 ####################
 # SNAX Generations #
@@ -415,7 +417,7 @@ $(GENERATED_DIR)/bootdata.cc: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 
 # Clean all build directories and temporary files for Questasim simulation
 clean-vlt: clean-work
-	rm -rf bin $(VLT_BUILDDIR) $(SNAX_TEST_PATH)testharness.sv
+	rm -rf bin $(VLT_BUILDDIR) $(SNAX_TEST_PATH)testharness.sv $(CSRMAN_PARAM_SCALA_PATH) $(STREAM_PARAM_SCALA_PATH)
 
 $(VLT_AR): ${SNAX_GEN} ${VLT_SOURCES} ${TB_SRCS}
 	+$(call VERILATE,testharness)
