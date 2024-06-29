@@ -228,6 +228,7 @@ object DecoupledBufferConnect {
             right: DecoupledIO[T]
         )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
             val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 1))
+            buffer.suggestName("cut1")
             if (
               DataMirror.hasOuterFlip(left) == false &&
               DataMirror.hasOuterFlip(right) == true
@@ -237,10 +238,50 @@ object DecoupledBufferConnect {
             } else if (
               DataMirror.hasOuterFlip(left) == true &&
               DataMirror.hasOuterFlip(right) == false
-            ) { // Right is the input
+            ) { // Right is the output
                 right <> buffer.io.enq
                 buffer.io.deq <> left
             } else throw new Exception("<|> cannot determine the direction at left and right")
+        }
+
+        def <||>(
+            right: DecoupledIO[T]
+        )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+            val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 2))
+            buffer.suggestName("cut2")
+            if (
+              DataMirror.hasOuterFlip(left) == false &&
+              DataMirror.hasOuterFlip(right) == true
+            ) { // Left is the output
+                left <> buffer.io.enq
+                buffer.io.deq <> right
+            } else if (
+              DataMirror.hasOuterFlip(left) == true &&
+              DataMirror.hasOuterFlip(right) == false
+            ) { // Right is the output
+                right <> buffer.io.enq
+                buffer.io.deq <> left
+            } else throw new Exception("<||> cannot determine the direction at left and right")
+        }
+
+        def <|||>(
+            right: DecoupledIO[T]
+        )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
+            val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 3))
+            buffer.suggestName("cut3")
+            if (
+              DataMirror.hasOuterFlip(left) == false &&
+              DataMirror.hasOuterFlip(right) == true
+            ) { // Left is the output
+                left <> buffer.io.enq
+                buffer.io.deq <> right
+            } else if (
+              DataMirror.hasOuterFlip(left) == true &&
+              DataMirror.hasOuterFlip(right) == false
+            ) { // Right is the output
+                right <> buffer.io.enq
+                buffer.io.deq <> left
+            } else throw new Exception("<|||> cannot determine the direction at left and right")
         }
     }
 }

@@ -94,7 +94,8 @@ class DMADataPathTester extends AnyFreeSpec with ChiselScalatestTester {
         dut.io.writer_cfg.agu_cfg.Strides(1).poke(writerTestingParams.temporal_stride(0))
         dut.io.writer_cfg.agu_cfg.Strides(2).poke(writerTestingParams.temporal_stride(1))
         // Poke the loop back to ture since we are only testing w/o any axi transactions
-        dut.io.loopBack_i.poke(true)
+        dut.io.reader_loopBack_i.poke(true)
+        dut.io.writer_loopBack_i.poke(true)
         // Poke the cluster_data_i to zero
         dut.io.cluster_data_i.bits.poke(0.U)
         dut.io.cluster_data_i.valid.poke(0.B)

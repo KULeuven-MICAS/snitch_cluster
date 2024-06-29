@@ -56,8 +56,6 @@ class AddressGenUnit(param: AddressGenUnitParam) extends Module {
         val addr = Vec(param.spatialUnrollingFactor, Decoupled(UInt(param.addressWidth.W)))
     })
 
-    // Create a cfg_reg to temporarily hold the cfg value from the outside
-    val cfg_reg = RegEnable(io.cfg, io.start)
     // Create a counter to count from 0 to product(bounds)
     val counter = Module(new basicCounter(32))
     // When start signal is high, the counter is rest to zero. 
@@ -84,7 +82,7 @@ class AddressGenUnit(param: AddressGenUnitParam) extends Module {
 
     // Connect the ceil from config to inside
     // The innermost part needs spatial unrolling, but other pats does not needed
-    counter.io.ceil := cfg_reg.Bounds.reduceTree(_ * _) / param.spatialUnrollingFactor.U
+    counter.io.ceil := io.cfg.Bounds.reduceTree(_ * _) / param.spatialUnrollingFactor.U
 
     // The counter's tick is the enable signal
     counter.io.tick := currentState === sBUSY && outputBuffer.io.in.head.fire // FIFO still have the space to take the new address
@@ -95,21 +93,21 @@ class AddressGenUnit(param: AddressGenUnitParam) extends Module {
     var temp = counter.io.value
     
     // currentLoop(0), is the one need to be divided by the right-shifted loopBound(0)
-    currentLoop(0) := temp % (cfg_reg.Bounds(0) / param.spatialUnrollingFactor.U)
-    temp = temp / (cfg_reg.Bounds(0) / param.spatialUnrollingFactor.U)
+    currentLoop(0) := temp % (io.cfg.Bounds(0) / param.spatialUnrollingFactor.U)
+    temp = temp / (io.cfg.Bounds(0) / param.spatialUnrollingFactor.U)
     // The other loop can be calculated directly
     for (i <- currentLoop.zipWithIndex.tail) {
-        i._1 := temp % cfg_reg.Bounds(i._2)
-        temp = temp / cfg_reg.Bounds(i._2)
+        i._1 := temp % io.cfg.Bounds(i._2)
+        temp = temp / io.cfg.Bounds(i._2)
     }
 
     // Calculate the current base address: the first stride need to be left-shifted
-    val currentPointer = io.cfg.Ptr + currentLoop.head * cfg_reg.Strides.head * param.spatialUnrollingFactor.U + currentLoop.tail.zip(cfg_reg.Strides.tail).map {case (a, b) => a * b}.reduce(_ + _)
+    val currentPointer = io.cfg.Ptr + currentLoop.head * io.cfg.Strides.head * param.spatialUnrollingFactor.U + currentLoop.tail.zip(io.cfg.Strides.tail).map {case (a, b) => a * b}.reduce(_ + _)
 
     // Calculate all calculated address together
     val currentAddress = Wire(Vec(io.addr.length, UInt(param.addressWidth.W)))
     currentAddress.zipWithIndex.foreach { case (address, index) =>
-        address := currentPointer + cfg_reg.Strides.head * index.U
+        address := currentPointer + io.cfg.Strides.head * index.U
     }
 
     // Connect it to the input of outputBuffer

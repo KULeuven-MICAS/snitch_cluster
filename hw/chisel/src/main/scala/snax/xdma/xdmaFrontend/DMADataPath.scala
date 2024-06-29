@@ -66,7 +66,9 @@ class DMADataPath(readerparam: ReaderWriterDataPathParam, writerparam: ReaderWri
         val reader_cfg = Input(new ReaderWriterCfg(readerparam))
         val writer_cfg = Input(new ReaderWriterCfg(writerparam))
 
-        val loopBack_i = Input(Bool()) // Unbuffered
+        val reader_loopBack_i = Input(Bool()) // Unbuffered
+        val writer_loopBack_i = Input(Bool()) // Unbuffered
+
         // Two start signal will inform the new cfg is available, trigger agu, and inform all extension that a stream is coming
         val reader_start_i = Input(Bool())
         val writer_start_i = Input(Bool())
@@ -232,8 +234,8 @@ class DMADataPath(readerparam: ReaderWriterDataPathParam, writerparam: ReaderWri
     val readerDemux = Module(new DemuxDecoupled(chiselTypeOf(reader_data_after_extension.bits), numOutput = 2))
     val writerMux = Module(new MuxDecoupled(chiselTypeOf(writer_data_before_extension.bits), numInput = 2))
 
-    readerDemux.io.sel := io.loopBack_i
-    writerMux.io.sel := io.loopBack_i
+    readerDemux.io.sel := io.reader_loopBack_i
+    writerMux.io.sel := io.writer_loopBack_i
     readerDemux.io.in <|> reader_data_after_extension
     writerMux.io.out <|> writer_data_before_extension
     // Why there is a problem?

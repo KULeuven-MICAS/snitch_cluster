@@ -40,14 +40,11 @@ class DMAExtension(param: DMAExtensionParam) extends Module {
         val busy_o = Output(Bool())
     }
 
-    // The csr is buffered within DMAExtension base Module
-    val csrBuffer = RegEnable(io.csr_i, io.start_i)
-
-    private val bypass = csrBuffer.head(0)
+    private val bypass = io.csr_i.head(0)
     private val bypass_data = Wire(Decoupled(UInt(param.dataWidth.W)))
     val ext_data_i = Wire(Decoupled(UInt(param.dataWidth.W)))
     val ext_data_o = Wire(Decoupled(UInt(param.dataWidth.W)))
-    val ext_csr_i = csrBuffer.tail
+    val ext_csr_i = io.csr_i.tail
     val ext_start_i = io.start_i
     val ext_busy_o = Wire(Bool())
     io.busy_o := ext_busy_o
