@@ -91,7 +91,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemm_cluster
 
-	$(eval $(call generate_snax_gen,snax_streamer_gemm))
+$(eval $(call generate_snax_gen,snax_streamer_gemm))
 
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
 	include $(SNAX_GEMM_ROOT)/Makefile
@@ -106,7 +106,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-simd.hjson)
 
 	CLUSTER_NAME = snax_streamer_simd_cluster
 
-	$(eval $(call generate_snax_gen,snax_streamer_simd))
+$(eval $(call generate_snax_gen,snax_streamer_simd))
 
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-postprocessing-simd)
 	include $(SNAX_GEMM_ROOT)/Makefile
@@ -122,7 +122,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-alu.hjson)
 
 	CLUSTER_NAME = snax_alu_cluster
 
-	$(eval $(call generate_snax_gen,snax_alu))
+$(eval $(call generate_snax_gen,snax_alu))
 
 	VSIM_BENDER += -t snax_alu
 	VLT_BENDER  += -t snax_alu
@@ -134,7 +134,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-data-reshuffler.hjson)
 
 	CLUSTER_NAME = snax_data_reshuffler_cluster
 
-	$(eval $(call generate_snax_gen,snax_data_reshuffler))
+$(eval $(call generate_snax_gen,snax_data_reshuffler))
 
 	SNAX_DR_ROOT ?= $(ROOT)/hw/chisel_acc
 	include $(SNAX_DR_ROOT)/Makefile
@@ -149,7 +149,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-conv.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemm_cluster
 	
-	$(eval $(call generate_snax_gen,snax_streamer_gemm))
+$(eval $(call generate_snax_gen,snax_streamer_gemm))
  
     SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
     include $(SNAX_GEMM_ROOT)/Makefile
@@ -164,7 +164,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemmX.hjson)
 
 	CLUSTER_NAME = snax_streamer_gemmX_cluster
 
-	$(eval $(call generate_snax_gen,snax_streamer_gemmX))
+$(eval $(call generate_snax_gen,snax_streamer_gemmX))
 
 	SNAX_GEMMX_ROOT ?= $(ROOT)/hw/chisel_acc
     include $(SNAX_GEMMX_ROOT)/Makefile
@@ -179,7 +179,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
  
  	CLUSTER_NAME = snax_streamer_gemm_cluster
 
-	$(eval $(call generate_snax_gen,snax_streamer_gemm))
+$(eval $(call generate_snax_gen,snax_streamer_gemm))
  
     SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
     include $(SNAX_GEMM_ROOT)/Makefile
@@ -188,7 +188,7 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
     VLT_BENDER  += -t snax_streamer_gemm
     VCS_BENDER  += -t snax_streamer_gemm
 
-	$(eval $(call generate_snax_gen,snax_data_reshuffler))
+$(eval $(call generate_snax_gen,snax_data_reshuffler))
 
 	SNAX_DR_ROOT ?= $(ROOT)/hw/chisel_acc
 	include $(SNAX_DR_ROOT)/Makefile
