@@ -78,6 +78,7 @@ endef
 ifeq (${CFG_OVERRIDE}, cfg/snax-gemm.hjson)
 
 	CLUSTER_NAME = snax_gemm_cluster
+	BYPASS_ACCGEN = true
 
 	SNAX_GEMM_ROOT ?= $(shell $(BENDER) path snax-gemm)
 	include $(SNAX_GEMM_ROOT)/Makefile	
