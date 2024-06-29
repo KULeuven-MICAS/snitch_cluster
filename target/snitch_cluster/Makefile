@@ -145,7 +145,7 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-streamer-gemm-conv.hjson)
 
-	CLUSTER_NAME = snax_streamer_gemm_conv_cluster
+	CLUSTER_NAME = snax_streamer_gemm_cluster
 	
 	$(eval $(call generate_snax_gen,snax_streamer_gemm))
  
@@ -175,7 +175,7 @@ endif
 
 ifeq (${CFG_OVERRIDE}, cfg/snax-wide-gemm-data-reshuffler.hjson)
  
- 	CLUSTER_NAME = snax_wide_gemm_data_reshuffler_cluster
+ 	CLUSTER_NAME = snax_streamer_gemm_cluster
 
 	$(eval $(call generate_snax_gen,snax_streamer_gemm))
  
