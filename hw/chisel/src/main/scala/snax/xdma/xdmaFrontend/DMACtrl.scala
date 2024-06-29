@@ -87,6 +87,50 @@ class ReaderWriterCfgInternal(param: ReaderWriterDataPathParam)
 
 }
 
+class configRouter(dataType: ReaderWriterCfgInternal, cfgBufferDepth: Int, tcdmSize: Int) extends Module {
+    val io = IO(new Bundle {
+        val clusterBaseAddress = Input(dataType.agu_cfg.Ptr)
+        val from = Flipped(new Bundle {
+            val remote = Decoupled(dataType)
+            val local = Decoupled(dataType)
+        })
+        val to = new Bundle {
+            val remote = Decoupled(dataType)
+            val local = Decoupled(dataType)
+        }
+    })
+
+    val from_arbiter = Module(new Arbiter(dataType, 2))
+    from_arbiter.io.in(0) <> io.from.local
+    from_arbiter.io.in(1) <> io.from.remote
+    val cfgBuffer = Module(new Queue(dataType, entries = cfgBufferDepth))
+    cfgBuffer.io.enq <> from_arbiter.io.out
+
+    // At the output of FIFO: Do the rule check
+    val cType_local :: cType_remote :: cType_discard :: Nil = Enum(3)
+    val cValue = Wire(cType_discard)
+
+    when (cfgBuffer.io.deq.bits.agu_cfg.Ptr(cfgBuffer.io.deq.bits.agu_cfg.Ptr.getWidth - 1, log2Up(tcdmSize) + 10) === io.clusterBaseAddress(cfgBuffer.io.deq.bits.agu_cfg.Ptr.getWidth - 1, log2Up(tcdmSize) + 10)) {
+        cValue := cType_local   // When cfg has the Ptr that fall within local TCDM, the data should be forwarded to the local ctrl path
+    } .elsewhen (cfgBuffer.io.deq.bits.agu_cfg.Ptr === 0.U) {
+        cValue := cType_discard // When cfg has the Ptr that is zero, This means that the frame need to be thrown away. This is important as when the data is moved from DRAM to TCDM or vice versa, DRAM part is handled by iDMA, thus only one config instead of two is submitted
+    } .otherwise {
+        cValue := cType_remote  // For the remaining condition, the config is forward to remote DMA
+    }
+
+    val to_demux = Module(new DemuxDecoupled(dataType = dataType, numOutput = 3))
+    to_demux.io.in <> cfgBuffer.io.deq
+    to_demux.io.sel := cValue
+    // Port local is connected to the outside
+    to_demux.io.out(cType_local.litValue.toInt) <> io.to.local
+    // Port remote is connected to the outside
+    to_demux.io.out(cType_remote.litValue.toInt) <> io.to.remote
+    // Port discard is not connected and will always be discarded
+    to_demux.io.out(cType_discard.litValue.toInt).ready := true.B
+}
+
+
+
 class DMACtrl(
     readerparam: ReaderWriterDataPathParam,
     writerparam: ReaderWriterDataPathParam,
@@ -100,12 +144,6 @@ class DMACtrl(
         )
         val clusterBaseAddress = Output(UInt(readerparam.rwParam.tcdm_param.addrWidth.W))
     })
-
-    // This is used to determine whether the src and dst request is at the same position
-    val clusterMask = Cat(
-      VecInit(Seq.fill(readerparam.rwParam.tcdm_param.addrWidth)(true.B)).asUInt,
-      VecInit(Seq.fill(log2Floor(readerparam.rwParam.tcdm_param.tcdmSize) + 10)(false.B)).asUInt
-    )
 
     val csrmanager = Module(
       new CsrManager(
@@ -185,7 +223,7 @@ class DMACtrl(
     val preRoute_src_local = Decoupled(new ReaderWriterCfgInternal(readerparam))
     val preRoute_dst_local = Decoupled(new ReaderWriterCfgInternal(writerparam))
     val preRoute_loopBack =
-        (clusterMask & preRuleCheck_src.agu_cfg.Ptr) === (clusterMask & preRuleCheck_dst.agu_cfg.Ptr)
+        preRuleCheck_src.agu_cfg.Ptr(preRuleCheck_src.agu_cfg.Ptr.getWidth - 1, log2Up(readerparam.rwParam.tcdm_param.tcdmSize) + 10) === preRuleCheck_dst.agu_cfg.Ptr(preRuleCheck_dst.agu_cfg.Ptr.getWidth - 1, log2Up(readerparam.rwParam.tcdm_param.tcdmSize) + 10)
 
     // Connect bits
     preRoute_src_local.bits := preRuleCheck_src
@@ -206,7 +244,6 @@ class DMACtrl(
     preRoute_src_remote.valid := io.dmactrl.remoteDMADataPath.fromRemote.valid
     io.dmactrl.remoteDMADataPath.fromRemote.ready := preRoute_src_remote.ready
 
-    preRoute_src_remote.bits.agu_cfg.Ptr & io.clusterBaseAddress
-
     // Command Router is instantiated below (Only at the src side)
+    
 }

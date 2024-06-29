@@ -53,3 +53,9 @@ class complexQueue_Tester extends AnyFlatSpec with ChiselScalatestTester {
         }
     }
 }
+
+object complexQueue_CodeEmitter extends App {
+    println("Hello World! ")
+    println(getVerilogString(new complexQueue_OnetoN(dataType = UInt(32.W), N = 4, depth = 16)))
+    println(getVerilogString(new complexQueue_NtoOne(dataType = UInt(32.W), N = 4, depth = 16)))
+}

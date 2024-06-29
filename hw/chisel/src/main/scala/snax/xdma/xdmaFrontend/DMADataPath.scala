@@ -229,8 +229,8 @@ class DMADataPath(readerparam: ReaderWriterDataPathParam, writerparam: ReaderWri
     }
 
     // The following code only tackle with reader_data_after_extension and writer_data_before_extension: they should be either loopbacked or forwarded to the external interface (cluster_data_i / cluster_data_o)
-    val readerDemux = Module(new DemuxDecoupled(chiselTypeOf(reader_data_after_extension.bits)))
-    val writerMux = Module(new MuxDecoupled(chiselTypeOf(writer_data_before_extension.bits)))
+    val readerDemux = Module(new DemuxDecoupled(chiselTypeOf(reader_data_after_extension.bits), numOutput = 2))
+    val writerMux = Module(new MuxDecoupled(chiselTypeOf(writer_data_before_extension.bits), numInput = 2))
 
     readerDemux.io.sel := io.loopBack_i
     writerMux.io.sel := io.loopBack_i

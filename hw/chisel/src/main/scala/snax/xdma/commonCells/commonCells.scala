@@ -6,8 +6,8 @@ import chisel3.reflect.DataMirror
 import chisel3.internal.throwException
 import chisel3.internal.throwException
 
-/** The complexQueue_Concat to do multiple channel in / single concatenated out or single channel in /
-  * multiple splitted out fifo The user defined params include:
+/** The complexQueue_Concat to do multiple channel in / single concatenated out or single channel in
+  * / multiple splitted out fifo The user defined params include:
   * @param inputWidth:
   *   the width of the input
   * @param outputWidth:
@@ -87,51 +87,133 @@ class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int) extends
     io.anyFull := queues.map(queue => ~(queue.io.enq.ready)).reduce(_ | _)
 }
 
-/** The 1in, 2out Demux for Decoupled signal
-  * As the demux is the 1in, 2out system, we don't need to consider the demux of bits
+/** The complexQueue to do N-channels in / 1 N-Vec channel out. The user defined params include:
+  * @param dataType:
+  *   the type of one channel
+  * @param N
+  *
+  * @param depth:
+  *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first
+  *   option If inputWidth is larger than outputWidth, then it will be the second option No matter
+  *   which case, the big width one should equal to integer times of the small width one
   */
-class DemuxDecoupled[T <: Data](dataType: T) extends Module {
+class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Module {
+    require(
+      N > 1,
+      message = "N should be greater than 1"
+    )
+    require(depth > 0)
+
     val io = IO(new Bundle {
-        val in = Flipped(Decoupled(dataType))
-        val out = Vec(2, Decoupled(dataType))
-        val sel = Input(Bool())
+        val in = Flipped(Vec(N, Decoupled(dataType)))
+        val out = Decoupled(Vec(N, dataType))
+        val allEmpty = Output(Bool())
+        val anyFull = Output(Bool())
     })
 
-    // Demux logic
-    io.out(0).bits := io.in.bits
-    io.out(1).bits := io.in.bits
+    val queues = for (i <- 0 until N) yield {
+        Module(new Queue(dataType, depth))
+    }
 
-    when(io.sel) {
-        io.out(1).valid := io.in.valid
-        io.in.ready := io.out(1).ready
-        io.out(0).valid := false.B // Unselected output should not be valid
-    }.otherwise {
-        io.out(0).valid := io.in.valid
-        io.in.ready := io.out(0).ready
-        io.out(1).valid := false.B // Unselected output should not be valid
+    io.in.zip(queues).foreach { case (i, j) => i <> j.io.enq }
+    io.out.bits.zip(queues) .foreach { case (i, j) => i := j.io.deq.bits }
+    io.out.valid := queues.map(i => i.io.deq.valid).reduce(_ & _)
+    val dequeue_ready = io.out.valid & io.out.ready
+    queues.foreach(_.io.deq.ready := dequeue_ready)
+
+    // All empty signal is a debug signal and derived from sub channels: if all fifo is empty, then this signal is empty
+    io.allEmpty := queues.map(queue => ~(queue.io.deq.valid)).reduce(_ & _)
+
+    // Any full signal is a debug signal and derived from sub channels: if any fifo is full, then this signal is full
+    io.anyFull := queues.map(queue => ~(queue.io.enq.ready)).reduce(_ | _)
+}
+
+/** The complexQueue to do 1 N-Vec channel in / N-channels out. The user defined params include:
+  * @param dataType:
+  *   the type of one channel
+  * @param N
+  *
+  * @param depth:
+  *   the depth of the FIFO If inputWidth is smaller than outputWidth, then it will be the first
+  *   option If inputWidth is larger than outputWidth, then it will be the second option No matter
+  *   which case, the big width one should equal to integer times of the small width one
+  */
+
+class complexQueue_OnetoN[T <: Data](dataType: T, N: Int, depth: Int) extends Module {
+    require(
+      N > 1,
+      message = "N should be greater than 1"
+    )
+    require(depth > 0)
+
+    val io = IO(new Bundle {
+        val in = Flipped(Decoupled(Vec(N, dataType)))
+        val out = Vec(N, Decoupled(dataType))
+        val allEmpty = Output(Bool())
+        val anyFull = Output(Bool())
+    })
+
+    val queues = for (i <- 0 until N) yield {
+        Module(new Queue(dataType, depth))
+    }
+
+    io.out.zip(queues).foreach { case (i, j) => i <> j.io.deq }
+    io.in.bits.zip(queues) .foreach { case (i, j) => j.io.enq.bits := i }
+    io.in.ready := queues.map(i => i.io.enq.ready).reduce(_ & _)
+    val enqueue_valid = io.in.valid & io.in.ready
+    queues.foreach(_.io.enq.valid := enqueue_valid)
+
+    // All empty signal is a debug signal and derived from sub channels: if all fifo is empty, then this signal is empty
+    io.allEmpty := queues.map(queue => ~(queue.io.deq.valid)).reduce(_ & _)
+
+    // Any full signal is a debug signal and derived from sub channels: if any fifo is full, then this signal is full
+    io.anyFull := queues.map(queue => ~(queue.io.enq.ready)).reduce(_ | _)
+}
+
+
+/** The 1in, N-out Demux for Decoupled signal As the demux is the 1in, 2out system, we don't need to
+  * consider the demux of bits
+  */
+class DemuxDecoupled[T <: Data](dataType: T, numOutput: Int) extends Module {
+    val io = IO(new Bundle {
+        val in = Flipped(Decoupled(dataType))
+        val out = Vec(numOutput, Decoupled(dataType))
+        val sel = Input(UInt(log2Ceil(numOutput).W))
+    })
+    // Default assigns
+    io.in.ready := false.B
+    // Demux logic
+    for (i <- 0 until numOutput) {
+        io.out(i).bits := io.in.bits
+        when(io.sel === i.U) {
+            io.out(i).valid := io.in.valid
+            io.in.ready := io.out(i).ready
+        } otherwise {
+            io.out(i).valid := false.B // Unselected output should not be valid
+        }
     }
 }
 
-/** The 1in, 2out Demux for Decoupled signal
+/** The N-in, 1out Demux for Decoupled signal
   */
-class MuxDecoupled[T <: Data](dataType: T) extends Module {
+class MuxDecoupled[T <: Data](dataType: T, numInput: Int) extends Module {
     val io = IO(new Bundle {
-        val in = Vec(2, Flipped(Decoupled(dataType)))
+        val in = Vec(numInput, Flipped(Decoupled(dataType)))
         val out = Decoupled(dataType)
-        val sel = Input(Bool())
+        val sel = Input(UInt(log2Ceil(numInput).W))
     })
-
+    // Default assigns
+    io.out.valid := false.B
+    io.out.bits := 0.U
     // Mux logic
-    when(io.sel) {
-        io.out.valid := io.in(1).valid
-        io.out.bits := io.in(1).bits
-        io.in(1).ready := io.out.ready
-        io.in(0).ready := false.B // Unselected input should not be ready
-    }.otherwise {
-        io.out.valid := io.in(0).valid
-        io.out.bits := io.in(0).bits
-        io.in(0).ready := io.out.ready
-        io.in(1).ready := false.B // Unselected input should not be ready
+    for (i <- 0 until numInput) {
+        when(io.sel === i.U) {
+            io.out.valid := io.in(i).valid
+            io.in(i).ready := io.out.ready
+            io.out.bits := io.in(i).bits
+        } otherwise {
+            io.in(i).ready := false.B // Unselected input should not be ready
+        }
     }
 }
 
@@ -141,21 +223,21 @@ class MuxDecoupled[T <: Data](dataType: T) extends Module {
   */
 object DecoupledBufferConnect {
     implicit class BufferedDecoupledConnectionOp[T <: Data](val left: DecoupledIO[T]) {
-        // This class defines the implicit class for the new operand <|>
+        // This class defines the implicit class for the new operand <|> for DecoupleIO
         def <|>(
             right: DecoupledIO[T]
         )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
             val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 1))
             if (
-              DataMirror.hasOuterFlip(left) == false && 
+              DataMirror.hasOuterFlip(left) == false &&
               DataMirror.hasOuterFlip(right) == true
             ) { // Left is the output
                 left <> buffer.io.enq
                 buffer.io.deq <> right
             } else if (
-              DataMirror.hasOuterFlip(left) == true && 
+              DataMirror.hasOuterFlip(left) == true &&
               DataMirror.hasOuterFlip(right) == false
-            ){ // Right is the input
+            ) { // Right is the input
                 right <> buffer.io.enq
                 buffer.io.deq <> left
             } else throw new Exception("<|> cannot determine the direction at left and right")
@@ -165,9 +247,10 @@ object DecoupledBufferConnect {
 
 object BitsConcat {
     implicit class UIntConcatOp[T <: Bits](val left: T) {
-        // This class defines the implicit class for the new operand <|>
+        // This class defines the implicit class for the new operand ++ for UInt
         def ++(
             right: T
-        )(implicit sourceInfo: chisel3.experimental.SourceInfo): T =  Cat(left, right).asInstanceOf[T]
+        )(implicit sourceInfo: chisel3.experimental.SourceInfo): T =
+            Cat(left, right).asInstanceOf[T]
     }
 }

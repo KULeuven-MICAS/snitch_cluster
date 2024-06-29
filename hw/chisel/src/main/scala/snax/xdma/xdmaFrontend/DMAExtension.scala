@@ -53,7 +53,7 @@ class DMAExtension(param: DMAExtensionParam) extends Module {
     io.busy_o := ext_busy_o
 
     // Structure to bypass extension: Demux
-    private val InputDemux = Module(new DemuxDecoupled(UInt(param.dataWidth.W)))
+    private val InputDemux = Module(new DemuxDecoupled(UInt(param.dataWidth.W), numOutput = 2))
     InputDemux.io.sel := bypass
     InputDemux.io.in <> io.data_i
     // When bypass is 0, io.out(0) is connected with extension's input
@@ -62,7 +62,7 @@ class DMAExtension(param: DMAExtensionParam) extends Module {
     InputDemux.io.out(1) <> bypass_data
 
     // Structure to bypass extension: Mux
-    private val OutputMux = Module(new MuxDecoupled(UInt(param.dataWidth.W)))
+    private val OutputMux = Module(new MuxDecoupled(UInt(param.dataWidth.W), numInput = 2))
     OutputMux.io.sel := bypass
     OutputMux.io.out <> io.data_o
     // When bypass is 0, io.in(0) is connected with extension's output
