@@ -368,10 +368,42 @@ sources:
     files:
       - target/common/test/tb_bin.sv
 
-  # target/snitch_cluster
+  #---------------------------
+  # Cluster wrapper selections
+  #---------------------------
   - target: snitch_cluster
     files:
       - target/snitch_cluster/generated/snitch_cluster_wrapper.sv
-  - target: all(snitch_cluster, any(simulation, verilator))
+  - target: snax_mac
+    files:
+      - target/snitch_cluster/generated/snax_mac_cluster_wrapper.sv
+  - target: snax_alu
+    files:
+      - target/snitch_cluster/generated/snax_alu_cluster_wrapper.sv
+  # Note: this is about to be obsolete
+  # but it uses the old snax-gemm still
+  - target: snax-gemm
+    files:
+      - target/snitch_cluster/generated/snax_gemm_cluster_wrapper.sv
+  - target: snax_streamer_gemm
+    files:
+      - target/snitch_cluster/generated/snax_streamer_gemm_cluster_wrapper.sv
+  - target: snax_streamer_simd
+    files:
+      - target/snitch_cluster/generated/snax_streamer_simd_cluster_wrapper.sv
+  - target: snax_data_reshuffler
+    files:
+      - target/snitch_cluster/generated/snax_data_reshuffler_cluster_wrapper.sv
+  - target: snax_data_reshuffler
+    files:
+      - target/snitch_cluster/generated/snax_data_reshuffler_cluster_wrapper.sv
+  - target: snax_streamer_gemmX
+    files:
+      - target/snitch_cluster/generated/snax_streamer_gemmX_cluster_wrapper.sv
+
+  #---------------------------
+  # Test harness declaration
+  #---------------------------
+  - target: any(simulation, verilator)
     files:
       - target/snitch_cluster/test/testharness.sv
