@@ -211,6 +211,18 @@ ifeq (${CFG_OVERRIDE}, cfg/snax-mac.hjson)
 
 endif
 
+ifeq (${CFG_OVERRIDE}, cfg/snax-mac-mult.hjson)
+
+	CLUSTER_NAME  = snax_mac_cluster
+
+	BYPASS_ACCGEN = true
+	
+	VSIM_BENDER += -t snax_mac
+	VLT_BENDER  += -t snax_mac
+	VCS_BENDER  += -t snax_mac
+
+endif
+
 ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
 
 	CLUSTER_NAME = snitch_cluster
