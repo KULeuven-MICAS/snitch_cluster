@@ -29,7 +29,7 @@ dependencies:
   tech_cells_generic: { git: https://github.com/pulp-platform/tech_cells_generic, version:  0.2.11  }
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg,          version:  0.8.0   }
   hwpe-mac-engine:    { git: https://github.com/KULeuven-MICAS/hwpe-mac-engine.git, rev: 5d3b4525b665169fc8321c8a811f3c83ad3c72e8 }
-  snax-gemm: { git: "https://github.com/KULeuven-MICAS/snax-gemm", rev: main }
+  snax-gemm: { git: "https://github.com/KULeuven-MICAS/snax-gemm", rev: ry/add-name-fix }
   snax-postprocessing-simd: { git: "https://github.com/KULeuven-MICAS/snax-postprocessing-simd", rev: main }
 
 vendor_package:
@@ -307,7 +307,7 @@ sources:
       # Level 2
       - target/snitch_cluster/generated/snax_alu/snax_alu_wrapper.sv
 
-  - target: snax_streamer_gemm
+  - target: any(snax_streamer_gemm, snax_wide_gemm_data_reshuffler)
     files:
       # Level 0
       - target/snitch_cluster/generated/snax_streamer_gemm/snax_streamer_gemm_csrman_CsrManager.sv
@@ -329,7 +329,7 @@ sources:
       # Level 2
       - target/snitch_cluster/generated/snax_streamer_simd/snax_streamer_simd_wrapper.sv
 
-  - target: snax_data_reshuffler
+  - target: any(snax_data_reshuffler, snax_wide_gemm_data_reshuffler)
     files:
       # Level 0
       - hw/chisel_acc/generated/reshuffle/Reshuffler.sv
@@ -385,7 +385,7 @@ sources:
   - target: snax-gemm
     files:
       - target/snitch_cluster/generated/snax_gemm_cluster_wrapper.sv
-  - target: snax_streamer_gemm
+  - target: any(snax_streamer_gemm,snax_wide_gemm_data_reshuffler)
     files:
       - target/snitch_cluster/generated/snax_streamer_gemm_cluster_wrapper.sv
   - target: snax_streamer_simd
