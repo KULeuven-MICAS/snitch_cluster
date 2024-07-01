@@ -232,7 +232,6 @@ ifeq (${CFG_OVERRIDE}, cfg/default.hjson)
 
 endif
 
-# Make sure to include the testharness
 SNAX_GEN += $(SNAX_TEST_PATH)testharness.sv
 
 VSIM_BENDER += -t QUESTA_SIM
@@ -428,7 +427,7 @@ $(GENERATED_DIR)/bootdata.cc: ${CFG} ${CLUSTER_GEN_PREREQ} | $(GENERATED_DIR)
 clean-vlt: clean-work
 	rm -rf bin $(VLT_BUILDDIR) $(SNAX_TEST_PATH)testharness.sv $(CSRMAN_PARAM_SCALA_PATH) $(STREAM_PARAM_SCALA_PATH)
 
-$(VLT_AR): ${SNAX_GEN} ${VLT_SOURCES} ${TB_SRCS}
+$(VLT_AR): ${OTHER_SNAX_GEN} ${VLT_SOURCES} ${TB_SRCS} 
 	+$(call VERILATE,testharness)
 verilate: $(VLT_AR)
 
