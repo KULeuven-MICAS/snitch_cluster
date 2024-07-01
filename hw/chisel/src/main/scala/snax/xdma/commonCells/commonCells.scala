@@ -17,7 +17,7 @@ import chisel3.internal.throwException
   *   option If inputWidth is larger than outputWidth, then it will be the second option No matter
   *   which case, the big width one should equal to integer times of the small width one
   */
-class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int) extends Module {
+class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int) extends Module with RequireAsyncReset {
     val bigWidth = Seq(inputWidth, outputWidth).max
     val smallWidth = Seq(inputWidth, outputWidth).min
     require(
@@ -97,7 +97,7 @@ class complexQueue_Concat(inputWidth: Int, outputWidth: Int, depth: Int) extends
   *   option If inputWidth is larger than outputWidth, then it will be the second option No matter
   *   which case, the big width one should equal to integer times of the small width one
   */
-class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Module {
+class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Module with RequireAsyncReset {
     require(
       N > 1,
       message = "N should be greater than 1"
@@ -139,7 +139,7 @@ class complexQueue_NtoOne[T <: Data](dataType: T, N: Int, depth: Int) extends Mo
   *   which case, the big width one should equal to integer times of the small width one
   */
 
-class complexQueue_OnetoN[T <: Data](dataType: T, N: Int, depth: Int) extends Module {
+class complexQueue_OnetoN[T <: Data](dataType: T, N: Int, depth: Int) extends Module with RequireAsyncReset {
     require(
       N > 1,
       message = "N should be greater than 1"
@@ -174,7 +174,7 @@ class complexQueue_OnetoN[T <: Data](dataType: T, N: Int, depth: Int) extends Mo
 /** The 1in, N-out Demux for Decoupled signal As the demux is the 1in, 2out system, we don't need to
   * consider the demux of bits
   */
-class DemuxDecoupled[T <: Data](dataType: T, numOutput: Int) extends Module {
+class DemuxDecoupled[T <: Data](dataType: T, numOutput: Int) extends Module with RequireAsyncReset {
     val io = IO(new Bundle {
         val in = Flipped(Decoupled(dataType))
         val out = Vec(numOutput, Decoupled(dataType))
@@ -196,7 +196,7 @@ class DemuxDecoupled[T <: Data](dataType: T, numOutput: Int) extends Module {
 
 /** The N-in, 1out Demux for Decoupled signal
   */
-class MuxDecoupled[T <: Data](dataType: T, numInput: Int) extends Module {
+class MuxDecoupled[T <: Data](dataType: T, numInput: Int) extends Module with RequireAsyncReset {
     val io = IO(new Bundle {
         val in = Vec(numInput, Flipped(Decoupled(dataType)))
         val out = Decoupled(dataType)
@@ -223,65 +223,34 @@ class MuxDecoupled[T <: Data](dataType: T, numInput: Int) extends Module {
   */
 object DecoupledBufferConnect {
     implicit class BufferedDecoupledConnectionOp[T <: Data](val left: DecoupledIO[T]) {
-        // This class defines the implicit class for the new operand <|> for DecoupleIO
-        def <|>(
+        // This class defines the implicit class for the new operand -|>,-||>, -|||> for DecoupleIO
+
+        def -|>(
             right: DecoupledIO[T]
         )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
             val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 1))
             buffer.suggestName("cut1")
-            if (
-              DataMirror.hasOuterFlip(left) == false &&
-              DataMirror.hasOuterFlip(right) == true
-            ) { // Left is the output
-                left <> buffer.io.enq
-                buffer.io.deq <> right
-            } else if (
-              DataMirror.hasOuterFlip(left) == true &&
-              DataMirror.hasOuterFlip(right) == false
-            ) { // Right is the output
-                right <> buffer.io.enq
-                buffer.io.deq <> left
-            } else throw new Exception("<|> cannot determine the direction at left and right")
+
+            left <> buffer.io.enq
+            buffer.io.deq <> right
         }
 
-        def <||>(
+        def -||>(
             right: DecoupledIO[T]
         )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
             val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 2))
             buffer.suggestName("cut2")
-            if (
-              DataMirror.hasOuterFlip(left) == false &&
-              DataMirror.hasOuterFlip(right) == true
-            ) { // Left is the output
-                left <> buffer.io.enq
-                buffer.io.deq <> right
-            } else if (
-              DataMirror.hasOuterFlip(left) == true &&
-              DataMirror.hasOuterFlip(right) == false
-            ) { // Right is the output
-                right <> buffer.io.enq
-                buffer.io.deq <> left
-            } else throw new Exception("<||> cannot determine the direction at left and right")
+            left <> buffer.io.enq
+            buffer.io.deq <> right
         }
 
-        def <|||>(
+        def -|||>(
             right: DecoupledIO[T]
         )(implicit sourceInfo: chisel3.experimental.SourceInfo): Unit = {
             val buffer = Module(new Queue(chiselTypeOf(left.bits), entries = 3))
             buffer.suggestName("cut3")
-            if (
-              DataMirror.hasOuterFlip(left) == false &&
-              DataMirror.hasOuterFlip(right) == true
-            ) { // Left is the output
-                left <> buffer.io.enq
-                buffer.io.deq <> right
-            } else if (
-              DataMirror.hasOuterFlip(left) == true &&
-              DataMirror.hasOuterFlip(right) == false
-            ) { // Right is the output
-                right <> buffer.io.enq
-                buffer.io.deq <> left
-            } else throw new Exception("<|||> cannot determine the direction at left and right")
+            left <> buffer.io.enq
+            buffer.io.deq <> right
         }
     }
 }

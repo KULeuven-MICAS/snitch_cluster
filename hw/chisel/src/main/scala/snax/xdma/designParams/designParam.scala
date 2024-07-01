@@ -1,5 +1,7 @@
 package snax.xdma.designParams
 
+import chisel3.util.log2Up
+
 /* 
  *  This is the collection of all design Params
  *  Design Params is placed all together with companion object to avoid multiple definition of one config & config conflict
@@ -39,9 +41,9 @@ object AddressGenUnitParam {
 
 class ReaderWriterParam(
     dimension: Int = 3,
-    tcdmAddressWidth: Int = 17,
     tcdmDataWidth: Int = 64,
     tcdmSize: Int = 128, 
+    tcdmAddressWidth: Int = 48, 
     numChannel: Int = 8,
     addressBufferDepth: Int = 8,
     dataBufferDepth: Int = 8
