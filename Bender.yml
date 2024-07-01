@@ -385,7 +385,7 @@ sources:
   - target: snax-gemm
     files:
       - target/snitch_cluster/generated/snax_gemm_cluster_wrapper.sv
-  - target: any(snax_streamer_gemm,snax_wide_gemm_data_reshuffler)
+  - target: any(snax_streamer_gemm, snax_wide_gemm_data_reshuffler)
     files:
       - target/snitch_cluster/generated/snax_streamer_gemm_cluster_wrapper.sv
   - target: snax_streamer_simd
