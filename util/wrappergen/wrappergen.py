@@ -10,7 +10,6 @@
 # This wrappergen is specific to configure the templates
 # and wrappers towards the SNAX shell
 # -------------------------------------------------------
-from xmlrpc.client import Boolean
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from jsonref import JsonRef
@@ -192,7 +191,7 @@ def main():
     num_core_w_acc = 0
     acc_cfgs = []
 
-    if(args.bypass_accgen == "false"):
+    if (args.bypass_accgen == "false"):
         for i in range(num_cores):
             if "snax_acc_cfg" in cfg_cores[i]:
                 num_core_w_acc += 1
